@@ -214,7 +214,7 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
               cy="50%"
               outerRadius={100}
             >
-              {data.map((entry, index) => (
+              {data.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
           </Pie>
