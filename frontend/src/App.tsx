@@ -213,8 +213,8 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
               cx="50%"
               cy="50%"
               outerRadius={100}
-              label={({ name, percent }) =>
-                `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+              label={({ percent }) =>
+                `${((percent ?? 0) * 100).toFixed(0)}%`
               }
             >
               {data.map((_, index) => (
