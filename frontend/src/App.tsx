@@ -212,6 +212,7 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
               nameKey="name"
               cx="50%"
               cy="50%"
+              innerRadius={60}
               outerRadius={100}
               label={({ percent }) =>
                 `${((percent ?? 0) * 100).toFixed(0)}%`
