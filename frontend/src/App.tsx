@@ -214,15 +214,21 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
               cy="50%"
               innerRadius={60}
               outerRadius={100}
-              label={({ percent }) =>
-                `${((percent ?? 0) * 100).toFixed(0)}%`
-              }
             >
               {data.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
           </Pie>
-          <Tooltip />
+          <Tooltip
+            formatter={(value , name) => {
+              const total = data.reduce(
+                (sum: number, item: any) => sum + item.value,
+                  0
+                );
+              const percent = ((Number(value) / total) * 100).toFixed(0);
+              return [`${value} € (${percent}%)`, name];
+            }}
+          />
           <Legend />
           </PieChart>
         )}
