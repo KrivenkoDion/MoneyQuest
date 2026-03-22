@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
 // тип одной транзакции 
 type Transaction = {
@@ -213,12 +213,16 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
               cx="50%"
               cy="50%"
               outerRadius={100}
+              label={({ name, percent }) =>
+                `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+              }
             >
               {data.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
           </Pie>
           <Tooltip />
+          <Legend />
           </PieChart>
         )}
       </div>
