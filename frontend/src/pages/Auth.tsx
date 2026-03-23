@@ -16,45 +16,54 @@ function Auth() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "radial-gradient(circle at top, #1a1a2e, #0f0f1a)",
-        fontFamily: "Arial",
-        color: "white",
+        background: "linear-gradient(135deg, #0f0f1a, #1a1a2e)",
+        fontFamily: "Inter, Arial",
       }}
     >
       <div
         style={{
-          width: 320,
+          width: 360,
           padding: 30,
-          borderRadius: 20,
-          background: "rgba(255,255,255,0.05)",
-          backdropFilter: "blur(12px)",
-          boxShadow: "0 0 30px rgba(0,255,255,0.2)",
-          border: "1px solid rgba(0,255,255,0.3)",
+          borderRadius: 16,
+          background: "#161625",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+          border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
         {/* Заголовок */}
         <h1
           style={{
             textAlign: "center",
-            marginBottom: 20,
-            color: "#00f5ff",
-            textShadow: "0 0 10px #00f5ff, 0 0 20px #00f5ff",
+            marginBottom: 30,
+            fontSize: 28,
+            fontWeight: 600,
+            color: "#ffffff",
+            letterSpacing: 1,
           }}
         >
-          MoneyQuest 💰
+          MoneyQuest
         </h1>
 
         {/* Tabs */}
-        <div style={{ display: "flex", marginBottom: 20 }}>
+        <div
+          style={{
+            display: "flex",
+            marginBottom: 25,
+            background: "#1f1f2e",
+            borderRadius: 10,
+            overflow: "hidden",
+          }}
+        >
           <button
             onClick={() => setIsLogin(true)}
             style={{
               flex: 1,
               padding: 10,
-              background: isLogin ? "#00f5ff" : "transparent",
+              background: isLogin ? "#2a2a3d" : "transparent",
               border: "none",
-              color: isLogin ? "black" : "#00f5ff",
+              color: isLogin ? "#fff" : "#888",
               cursor: "pointer",
+              transition: "0.2s",
             }}
           >
             Login
@@ -65,10 +74,11 @@ function Auth() {
             style={{
               flex: 1,
               padding: 10,
-              background: !isLogin ? "#ff00ff" : "transparent",
+              background: !isLogin ? "#2a2a3d" : "transparent",
               border: "none",
-              color: !isLogin ? "black" : "#ff00ff",
+              color: !isLogin ? "#fff" : "#888",
               cursor: "pointer",
+              transition: "0.2s",
             }}
           >
             Register
@@ -83,10 +93,10 @@ function Auth() {
             style={{
               width: "100%",
               padding: 12,
-              marginBottom: 10,
+              marginBottom: 12,
               borderRadius: 10,
-              border: "1px solid #00f5ff",
-              background: "transparent",
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "#1f1f2e",
               color: "white",
               outline: "none",
             }}
@@ -100,10 +110,10 @@ function Auth() {
           style={{
             width: "100%",
             padding: 12,
-            marginBottom: 10,
+            marginBottom: 12,
             borderRadius: 10,
-            border: "1px solid #00f5ff",
-            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#1f1f2e",
             color: "white",
             outline: "none",
           }}
@@ -118,8 +128,8 @@ function Auth() {
             padding: 12,
             marginBottom: 20,
             borderRadius: 10,
-            border: "1px solid #ff00ff",
-            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#1f1f2e",
             color: "white",
             outline: "none",
           }}
@@ -130,15 +140,22 @@ function Auth() {
           onClick={handleSubmit}
           style={{
             width: "100%",
-            padding: 12,
+            padding: 14,
             borderRadius: 10,
             border: "none",
-            background: "linear-gradient(90deg, #00f5ff, #ff00ff)",
-            color: "black",
-            fontWeight: "bold",
+            background: "#4CAF50",
+            color: "white",
+            fontSize: 16,
+            fontWeight: 500,
             cursor: "pointer",
-            boxShadow: "0 0 15px #00f5ff",
+            transition: "0.2s",
           }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "#43a047")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.background = "#4CAF50")
+          }
         >
           {isLogin ? "Войти" : "Создать аккаунт"}
         </button>
