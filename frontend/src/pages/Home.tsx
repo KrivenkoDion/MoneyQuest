@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
@@ -9,6 +10,7 @@ type Transaction = {
 };
 
 function Home() {
+  const navigate = useNavigate();
   const [balance, setBalance] = useState(() => {    // Зачисление баланас - пока 1к по дефолту 
     const saved = localStorage.getItem("balance");
     return saved ? Number(saved) : 1000;            // Выбор количества $
@@ -85,6 +87,45 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
   return (                                                                                      // ГЛАНВЫЙ RETURN ДО UI
     <div style={{ padding: 20, fontFamily: "Arial" }}>
       <h1>MoneyQuest 💰</h1>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 10,
+          marginBottom: 20,
+        }}
+      >
+        <button
+          onClick={() => navigate("/profile")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: "none",
+            background: "#2196F3",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          Профиль
+        </button>
+
+        <button
+          onClick={() => navigate("/achievements")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: "none",
+            background: "#9c27b0",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          Ачивки
+        </button>
+      </div>
+
+      
 
       {/* Баланс */}
       <div
