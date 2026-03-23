@@ -16,60 +16,29 @@ function Auth() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "radial-gradient(circle at 30% 20%, #2a2a5a, #0f0f1a)",
+        background: "linear-gradient(135deg, #0f0f1a, #1a1a2e)",
         fontFamily: "Inter, Arial",
-        position: "relative",
-        overflow: "hidden",
       }}
     >
-      {/* Glow circles */}
-      <div
-        style={{
-          position: "absolute",
-          width: 300,
-          height: 300,
-          background: "#4CAF50",
-          filter: "blur(120px)",
-          opacity: 0.2,
-          top: 50,
-          left: 100,
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          width: 250,
-          height: 250,
-          background: "#6c63ff",
-          filter: "blur(120px)",
-          opacity: 0.2,
-          bottom: 50,
-          right: 100,
-        }}
-      />
-
       <div
         style={{
           width: 360,
           padding: 30,
-          borderRadius: 20,
-          background: "rgba(22,22,37,0.8)",
-          backdropFilter: "blur(20px)",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          zIndex: 2,
+          borderRadius: 16,
+          background: "#161625",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
+          border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
         {/* Заголовок */}
         <h1
           style={{
             textAlign: "center",
-            marginBottom: 25,
-            fontSize: 30,
+            marginBottom: 30,
+            fontSize: 28,
             fontWeight: 600,
-            background: "linear-gradient(90deg, #4CAF50, #6c63ff)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#ffffff",
+            letterSpacing: 1,
           }}
         >
           MoneyQuest
@@ -80,7 +49,7 @@ function Auth() {
           style={{
             display: "flex",
             marginBottom: 25,
-            background: "rgba(255,255,255,0.05)",
+            background: "#1f1f2e",
             borderRadius: 10,
             overflow: "hidden",
           }}
@@ -94,6 +63,7 @@ function Auth() {
               border: "none",
               color: isLogin ? "#fff" : "#888",
               cursor: "pointer",
+              transition: "0.2s",
             }}
           >
             Login
@@ -108,6 +78,7 @@ function Auth() {
               border: "none",
               color: !isLogin ? "#fff" : "#888",
               cursor: "pointer",
+              transition: "0.2s",
             }}
           >
             Register
@@ -119,43 +90,72 @@ function Auth() {
           <input
             type="text"
             placeholder="Name"
-            style={inputStyle}
+            style={{
+              width: "100%",
+              padding: 12,
+              marginBottom: 12,
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.1)",
+              background: "#1f1f2e",
+              color: "white",
+              outline: "none",
+            }}
           />
         )}
 
+        {/* Email */}
         <input
           type="email"
           placeholder="Email"
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: 12,
+            marginBottom: 12,
+            borderRadius: 10,
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#1f1f2e",
+            color: "white",
+            outline: "none",
+          }}
         />
 
+        {/* Password */}
         <input
           type="password"
           placeholder="Password"
-          style={{ ...inputStyle, marginBottom: 20 }}
+          style={{
+            width: "100%",
+            padding: 12,
+            marginBottom: 20,
+            borderRadius: 10,
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#1f1f2e",
+            color: "white",
+            outline: "none",
+          }}
         />
 
-        {/* Button */}
+        {/* Кнопка */}
         <button
           onClick={handleSubmit}
           style={{
             width: "100%",
             padding: 14,
-            borderRadius: 12,
+            borderRadius: 10,
             border: "none",
-            background: "linear-gradient(90deg, #4CAF50, #6c63ff)",
+            background: "#4CAF50",
             color: "white",
             fontSize: 16,
             fontWeight: 500,
             cursor: "pointer",
-            transition: "0.3s",
+            transition: "0.2s",
           }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.transform = "scale(1.03)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-          }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "#43a047")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.background = "#4CAF50")
+          }
         >
           {isLogin ? "Войти" : "Создать аккаунт"}
         </button>
@@ -163,16 +163,5 @@ function Auth() {
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: 12,
-  marginBottom: 12,
-  borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.05)",
-  color: "white",
-  outline: "none",
-};
 
 export default Auth;
