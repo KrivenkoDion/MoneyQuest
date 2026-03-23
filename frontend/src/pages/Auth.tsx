@@ -6,7 +6,6 @@ function Auth() {
   const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = () => {
-    // пока просто вход без проверки
     navigate("/home");
   };
 
@@ -17,37 +16,44 @@ function Auth() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f5f5f5",
+        background: "radial-gradient(circle at top, #1a1a2e, #0f0f1a)",
+        fontFamily: "Arial",
+        color: "white",
       }}
     >
       <div
         style={{
+          width: 320,
           padding: 30,
-          borderRadius: 12,
-          background: "white",
-          width: 300,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          borderRadius: 20,
+          background: "rgba(255,255,255,0.05)",
+          backdropFilter: "blur(12px)",
+          boxShadow: "0 0 30px rgba(0,255,255,0.2)",
+          border: "1px solid rgba(0,255,255,0.3)",
         }}
       >
-        <h2 style={{ textAlign: "center" }}>
-          {isLogin ? "Login" : "Register"}
-        </h2>
-
-        {/* Переключение */}
-        <div
+        {/* Заголовок */}
+        <h1
           style={{
-            display: "flex",
+            textAlign: "center",
             marginBottom: 20,
+            color: "#00f5ff",
+            textShadow: "0 0 10px #00f5ff, 0 0 20px #00f5ff",
           }}
         >
+          MoneyQuest 💰
+        </h1>
+
+        {/* Tabs */}
+        <div style={{ display: "flex", marginBottom: 20 }}>
           <button
             onClick={() => setIsLogin(true)}
             style={{
               flex: 1,
               padding: 10,
-              background: isLogin ? "#4CAF50" : "#eee",
-              color: isLogin ? "white" : "black",
+              background: isLogin ? "#00f5ff" : "transparent",
               border: "none",
+              color: isLogin ? "black" : "#00f5ff",
               cursor: "pointer",
             }}
           >
@@ -59,9 +65,9 @@ function Auth() {
             style={{
               flex: 1,
               padding: 10,
-              background: !isLogin ? "#4CAF50" : "#eee",
-              color: !isLogin ? "white" : "black",
+              background: !isLogin ? "#ff00ff" : "transparent",
               border: "none",
+              color: !isLogin ? "black" : "#ff00ff",
               cursor: "pointer",
             }}
           >
@@ -69,56 +75,69 @@ function Auth() {
           </button>
         </div>
 
-        {/* Форма */}
+        {/* Name */}
         {!isLogin && (
           <input
             type="text"
             placeholder="Name"
             style={{
               width: "100%",
-              padding: 10,
+              padding: 12,
               marginBottom: 10,
-              borderRadius: 8,
-              border: "1px solid #ccc",
+              borderRadius: 10,
+              border: "1px solid #00f5ff",
+              background: "transparent",
+              color: "white",
+              outline: "none",
             }}
           />
         )}
 
+        {/* Email */}
         <input
           type="email"
           placeholder="Email"
           style={{
             width: "100%",
-            padding: 10,
+            padding: 12,
             marginBottom: 10,
-            borderRadius: 8,
-            border: "1px solid #ccc",
+            borderRadius: 10,
+            border: "1px solid #00f5ff",
+            background: "transparent",
+            color: "white",
+            outline: "none",
           }}
         />
 
+        {/* Password */}
         <input
           type="password"
           placeholder="Password"
           style={{
             width: "100%",
-            padding: 10,
+            padding: 12,
             marginBottom: 20,
-            borderRadius: 8,
-            border: "1px solid #ccc",
+            borderRadius: 10,
+            border: "1px solid #ff00ff",
+            background: "transparent",
+            color: "white",
+            outline: "none",
           }}
         />
 
+        {/* Кнопка */}
         <button
           onClick={handleSubmit}
           style={{
             width: "100%",
             padding: 12,
-            borderRadius: 8,
+            borderRadius: 10,
             border: "none",
-            background: "#4CAF50",
-            color: "white",
-            fontSize: 16,
+            background: "linear-gradient(90deg, #00f5ff, #ff00ff)",
+            color: "black",
+            fontWeight: "bold",
             cursor: "pointer",
+            boxShadow: "0 0 15px #00f5ff",
           }}
         >
           {isLogin ? "Войти" : "Создать аккаунт"}
