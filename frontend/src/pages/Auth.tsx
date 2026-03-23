@@ -5,8 +5,50 @@ function Auth() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const handleSubmit = () => {
-    navigate("/home");
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+
+    if (isLogin) {
+      // LOGIN
+      const user = users.find(
+        (u: any) => u.email === email && u.password === password
+      );
+
+      if (!user) {
+        alert("Неверный email или пароль");
+        return;
+      }
+
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      navigate("/home");
+
+    } else {
+      // REGISTER
+      if (!name || !email || !password) {
+        alert("Заполни все поля");
+        return;
+      }
+
+      const existingUser = users.find((u: any) => u.email === email);
+      if (existingUser) {
+        alert("Пользователь уже существует");
+        return;
+      }
+
+      const newUser = { name, email, password };
+
+      localStorage.setItem(
+        "users",
+        JSON.stringify([...users, newUser])
+      );
+
+      localStorage.setItem("currentUser", JSON.stringify(newUser));
+      navigate("/home");
+    }
   };
 
   return (
@@ -30,7 +72,6 @@ function Auth() {
           border: "1px solid rgba(255,255,255,0.05)",
         }}
       >
-        {/* Заголовок */}
         <h1
           style={{
             textAlign: "center",
@@ -63,7 +104,6 @@ function Auth() {
               border: "none",
               color: isLogin ? "#fff" : "#888",
               cursor: "pointer",
-              transition: "0.2s",
             }}
           >
             Login
@@ -78,84 +118,41 @@ function Auth() {
               border: "none",
               color: !isLogin ? "#fff" : "#888",
               cursor: "pointer",
-              transition: "0.2s",
             }}
           >
             Register
           </button>
         </div>
 
-        {/* Name */}
         {!isLogin && (
           <input
             type="text"
             placeholder="Name"
-            style={{
-              width: "100%",
-              padding: 12,
-              marginBottom: 12,
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "#1f1f2e",
-              color: "white",
-              outline: "none",
-            }}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={inputStyle}
           />
         )}
 
-        {/* Email */}
         <input
           type="email"
           placeholder="Email"
-          style={{
-            width: "100%",
-            padding: 12,
-            marginBottom: 12,
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.1)",
-            background: "#1f1f2e",
-            color: "white",
-            outline: "none",
-          }}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={inputStyle}
         />
 
-        {/* Password */}
         <input
           type="password"
           placeholder="Password"
-          style={{
-            width: "100%",
-            padding: 12,
-            marginBottom: 20,
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.1)",
-            background: "#1f1f2e",
-            color: "white",
-            outline: "none",
-          }}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={inputStyle}
         />
 
-        {/* Кнопка */}
         <button
           onClick={handleSubmit}
-          style={{
-            width: "100%",
-            padding: 14,
-            borderRadius: 10,
-            border: "none",
-            background: "#4CAF50",
-            color: "white",
-            fontSize: 16,
-            fontWeight: 500,
-            cursor: "pointer",
-            transition: "0.2s",
-          }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.background = "#43a047")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.background = "#4CAF50")
-          }
+          style={buttonStyle}
         >
           {isLogin ? "Войти" : "Создать аккаунт"}
         </button>
@@ -163,5 +160,28 @@ function Auth() {
     </div>
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: 12,
+  marginBottom: 12,
+  borderRadius: 10,
+  border: "1px solid rgba(255,255,255,0.1)",
+  background: "#1f1f2e",
+  color: "white",
+  outline: "none",
+};
+
+const buttonStyle = {
+  width: "100%",
+  padding: 14,
+  borderRadius: 10,
+  border: "none",
+  background: "#4CAF50",
+  color: "white",
+  fontSize: 16,
+  fontWeight: 500,
+  cursor: "pointer",
+};
 
 export default Auth;
