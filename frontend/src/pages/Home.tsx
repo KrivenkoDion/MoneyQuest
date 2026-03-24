@@ -10,14 +10,18 @@ type Transaction = {
 };
 
 function Home() {
+  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  if (!currentUser) {
+    window.location.href = "/";
+  }
   const navigate = useNavigate();
   const [balance, setBalance] = useState(() => {    // Зачисление баланас - пока 1к по дефолту 
-    const saved = localStorage.getItem("balance");
+     const saved = localStorage.getItem(`balance_${currentUser.email}`);
     return saved ? Number(saved) : 1000;            // Выбор количества $
   });
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {       //список всех транзакций
-    const saved = localStorage.getItem("transactions");
+    const saved = localStorage.getItem(`transactions_${currentUser.email}`);
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -27,8 +31,11 @@ function Home() {
   const [income, setIncome] = useState("");                 // сумма для пополнения баланса 
 
   useEffect(() => {
-    localStorage.setItem("balance", balance.toString());
-    localStorage.setItem("transactions", JSON.stringify(transactions));     // Сохраняем в локальное хранилище 
+    localStorage.setItem(`balance_${currentUser.email}`, balance.toString());
+    localStorage.setItem(
+      `transactions_${currentUser.email}`,
+      JSON.stringify(transactions)
+    );
   }, [balance, transactions]);
 
   const addExpense = () => {
