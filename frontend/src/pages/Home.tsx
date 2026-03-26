@@ -23,24 +23,22 @@ function Home() {
   const [category, setCategory] = useState("food");
   const [income, setIncome] = useState("");
 
-  // 🔥 Загрузка транзакций с backend
+  // 🔥 загрузка с backend
   useEffect(() => {
     fetch(`https://moneyquest-pcoq.onrender.com/transactions/${currentUser.email}`)
       .then(res => res.json())
       .then(data => setTransactions(data))
-      .catch(() => alert("Ошибка загрузки данных"));
+      .catch(() => alert("Ошибка загрузки"));
   }, []);
 
-  // 💰 Баланс считается автоматически
   const balance = transactions.reduce((sum, t) => {
     return t.category === "income" ? sum + t.amount : sum - t.amount;
   }, 1000);
 
-  // ➖ расход
   const addExpense = async () => {
     const value = Number(amount);
 
-    if (!value || value <= 0 || description.trim() === "" || !category) return;
+    if (!value || value <= 0 || description.trim() === "") return;
 
     const newTransaction = {
       amount: value,
@@ -65,7 +63,6 @@ function Home() {
     setDescription("");
   };
 
-  // ➕ доход
   const addIncome = async () => {
     const value = Number(income);
 
@@ -93,7 +90,6 @@ function Home() {
     setIncome("");
   };
 
-  // 📊 диаграмма
   const data = Object.values(
     transactions
       .filter((t) => t.category !== "income")
@@ -110,17 +106,20 @@ function Home() {
 
   return (
     <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1>MoneyQuest 💰</h1>
+      <h1 style={{ textAlign: "center" }}>MoneyQuest 💰</h1>
 
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
         <button onClick={() => navigate("/profile")}>Профиль</button>
         <button onClick={() => navigate("/achievements")}>Ачивки</button>
       </div>
 
-      <h2>Баланс: {balance} €</h2>
+      {/* Баланс */}
+      <div style={{ marginBottom: 20 }}>
+        <h2>Баланс: {balance} €</h2>
+      </div>
 
-      {/* ➖ расход */}
-      <div>
+      {/* Расход */}
+      <div style={{ marginBottom: 20 }}>
         <input
           placeholder="Описание"
           value={description}
@@ -128,9 +127,9 @@ function Home() {
         />
 
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="food">Еда</option>
-          <option value="transport">Транспорт</option>
-          <option value="fun">Развлечения</option>
+          <option value="food">🍔 Еда</option>
+          <option value="transport">🚕 Транспорт</option>
+          <option value="fun">🎮 Развлечения</option>
         </select>
 
         <input
@@ -143,8 +142,8 @@ function Home() {
         <button onClick={addExpense}>Добавить</button>
       </div>
 
-      {/* ➕ доход */}
-      <div style={{ marginTop: 20 }}>
+      {/* Пополнение */}
+      <div style={{ marginBottom: 20 }}>
         <input
           type="number"
           placeholder="Пополнение"
@@ -155,13 +154,17 @@ function Home() {
         <button onClick={addIncome}>Пополнить</button>
       </div>
 
-      {/* 📊 график */}
+      {/* Диаграмма */}
       <div style={{ marginTop: 30 }}>
-        {data.length > 0 && (
+        <h3>Расходы</h3>
+
+        {data.length === 0 ? (
+          <p>Нет данных</p>
+        ) : (
           <PieChart width={300} height={300}>
-            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%">
-              {data.map((_, index) => (
-                <Cell key={index} fill={COLORS[index % COLORS.length]} />
+            <Pie data={data} dataKey="value" nameKey="name">
+              {data.map((_, i) => (
+                <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -170,7 +173,7 @@ function Home() {
         )}
       </div>
 
-      {/* 📋 список */}
+      {/* Список */}
       <div style={{ marginTop: 30 }}>
         <h3>Операции</h3>
 
@@ -179,7 +182,7 @@ function Home() {
         ) : (
           transactions.map((t, i) => (
             <div key={i}>
-              {t.description} — {t.category} — {t.amount} €
+              {t.description} ({t.category}) — {t.amount} €
             </div>
           ))
         )}
