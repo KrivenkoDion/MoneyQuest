@@ -9,45 +9,63 @@ function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = () => {
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const handleSubmit = async () => {
+    try {
+      if (isLogin) {
+        // LOGIN через backend
+        const res = await fetch("http://localhost:3000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
 
-    if (isLogin) {
-      // LOGIN
-      const user = users.find(
-        (u: any) => u.email === email && u.password === password
-      );
+        const data = await res.json();
 
-      if (!user) {
-        alert("Неверный email или пароль");
-        return;
+        if (!res.ok) {
+          alert(data.error);
+          return;
+        }
+
+        localStorage.setItem("token", data.token);
+        navigate("/home");
+
+      } else {
+        // REGISTER через backend
+        if (!name || !email || !password) {
+          alert("Заполни все поля");
+          return;
+        }
+
+        const res = await fetch("http://localhost:3000/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error);
+          return;
+        }
+
+        alert("Аккаунт создан! Теперь войди");
+        setIsLogin(true);
       }
 
-      localStorage.setItem("currentUser", JSON.stringify(user));
-      navigate("/home");
-
-    } else {
-      // REGISTER
-      if (!name || !email || !password) {
-        alert("Заполни все поля");
-        return;
-      }
-
-      const existingUser = users.find((u: any) => u.email === email);
-      if (existingUser) {
-        alert("Пользователь уже существует");
-        return;
-      }
-
-      const newUser = { name, email, password };
-
-      localStorage.setItem(
-        "users",
-        JSON.stringify([...users, newUser])
-      );
-
-      localStorage.setItem("currentUser", JSON.stringify(newUser));
-      navigate("/home");
+    } catch (err) {
+      console.error(err);
+      alert("Ошибка сервера");
     }
   };
 
@@ -150,10 +168,7 @@ function Auth() {
           style={inputStyle}
         />
 
-        <button
-          onClick={handleSubmit}
-          style={buttonStyle}
-        >
+        <button onClick={handleSubmit} style={buttonStyle}>
           {isLogin ? "Войти" : "Создать аккаунт"}
         </button>
       </div>
