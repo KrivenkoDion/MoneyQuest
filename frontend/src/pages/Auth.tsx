@@ -12,57 +12,56 @@ function Auth() {
   const handleSubmit = async () => {
     try {
       if (isLogin) {
-        // LOGIN через backend
-        const res = await fetch("http://localhost:3000/login", {
+        // LOGIN
+        const res = await fetch("https://moneyquest-pcoq.onrender.com/login", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             email,
-            password
-          })
+            password,
+          }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error);
+          alert(data.error || "Ошибка входа");
           return;
         }
 
         localStorage.setItem("token", data.token);
         navigate("/home");
-
       } else {
-        // REGISTER через backend
+        // REGISTER
         if (!name || !email || !password) {
           alert("Заполни все поля");
           return;
         }
 
-        const res = await fetch("http://localhost:3000/register", {
+        const res = await fetch("https://moneyquest-pcoq.onrender.com/register", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            name,
             email,
-            password
-          })
+            password,
+          }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error);
+          alert(data.error || "Ошибка регистрации");
           return;
         }
 
         alert("Аккаунт создан! Теперь войди");
         setIsLogin(true);
       }
-
     } catch (err) {
       console.error(err);
       alert("Ошибка сервера");
