@@ -2,63 +2,71 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 
-// тип одной транзакции 
 type Transaction = {
-  amount: number;             // сумма расхода 
-  description: string;        // описание - чел сам пишет "закрыл счет в рестике"
-  category: string;           // перечень категорий, где юзер сам выбирает категорию
+  amount: number;
+  description: string;
+  category: string;
 };
 
 function Home() {
+  const navigate = useNavigate();
+
   const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+
   if (!currentUser) {
     window.location.href = "/";
   }
-  const navigate = useNavigate();
-  const [balance, setBalance] = useState(() => {    // Зачисление баланас - пока 1к по дефолту 
-     const saved = localStorage.getItem(`balance_${currentUser.email}`);
-    return saved ? Number(saved) : 1000;            // Выбор количества $
-  });
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {       //список всех транзакций
-    const saved = localStorage.getItem(`transactions_${currentUser.email}`);
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [amount, setAmount] = useState("");                 // Хранение ввода (данных) юзера 
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("food");         // по дефу еда 
-  const [income, setIncome] = useState("");                 // сумма для пополнения баланса 
+  const [category, setCategory] = useState("food");
+  const [income, setIncome] = useState("");
 
+  // 🔥 Загрузка транзакций с backend
   useEffect(() => {
-    localStorage.setItem(`balance_${currentUser.email}`, balance.toString());
-    localStorage.setItem(
-      `transactions_${currentUser.email}`,
-      JSON.stringify(transactions)
-    );
-  }, [balance, transactions]);
+    fetch(`https://moneyquest-pcoq.onrender.com/transactions/${currentUser.email}`)
+      .then(res => res.json())
+      .then(data => setTransactions(data))
+      .catch(() => alert("Ошибка загрузки данных"));
+  }, []);
 
-  const addExpense = () => {
-    const value = Number(amount);       // Функция добавления нового расхода 
-  
-    if (!value || value <= 0 || description.trim() === "" || !category) return;      // Проверка на ввод (нельзя пустое значение или ноль + нельзя оставить пустую категорию) 
-    
+  // 💰 Баланс считается автоматически
+  const balance = transactions.reduce((sum, t) => {
+    return t.category === "income" ? sum + t.amount : sum - t.amount;
+  }, 1000);
 
-    const newTransaction = {          // Создаем новую транзакцию 
+  // ➖ расход
+  const addExpense = async () => {
+    const value = Number(amount);
+
+    if (!value || value <= 0 || description.trim() === "" || !category) return;
+
+    const newTransaction = {
       amount: value,
-      description: description,
-      category: category,
+      description,
+      category,
     };
 
-    setTransactions([newTransaction, ...transactions]); // Добавляем в начало списка (самые свежие сверху)
-    
-    setBalance(balance - value);                         // Уменьаем баланс 
+    await fetch("https://moneyquest-pcoq.onrender.com/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: currentUser.email,
+        transaction: newTransaction,
+      }),
+    });
 
-    setAmount("");                                       // Очистка input полей 
+    setTransactions([newTransaction, ...transactions]);
+
+    setAmount("");
     setDescription("");
   };
 
-  const addIncome = () => {
+  // ➕ доход
+  const addIncome = async () => {
     const value = Number(income);
 
     if (!value || value <= 0) return;
@@ -69,119 +77,60 @@ function Home() {
       category: "income",
     };
 
+    await fetch("https://moneyquest-pcoq.onrender.com/transactions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: currentUser.email,
+        transaction: newTransaction,
+      }),
+    });
+
     setTransactions([newTransaction, ...transactions]);
-    setBalance(balance + value);
 
     setIncome("");
   };
 
-  // Группируем расходы по категориям
-const data = Object.values(
-  transactions
-    .filter((t) => t.category !== "income")
-    .reduce((acc: any, t) => {
-      if (!acc[t.category]) {
-        acc[t.category] = { name: t.category, value: 0 };
-      }
-      acc[t.category].value += t.amount;
-      return acc;
-    }, {})
-);
+  // 📊 диаграмма
+  const data = Object.values(
+    transactions
+      .filter((t) => t.category !== "income")
+      .reduce((acc: any, t) => {
+        if (!acc[t.category]) {
+          acc[t.category] = { name: t.category, value: 0 };
+        }
+        acc[t.category].value += t.amount;
+        return acc;
+      }, {})
+  );
 
-// Цвета для диаграммы
-const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
+  const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
 
-  return (                                                                                      // ГЛАНВЫЙ RETURN ДО UI
+  return (
     <div style={{ padding: 20, fontFamily: "Arial" }}>
       <h1>MoneyQuest 💰</h1>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 10,
-          marginBottom: 20,
-        }}
-      >
-        <button
-          onClick={() => navigate("/profile")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            background: "#2196F3",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          Профиль
-        </button>
-
-        <button
-          onClick={() => navigate("/achievements")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            background: "#9c27b0",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          Ачивки
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+        <button onClick={() => navigate("/profile")}>Профиль</button>
+        <button onClick={() => navigate("/achievements")}>Ачивки</button>
       </div>
 
-      
+      <h2>Баланс: {balance} €</h2>
 
-      {/* Баланс */}
-      <div
-        style={{
-          marginTop: 20,
-          padding: 20,
-          borderRadius: 10,
-          background: "#f5f5f5",
-        }}
-      >
-        <h2>Баланс</h2>
-        <h1>{balance} €</h1>
-      </div>
-
-      {/* Ввод */}
-      <div style={{ marginTop: 20 }}>
+      {/* ➖ расход */}
+      <div>
         <input
-          type="text"
-          placeholder="Описание (еда, такси...)"
+          placeholder="Описание"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{
-            padding: 10,
-            fontSize: 16,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-            marginBottom: 10,
-            width: "100%",
-          }}
         />
 
-        
-
-        {/* Категория */}
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{
-            padding: 10,
-            fontSize: 16,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-            marginBottom: 10,
-            width: "100%",
-          }}
-        >
-          <option value="food">🍔 Еда</option>
-          <option value="transport">🚕 Транспорт</option>
-          <option value="fun">🎮 Развлечения</option>
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="food">Еда</option>
+          <option value="transport">Транспорт</option>
+          <option value="fun">Развлечения</option>
         </select>
 
         <input
@@ -189,130 +138,48 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
           placeholder="Сумма"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          style={{
-            padding: 10,
-            fontSize: 16,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-            marginRight: 10,
-          }}
         />
 
-        <button
-          onClick={addExpense}
-          style={{
-            padding: "10px 16px",
-            fontSize: 16,
-            borderRadius: 8,
-            border: "none",
-            background: "#4CAF50",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          Добавить
-        </button>
+        <button onClick={addExpense}>Добавить</button>
       </div>
 
-      {/* Пополнение баланса */}
+      {/* ➕ доход */}
       <div style={{ marginTop: 20 }}>
         <input
           type="number"
-          placeholder="Сумма пополнения"
+          placeholder="Пополнение"
           value={income}
           onChange={(e) => setIncome(e.target.value)}
-          style={{
-            padding: 10,
-            fontSize: 16,
-            borderRadius: 8,
-            border: "1px solid #ccc",
-            marginRight: 10,
-          }}
         />
 
-        <button
-          onClick={addIncome}
-          style={{
-            padding: "10px 16px",
-            fontSize: 16,
-            borderRadius: 8,
-            border: "none",
-            background: "#2196F3",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          Пополнить
-        </button>
+        <button onClick={addIncome}>Пополнить</button>
       </div>
 
-      {/* Диаграмма расходов */}
+      {/* 📊 график */}
       <div style={{ marginTop: 30 }}>
-        <h3>Расходы по категориям</h3>
-
-        {data.length === 0 ? (
-          <p>Нет данных</p>
-        ) : (
+        {data.length > 0 && (
           <PieChart width={300} height={300}>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-            >
+            <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%">
               {data.map((_, index) => (
                 <Cell key={index} fill={COLORS[index % COLORS.length]} />
               ))}
-          </Pie>
-          <Tooltip
-            formatter={(value , name) => {
-              const total = data.reduce(
-                (sum: number, item: any) => sum + item.value,
-                  0
-                );
-              const percent = ((Number(value) / total) * 100).toFixed(0);
-              return [`${value} € (${percent}%)`, name];
-            }}
-          />
-          <Legend />
+            </Pie>
+            <Tooltip />
+            <Legend />
           </PieChart>
         )}
       </div>
 
-      {/* Список */}
+      {/* 📋 список */}
       <div style={{ marginTop: 30 }}>
-        <h3>Последние операции</h3>
+        <h3>Операции</h3>
 
         {transactions.length === 0 ? (
-          <p>Пока пусто...</p>
+          <p>Пусто</p>
         ) : (
-          transactions.map((t, index) => (
-            <div
-              key={index}
-              style={{
-                marginTop: 10,
-                padding: 10,
-                borderRadius: 8,
-                background: "#f9f9f9",
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>
-                {t.description} ({t.category})
-              </span>
-
-              <span
-                style={{
-                  color: t.category === "income" ? "#2ecc71" : "#e74c3c",
-                  fontWeight: "bold",
-                }}
-              >
-                {t.category === "income" ? "+" : "-"}{t.amount} €
-              </span>
+          transactions.map((t, i) => (
+            <div key={i}>
+              {t.description} — {t.category} — {t.amount} €
             </div>
           ))
         )}
@@ -322,7 +189,3 @@ const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
 }
 
 export default Home;
-
-
-
-// deploy trigger 02

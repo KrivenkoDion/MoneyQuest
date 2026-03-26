@@ -1,17 +1,41 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 function Profile() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
 
-  const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    fetch("https://moneyquest-pcoq.onrender.com/profile", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.user) {
+          navigate("/");
+        } else {
+          setUser(data.user);
+        }
+      })
+      .catch(() => navigate("/"));
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
     navigate("/");
   };
 
   if (!user) {
-    return <h2 style={{ color: "white" }}>Нет данных пользователя</h2>;
+    return <h2 style={{ color: "white" }}>Загрузка...</h2>;
   }
 
   return (
@@ -36,7 +60,6 @@ function Profile() {
       >
         <h2 style={{ marginBottom: 20 }}>Профиль</h2>
 
-        <p><b>Имя:</b> {user.name}</p>
         <p><b>Email:</b> {user.email}</p>
 
         <button
