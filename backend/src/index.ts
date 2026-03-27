@@ -23,7 +23,7 @@ function authMiddleware(req: any, res: any, next: any) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, SECRET);
+    const decoded: any = jwt.verify(token, SECRET);
     req.user = decoded;
     next();
   } catch {
@@ -57,7 +57,7 @@ app.post("/register", (req, res) => {
 });
 
 
-// LOGIN (🔥 теперь с JWT)
+// LOGIN (JWT)
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -76,26 +76,27 @@ app.post("/login", (req, res) => {
 });
 
 
-// PROFILE
+// 🔥 PROFILE (через JWT)
 app.get("/profile", authMiddleware, (req: any, res) => {
   res.json({
-    message: "Protected data 🔒",
-    user: req.user,
+    user: req.user
   });
 });
 
 
-// 🔥 ТРАНЗАКЦИИ
+// 🔥 ТРАНЗАКЦИИ (через JWT)
 
 // получить
-app.get("/transactions/:email", (req, res) => {
-  const { email } = req.params;
+app.get("/transactions", authMiddleware, (req: any, res) => {
+  const email = req.user.email;
+
   res.json(transactions[email] || []);
 });
 
 // добавить
-app.post("/transactions", (req, res) => {
-  const { email, transaction } = req.body;
+app.post("/transactions", authMiddleware, (req: any, res) => {
+  const email = req.user.email;
+  const { transaction } = req.body;
 
   if (!transactions[email]) {
     transactions[email] = [];
