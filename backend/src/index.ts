@@ -40,7 +40,38 @@ function authMiddleware(req: any, res: any, next: any) {
 }
 
 
-// REGISTER (через БД)
+// =======================
+// 🧹 RESET DB (ВАЖНО)
+// =======================
+app.get("/reset-db", async (req, res) => {
+  await pool.query("DROP TABLE IF EXISTS users");
+  await pool.query("DROP TABLE IF EXISTS transactions");
+
+  await pool.query(`
+    CREATE TABLE users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE,
+      password TEXT
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE transactions (
+      id SERIAL PRIMARY KEY,
+      email TEXT,
+      amount INT,
+      description TEXT,
+      category TEXT
+    );
+  `);
+
+  res.send("DB RESET ✅");
+});
+
+
+// =======================
+// REGISTER
+// =======================
 app.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
@@ -62,7 +93,9 @@ app.post("/register", async (req, res) => {
 });
 
 
-// LOGIN (через БД + JWT)
+// =======================
+// LOGIN
+// =======================
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -87,7 +120,9 @@ app.post("/login", async (req, res) => {
 });
 
 
+// =======================
 // PROFILE
+// =======================
 app.get("/profile", authMiddleware, (req: any, res) => {
   res.json({
     user: req.user
@@ -95,9 +130,9 @@ app.get("/profile", authMiddleware, (req: any, res) => {
 });
 
 
-// 🔥 ТРАНЗАКЦИИ (через БД)
-
-// получить
+// =======================
+// ТРАНЗАКЦИИ
+// =======================
 app.get("/transactions", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
 
@@ -109,13 +144,6 @@ app.get("/transactions", authMiddleware, async (req: any, res) => {
   res.json(result.rows);
 });
 
-
-app.get("/users", async (req, res) => {
-  const result = await pool.query("SELECT * FROM users");
-  res.json(result.rows);
-});
-
-// добавить
 app.post("/transactions", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
   const { transaction } = req.body;
@@ -126,6 +154,15 @@ app.post("/transactions", authMiddleware, async (req: any, res) => {
   );
 
   res.json({ message: "Transaction added" });
+});
+
+
+// =======================
+// DEBUG USERS
+// =======================
+app.get("/users", async (req, res) => {
+  const result = await pool.query("SELECT * FROM users");
+  res.json(result.rows);
 });
 
 
