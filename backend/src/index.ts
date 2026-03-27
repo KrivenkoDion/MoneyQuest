@@ -2,6 +2,8 @@ import express = require("express");
 import cors = require("cors");
 import jwt = require("jsonwebtoken");
 
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
+
 const { Pool } = require("pg");
 const app = express();
 const SECRET = "SECRET_KEY";
@@ -36,36 +38,6 @@ function authMiddleware(req: any, res: any, next: any) {
     return res.status(401).json({ error: "Invalid token" });
   }
 }
-
-
-// тест
-app.get("/", (req, res) => {
-  res.send("MoneyQuest API работает 🚀");
-});
-
-
-// 🧱 INIT DB (временно)
-app.get("/init-db", async (req, res) => {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      email TEXT UNIQUE,
-      password TEXT
-    );
-  `);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS transactions (
-      id SERIAL PRIMARY KEY,
-      email TEXT,
-      amount INT,
-      description TEXT,
-      category TEXT
-    );
-  `);
-
-  res.send("DB initialized");
-});
 
 
 // REGISTER (через БД)
