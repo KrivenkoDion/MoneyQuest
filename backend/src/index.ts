@@ -2,11 +2,17 @@ import express = require("express");
 import cors = require("cors");
 import jwt = require("jsonwebtoken");
 
+const { Pool } = require("pg");
 const app = express();
 const SECRET = "SECRET_KEY";
 
-const users: any[] = [];
-const transactions: any = {};
+// 🔥 PostgreSQL подключение
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -38,30 +44,62 @@ app.get("/", (req, res) => {
 });
 
 
-// REGISTER
-app.post("/register", (req, res) => {
+// 🧱 INIT DB (временно)
+app.get("/init-db", async (req, res) => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE,
+      password TEXT
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS transactions (
+      id SERIAL PRIMARY KEY,
+      email TEXT,
+      amount INT,
+      description TEXT,
+      category TEXT
+    );
+  `);
+
+  res.send("DB initialized");
+});
+
+
+// REGISTER (через БД)
+app.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
-  const exists = users.find(u => u.email === email);
+  const exists = await pool.query(
+    "SELECT * FROM users WHERE email = $1",
+    [email]
+  );
 
-  if (exists) {
+  if (exists.rows.length > 0) {
     return res.status(400).json({ error: "User already exists" });
   }
 
-  const user = { email, password };
-  users.push(user);
-
-  transactions[email] = [];
+  await pool.query(
+    "INSERT INTO users (email, password) VALUES ($1, $2)",
+    [email, password]
+  );
 
   res.json({ message: "User created" });
 });
 
 
-// LOGIN (JWT)
-app.post("/login", (req, res) => {
+// LOGIN (через БД + JWT)
+app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const user = users.find(u => u.email === email);
+  const result = await pool.query(
+    "SELECT * FROM users WHERE email = $1",
+    [email]
+  );
+
+  const user = result.rows[0];
 
   if (!user || user.password !== password) {
     return res.status(400).json({ error: "Invalid credentials" });
@@ -69,14 +107,11 @@ app.post("/login", (req, res) => {
 
   const token = jwt.sign({ email }, SECRET, { expiresIn: "1h" });
 
-  res.json({
-    message: "Login successful",
-    token
-  });
+  res.json({ token });
 });
 
 
-// 🔥 PROFILE (через JWT)
+// PROFILE
 app.get("/profile", authMiddleware, (req: any, res) => {
   res.json({
     user: req.user
@@ -84,25 +119,29 @@ app.get("/profile", authMiddleware, (req: any, res) => {
 });
 
 
-// 🔥 ТРАНЗАКЦИИ (через JWT)
+// 🔥 ТРАНЗАКЦИИ (через БД)
 
 // получить
-app.get("/transactions", authMiddleware, (req: any, res) => {
+app.get("/transactions", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
 
-  res.json(transactions[email] || []);
+  const result = await pool.query(
+    "SELECT * FROM transactions WHERE email = $1 ORDER BY id DESC",
+    [email]
+  );
+
+  res.json(result.rows);
 });
 
 // добавить
-app.post("/transactions", authMiddleware, (req: any, res) => {
+app.post("/transactions", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
   const { transaction } = req.body;
 
-  if (!transactions[email]) {
-    transactions[email] = [];
-  }
-
-  transactions[email].unshift(transaction);
+  await pool.query(
+    "INSERT INTO transactions (email, amount, description, category) VALUES ($1, $2, $3, $4)",
+    [email, transaction.amount, transaction.description, transaction.category]
+  );
 
   res.json({ message: "Transaction added" });
 });
