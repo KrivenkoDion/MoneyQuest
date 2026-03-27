@@ -71,9 +71,13 @@ app.post("/login", async (req, res) => {
     [email]
   );
 
+  if (result.rows.length === 0) {
+    return res.status(400).json({ error: "Invalid credentials" });
+  }
+
   const user = result.rows[0];
 
-  if (!user || user.password !== password) {
+  if (user.password !== password) {
     return res.status(400).json({ error: "Invalid credentials" });
   }
 
@@ -102,6 +106,12 @@ app.get("/transactions", authMiddleware, async (req: any, res) => {
     [email]
   );
 
+  res.json(result.rows);
+});
+
+
+app.get("/users", async (req, res) => {
+  const result = await pool.query("SELECT * FROM users");
   res.json(result.rows);
 });
 
