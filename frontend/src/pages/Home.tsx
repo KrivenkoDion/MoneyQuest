@@ -11,9 +11,9 @@ type Transaction = {
 function Home() {
   const navigate = useNavigate();
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+  const token = localStorage.getItem("token");
 
-  if (!currentUser) {
+  if (!token) {
     window.location.href = "/";
   }
 
@@ -23,13 +23,17 @@ function Home() {
   const [category, setCategory] = useState("food");
   const [income, setIncome] = useState("");
 
-  // 🔥 загрузка с backend
+  // ✅ загрузка с backend через JWT
   useEffect(() => {
-    fetch(`https://moneyquest-pcoq.onrender.com/transactions/${currentUser.email}`)
-      .then(res => res.json())
-      .then(data => setTransactions(data))
+    fetch("https://moneyquest-pcoq.onrender.com/transactions", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setTransactions(data))
       .catch(() => alert("Ошибка загрузки"));
-  }, []);
+  }, [token]);
 
   const balance = transactions.reduce((sum, t) => {
     return t.category === "income" ? sum + t.amount : sum - t.amount;
@@ -50,9 +54,9 @@ function Home() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        email: currentUser.email,
         transaction: newTransaction,
       }),
     });
@@ -78,9 +82,9 @@ function Home() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        email: currentUser.email,
         transaction: newTransaction,
       }),
     });
@@ -113,12 +117,10 @@ function Home() {
         <button onClick={() => navigate("/achievements")}>Ачивки</button>
       </div>
 
-      {/* Баланс */}
       <div style={{ marginBottom: 20 }}>
         <h2>Баланс: {balance} €</h2>
       </div>
 
-      {/* Расход */}
       <div style={{ marginBottom: 20 }}>
         <input
           placeholder="Описание"
@@ -142,7 +144,6 @@ function Home() {
         <button onClick={addExpense}>Добавить</button>
       </div>
 
-      {/* Пополнение */}
       <div style={{ marginBottom: 20 }}>
         <input
           type="number"
@@ -154,7 +155,6 @@ function Home() {
         <button onClick={addIncome}>Пополнить</button>
       </div>
 
-      {/* Диаграмма */}
       <div style={{ marginTop: 30 }}>
         <h3>Расходы</h3>
 
@@ -173,7 +173,6 @@ function Home() {
         )}
       </div>
 
-      {/* Список */}
       <div style={{ marginTop: 30 }}>
         <h3>Операции</h3>
 
