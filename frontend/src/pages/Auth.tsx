@@ -5,23 +5,19 @@ function Auth() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async () => {
     try {
       if (isLogin) {
-        // LOGIN
+        // 🔐 LOGIN
         const res = await fetch("https://moneyquest-pcoq.onrender.com/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+          body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
@@ -31,11 +27,13 @@ function Auth() {
           return;
         }
 
+        // ✅ сохраняем токен
         localStorage.setItem("token", data.token);
+
         navigate("/home");
       } else {
-        // REGISTER
-        if (!name || !email || !password) {
+        // 📝 REGISTER
+        if (!email || !password) {
           alert("Заполни все поля");
           return;
         }
@@ -45,11 +43,7 @@ function Auth() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-          }),
+          body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
@@ -69,94 +63,33 @@ function Auth() {
   };
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(135deg, #0f0f1a, #1a1a2e)",
-        fontFamily: "Inter, Arial",
-      }}
-    >
-      <div
-        style={{
-          width: 360,
-          padding: 30,
-          borderRadius: 16,
-          background: "#161625",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
-          border: "1px solid rgba(255,255,255,0.05)",
-        }}
-      >
-        <h1
-          style={{
-            textAlign: "center",
-            marginBottom: 30,
-            fontSize: 28,
-            fontWeight: 600,
-            color: "#ffffff",
-            letterSpacing: 1,
-          }}
-        >
-          MoneyQuest
-        </h1>
+    <div className="auth-container">
+      <div className="auth-card">
+        
+        <h1 className="auth-title">MoneyQuest</h1>
 
-        {/* Tabs */}
-        <div
-          style={{
-            display: "flex",
-            marginBottom: 25,
-            background: "#1f1f2e",
-            borderRadius: 10,
-            overflow: "hidden",
-          }}
-        >
+        <div className="auth-tabs">
           <button
             onClick={() => setIsLogin(true)}
-            style={{
-              flex: 1,
-              padding: 10,
-              background: isLogin ? "#2a2a3d" : "transparent",
-              border: "none",
-              color: isLogin ? "#fff" : "#888",
-              cursor: "pointer",
-            }}
+            className={`auth-tab ${isLogin ? "active" : ""}`}
           >
             Login
           </button>
 
           <button
             onClick={() => setIsLogin(false)}
-            style={{
-              flex: 1,
-              padding: 10,
-              background: !isLogin ? "#2a2a3d" : "transparent",
-              border: "none",
-              color: !isLogin ? "#fff" : "#888",
-              cursor: "pointer",
-            }}
+            className={`auth-tab ${!isLogin ? "active" : ""}`}
           >
             Register
           </button>
         </div>
-
-        {!isLogin && (
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-          />
-        )}
 
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
+          className="auth-input"
         />
 
         <input
@@ -164,38 +97,16 @@ function Auth() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={inputStyle}
+          className="auth-input"
         />
 
-        <button onClick={handleSubmit} style={buttonStyle}>
-          {isLogin ? "Войти" : "Создать аккаунт"}
+        <button onClick={handleSubmit} className="auth-button">
+          {isLogin ? "Log in" : "Create account"}
         </button>
+
       </div>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: 12,
-  marginBottom: 12,
-  borderRadius: 10,
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "#1f1f2e",
-  color: "white",
-  outline: "none",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: 14,
-  borderRadius: 10,
-  border: "none",
-  background: "#4CAF50",
-  color: "white",
-  fontSize: 16,
-  fontWeight: 500,
-  cursor: "pointer",
-};
 
 export default Auth;
