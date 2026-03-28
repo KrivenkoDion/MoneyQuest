@@ -1,10 +1,11 @@
+/* 🌍 БАЗА */
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
   background: linear-gradient(180deg, #f2f4f8, #e6ebf2);
 }
 
-/* контейнер */
+/* 📦 КОНТЕЙНЕР */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -12,41 +13,44 @@ body {
   align-items: center;
 }
 
-/* карточка */
+/* 🧊 КАРТОЧКА */
 .auth-card {
   width: 360px;
   background: white;
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.03);
 }
 
-/* логотип */
+/* 🧠 ЛОГО */
 .logo {
   font-weight: 600;
   font-size: 18px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-/* заголовок */
+/* 🔥 ЗАГОЛОВОК */
 .auth-title {
   font-size: 26px;
   font-weight: 700;
   margin-bottom: 10px;
+  line-height: 1.2;
 }
 
 .highlight {
   color: #5b6cff;
 }
 
-/* описание */
+/* 📝 ПОДТЕКСТ */
 .auth-sub {
   font-size: 14px;
   color: #777;
   margin-bottom: 20px;
+  line-height: 1.4;
 }
 
-/* инпут блок */
+/* 📥 INPUT ГРУППА */
 .input-group {
   margin-bottom: 12px;
 }
@@ -57,17 +61,45 @@ body {
   margin-bottom: 6px;
 }
 
+/* 🔲 ОБЕРТКА (иконки) */
+.input-wrapper {
+  position: relative;
+}
+
+/* 🧩 ИКОНКА */
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  font-size: 14px;
+}
+
+/* 👁 ПРАВАЯ ИКОНКА */
+.input-icon.right {
+  left: auto;
+  right: 12px;
+  cursor: pointer;
+}
+
+/* ✍️ INPUT */
 .auth-input {
   width: 100%;
-  padding: 12px;
+  padding: 12px 36px;
   border-radius: 12px;
   border: none;
   background: #f1f3f7;
   font-size: 14px;
   outline: none;
+  transition: 0.2s;
 }
 
-/* чекбокс */
+.auth-input:focus {
+  background: #e9edf5;
+}
+
+/* ☑️ ЧЕКБОКС */
 .checkbox {
   display: flex;
   align-items: center;
@@ -77,25 +109,29 @@ body {
   margin: 12px 0;
 }
 
-/* кнопка */
+/* 🚀 КНОПКА */
 .auth-button {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
   border: none;
-  background: #2f3e55;
+  background: linear-gradient(135deg, #2f3e55, #1f2a3a);
   color: white;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
 .auth-button:hover {
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
-/* футер */
+.auth-button:active {
+  transform: scale(0.97);
+}
+
+/* 🔗 FOOTER */
 .auth-footer {
   text-align: center;
   font-size: 13px;
@@ -107,4 +143,20 @@ body {
   color: #2f3e55;
   cursor: pointer;
   font-weight: 500;
+}
+
+/* ✨ МЕЛКИЕ АНИМАЦИИ */
+.auth-card {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
