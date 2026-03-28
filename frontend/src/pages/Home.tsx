@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
-import "./style.css";
+import "./styles.css";
 
 type Transaction = {
   amount: number;
