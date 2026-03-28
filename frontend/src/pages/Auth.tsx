@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles.css";
 
 function Auth() {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async () => {
     try {
@@ -36,7 +39,7 @@ function Auth() {
         const res = await fetch("https://moneyquest-pcoq.onrender.com/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ name, email, password }),
         });
 
         const data = await res.json();
@@ -65,22 +68,26 @@ function Auth() {
         </div>
 
         <div className="auth-sub">
-          Join a curated community of individuals mastering their financial destiny.
+          Take control of your money and track everything.
         </div>
 
         {!isLogin && (
-          <>
-            <div className="input-group">
-              <div className="input-label">FULL NAME</div>
-              <input className="auth-input" placeholder="Alexander Hamilton" />
-            </div>
-          </>
+          <div className="input-group">
+            <div className="input-label">FULL NAME</div>
+            <input
+              className="auth-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Alexander Hamilton"
+            />
+          </div>
         )}
 
         <div className="input-group">
-          <div className="input-label">EMAIL ADDRESS</div>
+          <div className="input-label">EMAIL</div>
           <input
             className="auth-input"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
@@ -89,13 +96,19 @@ function Auth() {
 
         <div className="input-group">
           <div className="input-label">PASSWORD</div>
-          <input
-            type="password"
-            className="auth-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="********"
-          />
+
+          <div className="password-wrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="auth-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
+            <span className="eye" onClick={() => setShowPassword(!showPassword)}>
+              👁
+            </span>
+          </div>
         </div>
 
         {!isLogin && (
@@ -106,7 +119,7 @@ function Auth() {
               className="auth-input"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="********"
+              placeholder="••••••••"
             />
           </div>
         )}
