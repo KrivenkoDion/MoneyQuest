@@ -115,3 +115,26 @@ body {
   cursor: pointer;
   font-weight: 500;
 }
+
+/* ошибки */
+
+.auth-input.error {
+  border: 1px solid #ff4d4f;
+  background: #fff5f5;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #ff4d4f;
+  margin-top: 4px;
+}
+
+.error-general {
+  background: #ffecec;
+  color: #d63031;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-align: center;
+}

@@ -1,18 +1,41 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles.css";
 
 function Auth() {
   const navigate = useNavigate();
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
 
+  // 🔥 ошибки
+  const [errors, setErrors] = useState<any>({});
+
+  const validate = () => {
+    const newErrors: any = {};
+
+    if (!email.includes("@")) {
+      newErrors.email = "Enter a valid email";
+    }
+
+    if (password.length < 4) {
+      newErrors.password = "Password must be at least 4 characters";
+    }
+
+    if (!isLogin && password !== confirm) {
+      newErrors.confirm = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return;
+
     try {
       if (isLogin) {
         const res = await fetch("https://moneyquest-pcoq.onrender.com/login", {
@@ -24,36 +47,31 @@ function Auth() {
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error);
+          setErrors({ general: data.error });
           return;
         }
 
         localStorage.setItem("token", data.token);
         navigate("/home");
       } else {
-        if (password !== confirm) {
-          alert("Passwords do not match");
-          return;
-        }
-
         const res = await fetch("https://moneyquest-pcoq.onrender.com/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error);
+          setErrors({ general: data.error });
           return;
         }
 
-        alert("Account created!");
+        setErrors({});
         setIsLogin(true);
       }
     } catch {
-      alert("Server error");
+      setErrors({ general: "Server error" });
     }
   };
 
@@ -71,64 +89,64 @@ function Auth() {
           Take control of your money and track everything.
         </div>
 
-        {!isLogin && (
-          <div className="input-group">
-            <div className="input-label">FULL NAME</div>
-            <input
-              className="auth-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Alexander Hamilton"
-            />
-          </div>
-        )}
-
+        {/* EMAIL */}
         <div className="input-group">
           <div className="input-label">EMAIL</div>
           <input
-            className="auth-input"
-            type="email"
+            className={`auth-input ${errors.email ? "error" : ""}`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@example.com"
           />
+          {errors.email && <div className="error-text">{errors.email}</div>}
         </div>
 
+        {/* PASSWORD */}
         <div className="input-group">
           <div className="input-label">PASSWORD</div>
 
           <div className="password-wrapper">
             <input
               type={showPassword ? "text" : "password"}
-              className="auth-input"
+              className={`auth-input ${errors.password ? "error" : ""}`}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
             />
-            <span className="eye" onClick={() => setShowPassword(!showPassword)}>
-              👁
+
+            <span
+              className="eye-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "🙈" : "👁️"}
             </span>
           </div>
+
+          {errors.password && (
+            <div className="error-text">{errors.password}</div>
+          )}
         </div>
 
+        {/* CONFIRM */}
         {!isLogin && (
           <div className="input-group">
             <div className="input-label">CONFIRM</div>
             <input
               type="password"
-              className="auth-input"
+              className={`auth-input ${errors.confirm ? "error" : ""}`}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
             />
+            {errors.confirm && (
+              <div className="error-text">{errors.confirm}</div>
+            )}
           </div>
         )}
 
-        {!isLogin && (
-          <div className="checkbox">
-            <input type="checkbox" />
-            <span>I agree to Terms & Privacy</span>
-          </div>
+        {/* GENERAL ERROR */}
+        {errors.general && (
+          <div className="error-general">{errors.general}</div>
         )}
 
         <button className="auth-button" onClick={handleSubmit}>
