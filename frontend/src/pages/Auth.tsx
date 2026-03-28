@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 function Auth() {
   const navigate = useNavigate();
 
+  const [name, setName] = useState(""); // ✅ вернули имя
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -11,19 +12,13 @@ function Auth() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // 🔥 ошибки
   const [errors, setErrors] = useState<any>({});
 
   const validate = () => {
     const newErrors: any = {};
 
-    if (!email.includes("@")) {
-      newErrors.email = "Enter a valid email";
-    }
-
-    if (password.length < 4) {
-      newErrors.password = "Password must be at least 4 characters";
-    }
+    if (!email.includes("@")) newErrors.email = "Enter valid email";
+    if (password.length < 4) newErrors.password = "Min 4 chars";
 
     if (!isLogin && password !== confirm) {
       newErrors.confirm = "Passwords do not match";
@@ -67,7 +62,6 @@ function Auth() {
           return;
         }
 
-        setErrors({});
         setIsLogin(true);
       }
     } catch {
@@ -88,6 +82,19 @@ function Auth() {
         <div className="auth-sub">
           Take control of your money and track everything.
         </div>
+
+        {/* NAME */}
+        {!isLogin && (
+          <div className="input-group">
+            <div className="input-label">FULL NAME</div>
+            <input
+              className="auth-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Alexander Hamilton"
+            />
+          </div>
+        )}
 
         {/* EMAIL */}
         <div className="input-group">
@@ -114,12 +121,19 @@ function Auth() {
               placeholder="********"
             />
 
-            <span
-              className="eye-icon"
+            <button
+              type="button"
+              className="eye-button"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? "🙈" : "👁️"}
-            </span>
+              {/* нормальный SVG глаз */}
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
+                />
+              </svg>
+            </button>
           </div>
 
           {errors.password && (
@@ -144,7 +158,6 @@ function Auth() {
           </div>
         )}
 
-        {/* GENERAL ERROR */}
         {errors.general && (
           <div className="error-general">{errors.general}</div>
         )}
