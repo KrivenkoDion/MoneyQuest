@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import "./style.css";
 
 type Transaction = {
   amount: number;
@@ -10,20 +11,22 @@ type Transaction = {
 
 function Home() {
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
 
-  if (!token) {
-    window.location.href = "/";
-  }
-
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [type, setType] = useState<"expense" | "income">("expense");
+
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("food");
-  const [income, setIncome] = useState("");
 
-  // ✅ загрузка с backend через JWT
+  // redirect
+  useEffect(() => {
+    if (!token) navigate("/");
+  }, [token, navigate]);
+
+  // load data
   useEffect(() => {
     fetch("https://moneyquest-pcoq.onrender.com/transactions", {
       headers: {
@@ -39,15 +42,14 @@ function Home() {
     return t.category === "income" ? sum + t.amount : sum - t.amount;
   }, 1000);
 
-  const addExpense = async () => {
+  const addTransaction = async () => {
     const value = Number(amount);
-
-    if (!value || value <= 0 || description.trim() === "") return;
+    if (!value || value <= 0) return;
 
     const newTransaction = {
       amount: value,
-      description,
-      category,
+      description: type === "income" ? "Пополнение" : description,
+      category: type === "income" ? "income" : category,
     };
 
     await fetch("https://moneyquest-pcoq.onrender.com/transactions", {
@@ -56,42 +58,14 @@ function Home() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        transaction: newTransaction,
-      }),
+      body: JSON.stringify({ transaction: newTransaction }),
     });
 
     setTransactions([newTransaction, ...transactions]);
 
     setAmount("");
     setDescription("");
-  };
-
-  const addIncome = async () => {
-    const value = Number(income);
-
-    if (!value || value <= 0) return;
-
-    const newTransaction = {
-      amount: value,
-      description: "Пополнение",
-      category: "income",
-    };
-
-    await fetch("https://moneyquest-pcoq.onrender.com/transactions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        transaction: newTransaction,
-      }),
-    });
-
-    setTransactions([newTransaction, ...transactions]);
-
-    setIncome("");
+    setShowModal(false);
   };
 
   const data = Object.values(
@@ -109,83 +83,126 @@ function Home() {
   const COLORS = ["#FF6384", "#36A2EB", "#FFCE56", "#2ecc71"];
 
   return (
-    <div style={{ padding: 20, fontFamily: "Arial" }}>
-      <h1 style={{ textAlign: "center" }}>MoneyQuest 💰</h1>
+    <div className="home-container">
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-        <button onClick={() => navigate("/profile")}>Профиль</button>
-        <button onClick={() => navigate("/achievements")}>Ачивки</button>
+      {/* HEADER */}
+      <div className="home-header">
+        <div className="home-logo">MQ</div>
+        <h2>MoneyQuest</h2>
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <h2>Баланс: {balance} €</h2>
+      {/* BALANCE */}
+      <p className="balance-label">AVAILABLE BALANCE</p>
+      <h1 className="balance-value">{balance} €</h1>
+
+      {/* ACTIONS */}
+      <div className="home-actions">
+        <button
+          className="btn-expense"
+          onClick={() => {
+            setType("expense");
+            setShowModal(true);
+          }}
+        >
+          + Add Expense
+        </button>
+
+        <button
+          className="btn-income"
+          onClick={() => {
+            setType("income");
+            setShowModal(true);
+          }}
+        >
+          + Add Income
+        </button>
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <input
-          placeholder="Описание"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+      {/* QUEST */}
+      <div className="home-card">
+        <p className="card-title">ACTIVE QUEST</p>
+        <h3 className="card-main">Save 1000€</h3>
 
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="food">🍔 Еда</option>
-          <option value="transport">🚕 Транспорт</option>
-          <option value="fun">🎮 Развлечения</option>
-        </select>
+        <div className="progress-bar">
+          <div className="progress-fill"></div>
+        </div>
 
-        <input
-          type="number"
-          placeholder="Сумма"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-
-        <button onClick={addExpense}>Добавить</button>
+        <div className="progress-row">
+          <span>650€ saved</span>
+          <span>65%</span>
+        </div>
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <input
-          type="number"
-          placeholder="Пополнение"
-          value={income}
-          onChange={(e) => setIncome(e.target.value)}
-        />
-
-        <button onClick={addIncome}>Пополнить</button>
-      </div>
-
-      <div style={{ marginTop: 30 }}>
-        <h3>Расходы</h3>
+      {/* GRAPH */}
+      <div className="home-card">
+        <h3>Expenses</h3>
 
         {data.length === 0 ? (
-          <p>Нет данных</p>
+          <p>No data</p>
         ) : (
-          <PieChart width={300} height={300}>
-            <Pie data={data} dataKey="value" nameKey="name">
+          <PieChart width={280} height={280}>
+            <Pie data={data} dataKey="value">
               {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
-            <Legend />
           </PieChart>
         )}
       </div>
 
-      <div style={{ marginTop: 30 }}>
-        <h3>Операции</h3>
+      {/* ACTIVITY */}
+      <div className="home-card">
+        <h3>Recent Activity</h3>
 
-        {transactions.length === 0 ? (
-          <p>Пусто</p>
-        ) : (
-          transactions.map((t, i) => (
-            <div key={i}>
-              {t.description} ({t.category}) — {t.amount} €
-            </div>
-          ))
-        )}
+        {transactions.slice(0, 5).map((t, i) => (
+          <div key={i} className="activity-item">
+            <span>{t.description}</span>
+            <span className={t.category === "income" ? "income" : "expense"}>
+              {t.category === "income" ? "+" : "-"}
+              {t.amount}€
+            </span>
+          </div>
+        ))}
       </div>
+
+      {/* MODAL */}
+      {showModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>{type === "income" ? "Add Income" : "Add Expense"}</h3>
+
+            {type === "expense" && (
+              <>
+                <input
+                  placeholder="Description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="food">Food</option>
+                  <option value="transport">Transport</option>
+                  <option value="fun">Fun</option>
+                </select>
+              </>
+            )}
+
+            <input
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+
+            <button onClick={addTransaction}>Save</button>
+            <button onClick={() => setShowModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
