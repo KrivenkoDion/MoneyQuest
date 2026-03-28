@@ -3,106 +3,138 @@ import { useNavigate } from "react-router-dom";
 
 function Auth() {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [isLogin, setIsLogin] = useState(false);
 
   const handleSubmit = async () => {
     try {
       if (isLogin) {
-        // 🔐 LOGIN
         const res = await fetch("https://moneyquest-pcoq.onrender.com/login", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error || "Ошибка входа");
+          alert(data.error);
           return;
         }
 
-        // ✅ сохраняем токен
         localStorage.setItem("token", data.token);
-
         navigate("/home");
       } else {
-        // 📝 REGISTER
-        if (!email || !password) {
-          alert("Заполни все поля");
+        if (password !== confirm) {
+          alert("Passwords do not match");
           return;
         }
 
         const res = await fetch("https://moneyquest-pcoq.onrender.com/register", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert(data.error || "Ошибка регистрации");
+          alert(data.error);
           return;
         }
 
-        alert("Аккаунт создан! Теперь войди");
+        alert("Account created!");
         setIsLogin(true);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Ошибка сервера");
+    } catch {
+      alert("Server error");
     }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        
-        <h1 className="auth-title">MoneyQuest</h1>
 
-        <div className="auth-tabs">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`auth-tab ${isLogin ? "active" : ""}`}
-          >
-            Login
-          </button>
+        <div className="logo">MoneyQuest</div>
 
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`auth-tab ${!isLogin ? "active" : ""}`}
-          >
-            Register
-          </button>
+        <div className="auth-title">
+          Begin your <span className="highlight">ascent.</span>
         </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="auth-input"
-        />
+        <div className="auth-sub">
+          Join a curated community of individuals mastering their financial destiny.
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="auth-input"
-        />
+        {!isLogin && (
+          <>
+            <div className="input-group">
+              <div className="input-label">FULL NAME</div>
+              <input className="auth-input" placeholder="Alexander Hamilton" />
+            </div>
+          </>
+        )}
 
-        <button onClick={handleSubmit} className="auth-button">
-          {isLogin ? "Log in" : "Create account"}
+        <div className="input-group">
+          <div className="input-label">EMAIL ADDRESS</div>
+          <input
+            className="auth-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@example.com"
+          />
+        </div>
+
+        <div className="input-group">
+          <div className="input-label">PASSWORD</div>
+          <input
+            type="password"
+            className="auth-input"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="********"
+          />
+        </div>
+
+        {!isLogin && (
+          <div className="input-group">
+            <div className="input-label">CONFIRM</div>
+            <input
+              type="password"
+              className="auth-input"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="********"
+            />
+          </div>
+        )}
+
+        {!isLogin && (
+          <div className="checkbox">
+            <input type="checkbox" />
+            <span>I agree to Terms & Privacy</span>
+          </div>
+        )}
+
+        <button className="auth-button" onClick={handleSubmit}>
+          {isLogin ? "Log in →" : "Create Account →"}
         </button>
+
+        <div className="auth-footer">
+          {isLogin ? (
+            <>
+              Don’t have an account?{" "}
+              <span onClick={() => setIsLogin(false)}>Create account</span>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <span onClick={() => setIsLogin(true)}>Log in</span>
+            </>
+          )}
+        </div>
 
       </div>
     </div>

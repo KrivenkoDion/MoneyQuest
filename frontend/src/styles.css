@@ -1,13 +1,12 @@
-/* фон */
 body {
   margin: 0;
   font-family: "Inter", sans-serif;
-  background: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+  background: linear-gradient(180deg, #f2f4f8, #e6ebf2);
 }
 
 /* контейнер */
 .auth-container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,74 +14,97 @@ body {
 
 /* карточка */
 .auth-card {
-  width: 340px;
-  padding: 28px;
-  border-radius: 18px;
-  background: rgba(22, 22, 37, 0.9);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255,255,255,0.05);
+  width: 360px;
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+
+/* логотип */
+.logo {
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 10px;
 }
 
 /* заголовок */
 .auth-title {
-  text-align: center;
-  color: white;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.highlight {
+  color: #5b6cff;
+}
+
+/* описание */
+.auth-sub {
+  font-size: 14px;
+  color: #777;
   margin-bottom: 20px;
 }
 
-/* табы */
-.auth-tabs {
-  display: flex;
-  margin-bottom: 20px;
-  background: #1f1f2e;
-  border-radius: 10px;
-  overflow: hidden;
+/* инпут блок */
+.input-group {
+  margin-bottom: 12px;
 }
 
-.auth-tab {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  cursor: pointer;
-  background: transparent;
+.input-label {
+  font-size: 12px;
   color: #888;
+  margin-bottom: 6px;
 }
 
-.auth-tab.active {
-  background: #2a2a3d;
-  color: white;
-}
-
-/* инпуты */
 .auth-input {
   width: 100%;
   padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: #1f1f2e;
-  color: white;
+  border-radius: 12px;
+  border: none;
+  background: #f1f3f7;
+  font-size: 14px;
   outline: none;
+}
+
+/* чекбокс */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #777;
+  margin: 12px 0;
 }
 
 /* кнопка */
 .auth-button {
   width: 100%;
   padding: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #4CAF50, #2ecc71);
+  background: #2f3e55;
   color: white;
-  font-size: 16px;
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .auth-button:hover {
-  transform: translateY(-1px);
   opacity: 0.9;
+}
+
+/* футер */
+.auth-footer {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 16px;
+  color: #777;
+}
+
+.auth-footer span {
+  color: #2f3e55;
+  cursor: pointer;
+  font-weight: 500;
 }
