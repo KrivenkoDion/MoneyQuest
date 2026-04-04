@@ -1,6 +1,7 @@
 import express = require("express");
 import cors = require("cors");
 import jwt = require("jsonwebtoken");
+import bcrypt = require("bcrypt");
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
@@ -41,7 +42,7 @@ function authMiddleware(req: any, res: any, next: any) {
 
 
 // =======================
-// 🧹 RESET DB (ВАЖНО)
+// 🧹 RESET DB
 // =======================
 app.get("/reset-db", async (req, res) => {
   await pool.query("DROP TABLE IF EXISTS users");
@@ -84,9 +85,11 @@ app.post("/register", async (req, res) => {
     return res.status(400).json({ error: "User already exists" });
   }
 
+  const hashedPassword = await bcrypt.hash(password, 10); // ✅ хэшируем
+
   await pool.query(
     "INSERT INTO users (email, password) VALUES ($1, $2)",
-    [email, password]
+    [email, hashedPassword]
   );
 
   res.json({ message: "User created" });
@@ -110,7 +113,9 @@ app.post("/login", async (req, res) => {
 
   const user = result.rows[0];
 
-  if (user.password !== password) {
+  const isMatch = await bcrypt.compare(password, user.password); // ✅ сравниваем
+
+  if (!isMatch) {
     return res.status(400).json({ error: "Invalid credentials" });
   }
 
