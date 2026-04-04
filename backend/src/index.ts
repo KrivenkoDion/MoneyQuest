@@ -2,12 +2,14 @@ import express = require("express");
 import cors = require("cors");
 import jwt = require("jsonwebtoken");
 import bcrypt = require("bcrypt");
+import dotenv = require("dotenv");
+dotenv.config();
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 const { Pool } = require("pg");
 const app = express();
-const SECRET = "SECRET_KEY";
+const SECRET = process.env.JWT_SECRET || "fallback_secret";
 
 // 🔥 PostgreSQL подключение
 const pool = new Pool({
