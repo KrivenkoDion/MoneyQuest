@@ -44,30 +44,30 @@ function authMiddleware(req: any, res: any, next: any) {
 // =======================
 // 🧹 RESET DB
 // =======================
-app.get("/reset-db", async (req, res) => {
-  await pool.query("DROP TABLE IF EXISTS users");
-  await pool.query("DROP TABLE IF EXISTS transactions");
+//app.get("/reset-db", async (req, res) => {
+  //await pool.query("DROP TABLE IF EXISTS users");
+  //await pool.query("DROP TABLE IF EXISTS transactions");
 
-  await pool.query(`
-    CREATE TABLE users (
-      id SERIAL PRIMARY KEY,
-      email TEXT UNIQUE,
-      password TEXT
-    );
-  `);
+  //await pool.query(`
+    //CREATE TABLE users (
+      //id SERIAL PRIMARY KEY,
+      //email TEXT UNIQUE,
+      //password TEXT
+    //);
+  //`);
 
-  await pool.query(`
-    CREATE TABLE transactions (
-      id SERIAL PRIMARY KEY,
-      email TEXT,
-      amount INT,
-      description TEXT,
-      category TEXT
-    );
-  `);
+  //await pool.query(`
+    //CREATE TABLE transactions (
+      //id SERIAL PRIMARY KEY,
+      //email TEXT,
+      //amount INT,
+      //description TEXT,
+      //category TEXT
+    //);
+  //`);
 
-  res.send("DB RESET ✅");
-});
+  //res.send("DB RESET ✅");
+//});
 
 
 // =======================
@@ -165,7 +165,7 @@ app.post("/transactions", authMiddleware, async (req: any, res) => {
 // =======================
 // DEBUG USERS
 // =======================
-app.get("/users", async (req, res) => {
+app.get("/users", authMiddleware, async (req, res) => {
   const result = await pool.query("SELECT * FROM users");
   res.json(result.rows);
 });
