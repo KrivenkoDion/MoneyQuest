@@ -1,30 +1,57 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+const CHARACTERS: Record<string, { fur: string; inner: string }> = {
+  brown:  { fur: "#8B7355", inner: "#C4956A" },
+  white:  { fur: "#E8E8E8", inner: "#F5F5F5" },
+  black:  { fur: "#2D2D2D", inner: "#4B4B4B" },
+  orange: { fur: "#C2703A", inner: "#E8967A" },
+};
+
+function ChillGuy({ fur, inner }: { fur: string; inner: string }) {
+  return (
+    <svg width="120" height="140" viewBox="0 0 200 230">
+      <ellipse cx="55" cy="60" rx="18" ry="24" fill={fur} transform="rotate(-15,55,60)" />
+      <ellipse cx="145" cy="60" rx="18" ry="24" fill={fur} transform="rotate(15,145,60)" />
+      <ellipse cx="55" cy="62" rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
+      <ellipse cx="145" cy="62" rx="10" ry="14" fill={inner} transform="rotate(15,145,62)" />
+      <ellipse cx="100" cy="95" rx="52" ry="50" fill={fur} />
+      <ellipse cx="100" cy="118" rx="28" ry="20" fill={inner} />
+      <ellipse cx="100" cy="108" rx="10" ry="7" fill="#2D1B0E" />
+      <ellipse cx="78" cy="88" rx="10" ry="7" fill="white" />
+      <ellipse cx="122" cy="88" rx="10" ry="7" fill="white" />
+      <ellipse cx="78" cy="90" rx="6" ry="5" fill="#3D2B1F" />
+      <ellipse cx="122" cy="90" rx="6" ry="5" fill="#3D2B1F" />
+      <rect x="68" y="83" width="20" height="7" rx="4" fill={fur} />
+      <rect x="112" y="83" width="20" height="7" rx="4" fill={fur} />
+      <path d="M88 126 Q100 134 112 126" fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
+      <rect x="82" y="140" width="36" height="20" fill={fur} />
+      <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
+      <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
+      <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
+      <path d="M30 170 Q10 205 30 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+      <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+      <ellipse cx="22" cy="232" rx="14" ry="12" fill={fur} />
+      <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
+    </svg>
+  );
+}
+
 function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/");
-      return;
-    }
+    if (!token) { navigate("/"); return; }
 
     fetch("https://moneyquest-pcoq.onrender.com/profile", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+      headers: { Authorization: "Bearer " + token },
     })
       .then(res => res.json())
       .then(data => {
-        if (!data.user) {
-          navigate("/");
-        } else {
-          setUser(data.user);
-        }
+        if (!data.user) navigate("/");
+        else setUser(data.user);
       })
       .catch(() => navigate("/"));
   }, []);
@@ -42,70 +69,51 @@ function Profile() {
     );
   }
 
-  const initials = user.name
-    ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase()
-    : user.email[0].toUpperCase();
+  const charColors = CHARACTERS[user.avatar] || CHARACTERS.brown;
 
   return (
     <div style={{
-      minHeight: "100vh",
-      background: "#f5f5f0",
-      maxWidth: 390,
-      margin: "0 auto",
-      fontFamily: "'Inter', sans-serif",
+      minHeight: "100vh", background: "#f5f5f0",
+      maxWidth: 390, margin: "0 auto",
+      fontFamily: "'Inter', sans-serif", paddingBottom: 40,
     }}>
 
       {/* HEADER */}
-      <div style={{
-        padding: "20px 24px 0",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}>
+      <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontWeight: 700, fontSize: 16 }}>MoneyQuest</span>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%",
-          background: "#e8e8e0", display: "flex",
-          alignItems: "center", justifyContent: "center",
-          fontSize: 18,
-        }}>🔔</div>
+        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e8e8e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🔔</div>
       </div>
 
-      {/* PROFILE CARD */}
-      <div style={{ padding: "24px 24px 0" }}>
+      {/* CHARACTER CARD */}
+      <div style={{ padding: "20px 24px 0" }}>
         <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
-          marginBottom: 8,
+          background: "white", borderRadius: 24,
+          padding: "24px 20px", display: "flex",
+          alignItems: "center", gap: 20, marginBottom: 12,
         }}>
-          {/* AVATAR */}
-          <div style={{
-            width: 64, height: 64, borderRadius: "50%",
-            background: "#1a1a2e", color: "white",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 24, fontWeight: 700,
-          }}>
-            {initials}
+          {/* CHILL GUY */}
+          <div style={{ flexShrink: 0 }}>
+            <ChillGuy fur={charColors.fur} inner={charColors.inner} />
           </div>
 
+          {/* USER INFO */}
           <div>
-            <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#1a1a2e" }}>
+            <h2 style={{ margin: "0 0 2px", fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
               {user.name || "Пользователь"}
             </h2>
-            <p style={{ margin: 0, fontSize: 13, color: "#999" }}>
-              {user.email}
-            </p>
+            <p style={{ margin: "0 0 8px", fontSize: 13, color: "#999" }}>{user.email}</p>
+            <div style={{
+              display: "inline-block", padding: "4px 10px",
+              background: "#f5f5f0", borderRadius: 20,
+              fontSize: 12, color: "#1a1a2e", fontWeight: 600,
+            }}>
+              ⭐ {user.xp || 0} XP
+            </div>
           </div>
         </div>
 
         {/* MILESTONE */}
-        <div style={{
-          background: "white",
-          borderRadius: 16,
-          padding: "16px 20px",
-          marginTop: 20,
-        }}>
+        <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
           <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
             Current Milestone
           </p>
@@ -113,26 +121,17 @@ function Profile() {
             <span style={{ fontWeight: 700, fontSize: 18, color: "#1a1a2e" }}>Beginner</span>
             <span style={{ fontSize: 13, color: "#999" }}>Level 1</span>
           </div>
-          <div style={{
-            marginTop: 10, height: 6, borderRadius: 3,
-            background: "#f0f0ea",
-          }}>
-            <div style={{
-              width: "10%", height: "100%",
-              borderRadius: 3, background: "#1a1a2e",
-            }} />
+          <div style={{ marginTop: 10, height: 6, borderRadius: 3, background: "#f0f0ea" }}>
+            <div style={{ width: `${Math.min((user.xp || 0), 100)}%`, height: "100%", borderRadius: 3, background: "#1a1a2e", transition: "width 0.3s" }} />
           </div>
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: "#999" }}>0 XP until next level</p>
+          <p style={{ margin: "6px 0 0", fontSize: 12, color: "#999" }}>{user.xp || 0} / 100 XP</p>
         </div>
 
         {/* STATS */}
-        <div style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: 12, marginTop: 12,
-        }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
             <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Total Saved</p>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>$0</p>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>0 €</p>
           </div>
           <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
             <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Achievements</p>
@@ -141,19 +140,10 @@ function Profile() {
         </div>
 
         {/* PERSONAL INFO */}
-        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginTop: 12 }}>
+        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
           <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Personal Info</p>
-
-          {[
-            { label: "Account Details", icon: "👤" },
-            { label: "Linked Banks", icon: "🏦" },
-          ].map((item) => (
-            <div key={item.label} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "14px 20px",
-              borderTop: "1px solid #f5f5f0",
-              cursor: "pointer",
-            }}>
+          {[{ label: "Account Details", icon: "👤" }, { label: "Linked Banks", icon: "🏦" }].map((item) => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderTop: "1px solid #f5f5f0", cursor: "pointer" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 <span style={{ fontSize: 15, color: "#1a1a2e" }}>{item.label}</span>
@@ -164,20 +154,10 @@ function Profile() {
         </div>
 
         {/* SETTINGS */}
-        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginTop: 12 }}>
+        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
           <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Settings</p>
-
-          {[
-            { label: "Security & Privacy", icon: "🔒" },
-            { label: "Notifications", icon: "🔔" },
-            { label: "Appearance", icon: "🌙" },
-          ].map((item) => (
-            <div key={item.label} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "14px 20px",
-              borderTop: "1px solid #f5f5f0",
-              cursor: "pointer",
-            }}>
+          {[{ label: "Security & Privacy", icon: "🔒" }, { label: "Notifications", icon: "🔔" }, { label: "Appearance", icon: "🌙" }].map((item) => (
+            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderTop: "1px solid #f5f5f0", cursor: "pointer" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span style={{ fontSize: 18 }}>{item.icon}</span>
                 <span style={{ fontSize: 15, color: "#1a1a2e" }}>{item.label}</span>
@@ -188,22 +168,7 @@ function Profile() {
         </div>
 
         {/* LOGOUT */}
-        <button
-          onClick={handleLogout}
-          style={{
-            marginTop: 16,
-            marginBottom: 32,
-            width: "100%",
-            padding: 16,
-            borderRadius: 14,
-            border: "none",
-            background: "#fff0f0",
-            color: "#e53935",
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+        <button onClick={handleLogout} style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#fff0f0", color: "#e53935", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
           Выйти из аккаунта
         </button>
       </div>
