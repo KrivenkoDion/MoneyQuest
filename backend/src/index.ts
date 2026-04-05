@@ -78,11 +78,11 @@ function authMiddleware(req: any, res: any, next: any) {
   //res.send("Migration done ✅");
 //});
 
-app.get("/migrate", async (req, res) => {
-  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS monthly_income INT DEFAULT 0");
-  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS income_day INT DEFAULT 1");
-  res.send("Migration done ✅");
-});
+//app.get("/migrate", async (req, res) => {
+  //await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS monthly_income INT DEFAULT 0");
+  //await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS income_day INT DEFAULT 1");
+  //res.send("Migration done ✅");
+//});
 
 // =======================
 // REGISTER
