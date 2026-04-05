@@ -43,6 +43,7 @@ function Auth() {
         });
         const data = await res.json();
         if (!res.ok) { setErrors({ general: data.error }); return; }
+        localStorage.setItem("token", data.token);
         // после регистрации → выбор персонажа
         navigate("/character-select");
       }
