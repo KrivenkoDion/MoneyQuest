@@ -72,11 +72,11 @@ function authMiddleware(req: any, res: any, next: any) {
 //});
 
 
-app.get("/migrate", async (req, res) => {
-  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT 'warrior'");
-  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INT DEFAULT 0");
-  res.send("Migration done ✅");
-});
+//app.get("/migrate", async (req, res) => {
+  //await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT 'warrior'");
+  //await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INT DEFAULT 0");
+  //res.send("Migration done ✅");
+//});
 
 // =======================
 // REGISTER
