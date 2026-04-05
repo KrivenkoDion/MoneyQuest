@@ -147,6 +147,20 @@ app.get("/profile", authMiddleware, async (req: any, res) => {
   res.json({ user: result.rows[0] });
 });
 
+
+// AVATAR UPDATE
+app.post("/update-avatar", authMiddleware, async (req: any, res) => {
+  const email = req.user.email;
+  const { avatar } = req.body;
+
+  await pool.query(
+    "UPDATE users SET avatar = $1 WHERE email = $2",
+    [avatar, email]
+  );
+
+  res.json({ message: "Avatar updated" });
+});
+
 // =======================
 // ТРАНЗАКЦИИ
 // =======================
