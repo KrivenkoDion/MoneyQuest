@@ -40,7 +40,7 @@ function Home() {
 
   const balance = transactions.reduce((sum, t) => {
     return t.category === "income" ? sum + t.amount : sum - t.amount;
-  }, 1000);
+  }, 0);
 
   const addTransaction = async () => {
     const value = Number(amount);

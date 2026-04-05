@@ -36,7 +36,7 @@ function Auth() {
         const res = await fetch("https://moneyquest-pcoq.onrender.com/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, name }),
         });
 
         const data = await res.json();
