@@ -96,7 +96,7 @@ app.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10); // ✅ хэшируем
 
   await pool.query(
-    "INSERT INTO users (email, password, name) VALUES ($1, $2, $3, $4)",
+    "INSERT INTO users (email, password, name, avatar) VALUES ($1, $2, $3, $4)",
     [email, hashedPassword, name, avatar || "brown"]
   );
 
