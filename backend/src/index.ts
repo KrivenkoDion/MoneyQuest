@@ -147,7 +147,7 @@ app.get("/profile", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
 
   const result = await pool.query(
-    "SELECT email, name, avatar, xp FROM users WHERE email = $1",
+    "SELECT email, name, avatar, xp, monthly_income, income_day FROM users WHERE email = $1",
     [email]
   );
 
@@ -166,6 +166,21 @@ app.post("/update-avatar", authMiddleware, async (req: any, res) => {
   );
 
   res.json({ message: "Avatar updated" });
+});
+
+// =======================
+// MONTHLY INCOME
+// =======================
+app.post("/update-income", authMiddleware, async (req: any, res) => {
+  const email = req.user.email;
+  const { monthly_income, income_day } = req.body;
+
+  await pool.query(
+    "UPDATE users SET monthly_income = $1, income_day = $2 WHERE email = $3",
+    [monthly_income, income_day, email]
+  );
+
+  res.json({ message: "Income updated" });
 });
 
 // =======================
