@@ -82,7 +82,7 @@ function authMiddleware(req: any, res: any, next: any) {
 // REGISTER
 // =======================
 app.post("/register", async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, avatar } = req.body;
 
   const exists = await pool.query(
     "SELECT * FROM users WHERE email = $1",
@@ -97,7 +97,7 @@ app.post("/register", async (req, res) => {
 
   await pool.query(
     "INSERT INTO users (email, password, name) VALUES ($1, $2, $3)",
-    [email, hashedPassword, name]
+    [email, hashedPassword, name, avatar || "warrior"]
   );
 
   res.json({ message: "User created" });
@@ -136,12 +136,16 @@ app.post("/login", async (req, res) => {
 // =======================
 // PROFILE
 // =======================
-app.get("/profile", authMiddleware, (req: any, res) => {
-  res.json({
-    user: req.user
-  });
-});
+app.get("/profile", authMiddleware, async (req: any, res) => {
+  const email = req.user.email;
 
+  const result = await pool.query(
+    "SELECT email, name, avatar, xp FROM users WHERE email = $1",
+    [email]
+  );
+
+  res.json({ user: result.rows[0] });
+});
 
 // =======================
 // ТРАНЗАКЦИИ
