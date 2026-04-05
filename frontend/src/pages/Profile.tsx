@@ -56,6 +56,31 @@ function Profile() {
       .catch(() => navigate("/"));
   }, []);
 
+  
+
+const [showIncomeEdit, setShowIncomeEdit] = useState(false);
+const [incomeAmount, setIncomeAmount] = useState("");
+const [incomeDay, setIncomeDay] = useState("1");
+
+const handleSaveIncome = async () => {
+  const token = localStorage.getItem("token");
+
+  await fetch("https://moneyquest-pcoq.onrender.com/update-income", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      monthly_income: Number(incomeAmount),
+      income_day: Number(incomeDay),
+    }),
+  });
+
+  setUser({ ...user, monthly_income: Number(incomeAmount), income_day: Number(incomeDay) });
+  setShowIncomeEdit(false);
+};
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
@@ -138,6 +163,71 @@ function Profile() {
             <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>0 🏅</p>
           </div>
         </div>
+
+        {/* MONTHLY INCOME */}
+<div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
+  <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
+    Monthly Income
+  </p>
+
+  {!showIncomeEdit ? (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div>
+        <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
+          {user.monthly_income ? `${user.monthly_income} €` : "Not set"}
+        </p>
+        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#999" }}>
+          {user.income_day ? `Every month on day ${user.income_day}` : "Set up automatic top-ups"}
+        </p>
+      </div>
+      <button
+        onClick={() => setShowIncomeEdit(true)}
+        style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+      >
+        {user.monthly_income ? "Edit" : "Set up →"}
+      </button>
+    </div>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div>
+        <p style={{ margin: "0 0 6px", fontSize: 12, color: "#999" }}>Monthly amount (€)</p>
+        <input
+          type="number"
+          value={incomeAmount}
+          onChange={(e) => setIncomeAmount(e.target.value)}
+          placeholder="1500"
+          style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box" as const, outline: "none" }}
+        />
+      </div>
+      <div>
+        <p style={{ margin: "0 0 6px", fontSize: 12, color: "#999" }}>Day of month</p>
+        <input
+          type="number"
+          min="1"
+          max="28"
+          value={incomeDay}
+          onChange={(e) => setIncomeDay(e.target.value)}
+          placeholder="1"
+          style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box" as const, outline: "none" }}
+        />
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          onClick={handleSaveIncome}
+          style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+        >
+          Save
+        </button>
+        <button
+          onClick={() => setShowIncomeEdit(false)}
+          style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )}
+</div>
 
         {/* PERSONAL INFO */}
         <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
