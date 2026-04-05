@@ -82,7 +82,7 @@ function authMiddleware(req: any, res: any, next: any) {
 // REGISTER
 // =======================
 app.post("/register", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   const exists = await pool.query(
     "SELECT * FROM users WHERE email = $1",
@@ -96,8 +96,8 @@ app.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10); // ✅ хэшируем
 
   await pool.query(
-    "INSERT INTO users (email, password) VALUES ($1, $2)",
-    [email, hashedPassword]
+    "INSERT INTO users (email, password, name) VALUES ($1, $2, $3)",
+    [email, hashedPassword, name]
   );
 
   res.json({ message: "User created" });
@@ -127,7 +127,7 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Invalid credentials" });
   }
 
-  const token = jwt.sign({ email }, SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ email, name: user.name }, SECRET, { expiresIn: "1h" });
 
   res.json({ token });
 });
