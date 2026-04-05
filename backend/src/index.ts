@@ -96,8 +96,8 @@ app.post("/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10); // ✅ хэшируем
 
   await pool.query(
-    "INSERT INTO users (email, password, name) VALUES ($1, $2, $3)",
-    [email, hashedPassword, name, avatar || "warrior"]
+    "INSERT INTO users (email, password, name) VALUES ($1, $2, $3, $4)",
+    [email, hashedPassword, name, avatar || "brown"]
   );
 
   res.json({ message: "User created" });
