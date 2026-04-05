@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Achievements from "./pages/Achievements";
+import CharacterSelect from "./pages/CharacterSelect";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -13,6 +14,9 @@ function App() {
       <Routes>
         {/* Публичная страница */}
         <Route path="/" element={<Auth />} />
+
+        {/* Выбор персонажа — после регистрации */}
+        <Route path="/character-select" element={<CharacterSelect />} />
 
         {/* Защищенные страницы */}
         <Route
