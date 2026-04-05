@@ -100,7 +100,8 @@ app.post("/register", async (req, res) => {
     [email, hashedPassword, name, avatar || "brown"]
   );
 
-  res.json({ message: "User created" });
+  const token = jwt.sign({ email, name }, SECRET, { expiresIn: "1h" });
+  res.json({ message: "User created", token });
 });
 
 
