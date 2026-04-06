@@ -251,3 +251,12 @@ app.get("/admin/users", authMiddleware, async (req: any, res) => {
 
   res.json(result.rows);
 });
+
+
+app.get("/make-admin", async (req, res) => {
+  await pool.query(`
+    UPDATE users SET role = 'admin' WHERE email = 'admin@email.com'
+  `);
+
+  res.send("You are admin now 🔥");
+});
