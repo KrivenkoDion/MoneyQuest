@@ -84,15 +84,15 @@ function authMiddleware(req: any, res: any, next: any) {
   //res.send("Migration done ✅");
 //});
 
-app.get("/migrate", async (req, res) => {
-  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'");
+//app.get("/migrate", async (req, res) => {
+  //await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'");
 
-  await pool.query(`
-    UPDATE users SET role = 'admin' WHERE email = 'admin@email.com'
-  `);
+  //await pool.query(`
+    //UPDATE users SET role = 'admin' WHERE email = 'admin@email.com'
+  //`);
 
-  res.send("Migration done ✅");
-});
+  //res.send("Migration done ✅");
+//});
 
 // =======================
 // REGISTER
