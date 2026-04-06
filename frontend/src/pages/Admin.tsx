@@ -14,52 +14,115 @@ function Admin() {
       .then(async (res) => {
         const data = await res.json();
 
-        console.log("USERS:", data);
-
         if (!res.ok) {
-          setError(data.error || "Something went wrong");
+          setError(data.error || "Error");
           return;
         }
 
         setUsers(data);
       })
-      .catch((err) => {
-        console.error("ERROR:", err);
-        setError("Failed to fetch users");
-      });
+      .catch(() => setError("Server error"));
   }, []);
 
+  const handleReset = async () => {
+    const confirmReset = confirm("Ты точно хочешь удалить ВСЮ базу?");
+
+    if (!confirmReset) return;
+
+    const res = await fetch("https://moneyquest-pcoq.onrender.com/admin/reset", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    window.location.reload();
+  };
+
   return (
-    <div style={{ padding: 20, color: "white" }}>
-      <h1>Admin Panel</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0f0f1a",
+        color: "white",
+        padding: "30px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <h1 style={{ marginBottom: "20px" }}>Admin Dashboard</h1>
 
-      {/* Ошибка */}
+      {/* ERROR */}
       {error && (
-        <p style={{ color: "red", marginBottom: 20 }}>
+        <div style={{ color: "red", marginBottom: "20px" }}>
           {error}
-        </p>
+        </div>
       )}
 
-      {/* Нет пользователей */}
-      {!error && users.length === 0 && (
-        <p>No users found</p>
-      )}
+      {/* STATS */}
+      <div style={{ marginBottom: "20px", opacity: 0.8 }}>
+        Total users: {users.length}
+      </div>
 
-      {/* Список пользователей */}
-      {users.map((u) => (
+      {/* RESET BUTTON */}
+      <button
+        onClick={handleReset}
+        style={{
+          background: "linear-gradient(135deg, #ff4d4d, #ff0000)",
+          color: "white",
+          border: "none",
+          padding: "10px 20px",
+          borderRadius: "10px",
+          marginBottom: "30px",
+          cursor: "pointer",
+          fontWeight: "bold",
+        }}
+      >
+        Reset Database
+      </button>
+
+      {/* TABLE */}
+      <div
+        style={{
+          background: "#1a1a2e",
+          borderRadius: "15px",
+          overflow: "hidden",
+        }}
+      >
+        {/* HEADER */}
         <div
-          key={u.id}
           style={{
-            background: "#1f1f2e",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "10px",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            padding: "15px",
+            background: "#111",
+            fontWeight: "bold",
           }}
         >
-          <p>Email: {u.email}</p>
-          <p>Role: {u.role}</p>
+          <div>Email</div>
+          <div>Role</div>
         </div>
-      ))}
+
+        {/* USERS */}
+        {users.map((u, index) => (
+          <div
+            key={u.id}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              padding: "15px",
+              borderTop: "1px solid #333",
+              background: index % 2 === 0 ? "#1a1a2e" : "#161625",
+            }}
+          >
+            <div>{u.email}</div>
+            <div style={{ color: u.role === "admin" ? "#4caf50" : "#aaa" }}>
+              {u.role}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
