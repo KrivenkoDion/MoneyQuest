@@ -84,6 +84,16 @@ function authMiddleware(req: any, res: any, next: any) {
   //res.send("Migration done ✅");
 //});
 
+app.get("/migrate", async (req, res) => {
+  await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user'");
+
+  await pool.query(`
+    UPDATE users SET role = 'admin' WHERE email = 'твой@email.com'
+  `);
+
+  res.send("Migration done ✅");
+});
+
 // =======================
 // REGISTER
 // =======================
@@ -134,7 +144,7 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ error: "Invalid credentials" });
   }
 
-  const token = jwt.sign({ email, name: user.name }, SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ email, name: user.name, role: user.role }, SECRET, { expiresIn: "1h" });
 
   res.json({ token });
 });
@@ -223,4 +233,21 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+
+// ADMIN
+
+app.get("/admin/users", authMiddleware, async (req: any, res) => {
+  const user = req.user;
+
+  if (user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  const result = await pool.query(
+    "SELECT id, email, name, role FROM users ORDER BY id DESC"
+  );
+
+  res.json(result.rows);
 });
