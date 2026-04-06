@@ -260,3 +260,16 @@ app.get("/make-admin", async (req, res) => {
 
   res.send("You are admin now 🔥");
 });
+
+
+// Reset DataBase
+app.post("/admin/reset", authMiddleware, async (req: any, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied" });
+  }
+
+  await pool.query("TRUNCATE TABLE transactions RESTART IDENTITY CASCADE");
+  await pool.query("TRUNCATE TABLE users RESTART IDENTITY CASCADE");
+
+  res.json({ message: "Database reset successful" });
+});
