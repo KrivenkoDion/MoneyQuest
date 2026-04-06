@@ -25,7 +25,7 @@ function Admin() {
   }, []);
 
   const handleReset = async () => {
-    const confirmReset = confirm("Ты точно хочешь удалить ВСЮ базу?");
+    const confirmReset = confirm("Delete ALL users?");
 
     if (!confirmReset) return;
 
@@ -44,85 +44,75 @@ function Admin() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "#0f0f1a",
-        color: "white",
-        padding: "30px",
+        maxWidth: "420px",
+        margin: "0 auto",
+        padding: "20px",
         fontFamily: "sans-serif",
       }}
     >
-      <h1 style={{ marginBottom: "20px" }}>Admin Dashboard</h1>
+      <h2 style={{ marginBottom: "20px" }}>Admin Panel</h2>
 
       {/* ERROR */}
       {error && (
-        <div style={{ color: "red", marginBottom: "20px" }}>
-          {error}
-        </div>
+        <p style={{ color: "red", marginBottom: "20px" }}>{error}</p>
       )}
 
       {/* STATS */}
-      <div style={{ marginBottom: "20px", opacity: 0.8 }}>
+      <div
+        style={{
+          background: "#fff",
+          padding: "15px",
+          borderRadius: "15px",
+          marginBottom: "20px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+        }}
+      >
         Total users: {users.length}
       </div>
 
-      {/* RESET BUTTON */}
+      {/* RESET */}
       <button
         onClick={handleReset}
         style={{
-          background: "linear-gradient(135deg, #ff4d4d, #ff0000)",
+          width: "100%",
+          padding: "12px",
+          background: "#ff4d4d",
           color: "white",
           border: "none",
-          padding: "10px 20px",
-          borderRadius: "10px",
-          marginBottom: "30px",
-          cursor: "pointer",
+          borderRadius: "12px",
+          marginBottom: "20px",
           fontWeight: "bold",
+          cursor: "pointer",
         }}
       >
         Reset Database
       </button>
 
-      {/* TABLE */}
-      <div
-        style={{
-          background: "#1a1a2e",
-          borderRadius: "15px",
-          overflow: "hidden",
-        }}
-      >
-        {/* HEADER */}
+      {/* USERS */}
+      {users.map((u) => (
         <div
+          key={u.id}
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            background: "#fff",
             padding: "15px",
-            background: "#111",
-            fontWeight: "bold",
+            borderRadius: "15px",
+            marginBottom: "10px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
           }}
         >
-          <div>Email</div>
-          <div>Role</div>
-        </div>
+          <div style={{ fontWeight: "bold" }}>{u.email}</div>
 
-        {/* USERS */}
-        {users.map((u, index) => (
           <div
-            key={u.id}
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              padding: "15px",
-              borderTop: "1px solid #333",
-              background: index % 2 === 0 ? "#1a1a2e" : "#161625",
+              marginTop: "5px",
+              fontSize: "14px",
+              color: u.role === "admin" ? "#4caf50" : "#999",
             }}
           >
-            <div>{u.email}</div>
-            <div style={{ color: u.role === "admin" ? "#4caf50" : "#aaa" }}>
-              {u.role}
-            </div>
+            {u.role}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
