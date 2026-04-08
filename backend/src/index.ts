@@ -97,30 +97,30 @@ function authMiddleware(req: any, res: any, next: any) {
 // =======================
 // 🎮 GAMIFICATION MIGRATE 
 // =======================
-app.get("/migrate-gamification", async (req, res) => {
+//app.get("/migrate-gamification", async (req, res) => {
   // XP already exists on users table (xp INT)
   // Add quests table
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS user_quests (
-      id SERIAL PRIMARY KEY,
-      email TEXT,
-      quest_id TEXT,
-      completed BOOLEAN DEFAULT false,
-      claimed BOOLEAN DEFAULT false,
-      UNIQUE(email, quest_id)
-    );
-  `);
+  //await pool.query(`
+    //CREATE TABLE IF NOT EXISTS user_quests (
+      //id SERIAL PRIMARY KEY,
+      //email TEXT,
+      //quest_id TEXT,
+      //completed BOOLEAN DEFAULT false,
+      //claimed BOOLEAN DEFAULT false,
+      //UNIQUE(email, quest_id)
+    //);
+  //`);
   // Add shop purchases table
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS user_items (
-      id SERIAL PRIMARY KEY,
-      email TEXT,
-      item_id TEXT,
-      UNIQUE(email, item_id)
-    );
-  `);
-  res.send("Gamification migration done ✅");
-});
+  //await pool.query(`
+    //CREATE TABLE IF NOT EXISTS user_items (
+      //id SERIAL PRIMARY KEY,
+      //email TEXT,
+      //item_id TEXT,
+      //UNIQUE(email, item_id)
+    //);
+  //`);
+  //res.send("Gamification migration done ✅");
+//});
 
 // =======================
 // REGISTER
