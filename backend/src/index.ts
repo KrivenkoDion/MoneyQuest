@@ -42,6 +42,29 @@ function authMiddleware(req: any, res: any, next: any) {
   }
 }
 
+// =======================
+// 🎮 GAMIFICATION CONFIG
+// =======================
+const QUESTS = [
+  {
+    id: "add_expense_once",
+    title: "First Expense",
+    description: "Add your first expense",
+    xp_reward: 20,
+  },
+];
+
+const SHOP_ITEMS = [
+  { id: "glasses", name: "Glasses", cost: 50 },
+  { id: "hat",     name: "Hat",     cost: 100 },
+];
+
+async function addXP(email: string, amount: number) {
+  await pool.query(
+    "UPDATE users SET xp = xp + $1 WHERE email = $2",
+    [amount, email]
+  );
+}
 
 // =======================
 // 🧹 RESET DB
