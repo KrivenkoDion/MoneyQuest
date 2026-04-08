@@ -267,8 +267,8 @@ app.post("/transactions", authMiddleware, async (req: any, res) => {
     [email, transaction.amount, transaction.description, transaction.category]
   );
 
-  // 🎮 Mark quest "add_expense_once" as completed (if not already)
-  if (transaction.amount < 0) {
+// 🎮 Mark quest "add_expense_once" as completed (if not already)
+  if (transaction.category !== "income") {
     await pool.query(`
       INSERT INTO user_quests (email, quest_id, completed, claimed)
       VALUES ($1, 'add_expense_once', true, false)
