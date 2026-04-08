@@ -24,6 +24,7 @@ function Home() {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("food");
+  const [questToast, setQuestToast] = useState(false);
 
   useEffect(() => {
     if (!token) navigate("/");
@@ -65,6 +66,12 @@ function Home() {
     setAmount("");
     setDescription("");
     setShowModal(false);
+
+    // 🎮 Show toast if expense quest just triggered
+    if (type === "expense") {
+      setQuestToast(true);
+      setTimeout(() => setQuestToast(false), 3000);
+    }
   };
 
   const s: Record<string, React.CSSProperties> = {
@@ -176,6 +183,18 @@ function Home() {
 
   return (
     <div style={s.page}>
+
+      {/* QUEST TOAST */}
+      {questToast && (
+        <div style={{
+          position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)",
+          background: "#1a1a2e", color: "white", borderRadius: 14,
+          padding: "12px 20px", fontSize: 14, fontWeight: 600,
+          zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+        }}>
+          🏆 Quest unlocked! Go claim your XP →
+        </div>
+      )}
 
       {/* HEADER */}
       <div style={s.header}>
