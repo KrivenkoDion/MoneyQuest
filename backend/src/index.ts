@@ -149,7 +149,8 @@ async function addXP(email: string, amount: number) {
 // REGISTER
 // =======================
 app.post("/register", async (req, res) => {
-  const { email, password, name, avatar } = req.body;
+  const email = req.body.email.toLowerCase().trim(); 
+  const { password, name, avatar } = req.body;
 
   const exists = await pool.query(
     "SELECT * FROM users WHERE email = $1",
@@ -176,7 +177,8 @@ app.post("/register", async (req, res) => {
 // LOGIN
 // =======================
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const email = req.body.email.toLowerCase().trim(); 
+  const password = req.body.password;
 
   const result = await pool.query(
     "SELECT * FROM users WHERE email = $1",
