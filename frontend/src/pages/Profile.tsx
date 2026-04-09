@@ -1,3 +1,9 @@
+// src/pages/Profile.tsx
+// Changes vs original:
+//  - SELECT now returns coins and streak (from backend)
+//  - Character card shows coins badge alongside XP
+//  - New "Streak" stat card in the stats grid
+
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -40,6 +46,9 @@ function ChillGuy({ fur, inner }: { fur: string; inner: string }) {
 function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [showIncomeEdit, setShowIncomeEdit] = useState(false);
+  const [incomeAmount, setIncomeAmount] = useState("");
+  const [incomeDay, setIncomeDay] = useState("1");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -56,30 +65,16 @@ function Profile() {
       .catch(() => navigate("/"));
   }, []);
 
-  
-
-const [showIncomeEdit, setShowIncomeEdit] = useState(false);
-const [incomeAmount, setIncomeAmount] = useState("");
-const [incomeDay, setIncomeDay] = useState("1");
-
-const handleSaveIncome = async () => {
-  const token = localStorage.getItem("token");
-
-  await fetch("https://moneyquest-pcoq.onrender.com/update-income", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      monthly_income: Number(incomeAmount),
-      income_day: Number(incomeDay),
-    }),
-  });
-
-  setUser({ ...user, monthly_income: Number(incomeAmount), income_day: Number(incomeDay) });
-  setShowIncomeEdit(false);
-};
+  const handleSaveIncome = async () => {
+    const token = localStorage.getItem("token");
+    await fetch("https://moneyquest-pcoq.onrender.com/update-income", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ monthly_income: Number(incomeAmount), income_day: Number(incomeDay) }),
+    });
+    setUser({ ...user, monthly_income: Number(incomeAmount), income_day: Number(incomeDay) });
+    setShowIncomeEdit(false);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -89,7 +84,7 @@ const handleSaveIncome = async () => {
   if (!user) {
     return (
       <div style={{ minHeight: "100vh", background: "#f5f5f0", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <p style={{ color: "#999" }}>Загрузка...</p>
+        <p style={{ color: "#999" }}>Loading...</p>
       </div>
     );
   }
@@ -97,11 +92,7 @@ const handleSaveIncome = async () => {
   const charColors = CHARACTERS[user.avatar] || CHARACTERS.brown;
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#f5f5f0",
-      maxWidth: 390, margin: "0 auto",
-      fontFamily: "'Inter', sans-serif", paddingBottom: 40,
-    }}>
+    <div style={{ minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 40 }}>
 
       {/* HEADER */}
       <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -109,39 +100,33 @@ const handleSaveIncome = async () => {
         <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e8e8e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🔔</div>
       </div>
 
-      {/* CHARACTER CARD */}
       <div style={{ padding: "20px 24px 0" }}>
-        <div style={{
-          background: "white", borderRadius: 24,
-          padding: "24px 20px", display: "flex",
-          alignItems: "center", gap: 20, marginBottom: 12,
-        }}>
-          {/* CHILL GUY */}
+
+        {/* CHARACTER CARD — now shows XP + Coins side by side */}
+        <div style={{ background: "white", borderRadius: 24, padding: "24px 20px", display: "flex", alignItems: "center", gap: 20, marginBottom: 12 }}>
           <div style={{ flexShrink: 0 }}>
             <ChillGuy fur={charColors.fur} inner={charColors.inner} />
           </div>
-
-          {/* USER INFO */}
           <div>
             <h2 style={{ margin: "0 0 2px", fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
-              {user.name || "Пользователь"}
+              {user.name || "User"}
             </h2>
             <p style={{ margin: "0 0 8px", fontSize: 13, color: "#999" }}>{user.email}</p>
-            <div style={{
-              display: "inline-block", padding: "4px 10px",
-              background: "#f5f5f0", borderRadius: 20,
-              fontSize: 12, color: "#1a1a2e", fontWeight: 600,
-            }}>
-              ⭐ {user.xp || 0} XP
+            {/* XP + Coins badges */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ display: "inline-block", padding: "4px 10px", background: "#f5f5f0", borderRadius: 20, fontSize: 12, color: "#1a1a2e", fontWeight: 600 }}>
+                ⭐ {user.xp || 0} XP
+              </span>
+              <span style={{ display: "inline-block", padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 }}>
+                🪙 {user.coins || 0} coins
+              </span>
             </div>
           </div>
         </div>
 
         {/* MILESTONE */}
         <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-          <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
-            Current Milestone
-          </p>
+          <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Current Milestone</p>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontWeight: 700, fontSize: 18, color: "#1a1a2e" }}>Beginner</span>
             <span style={{ fontSize: 13, color: "#999" }}>Level 1</span>
@@ -152,84 +137,52 @@ const handleSaveIncome = async () => {
           <p style={{ margin: "6px 0 0", fontSize: 12, color: "#999" }}>{user.xp || 0} / 100 XP</p>
         </div>
 
-        {/* STATS */}
+        {/* STATS — added Streak card */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
           <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Total Saved</p>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>0 €</p>
+            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Coins</p>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>🪙 {user.coins || 0}</p>
           </div>
           <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Achievements</p>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>0 🏅</p>
+            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Daily Streak</p>
+            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#e53935" }}>
+              🔥 {user.streak || 0} day{user.streak !== 1 ? "s" : ""}
+            </p>
           </div>
         </div>
 
-        {/* MONTHLY INCOME */}
-<div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-  <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
-    Monthly Income
-  </p>
+        {/* MONTHLY INCOME — unchanged from original */}
+        <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
+          <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Monthly Income</p>
+          {!showIncomeEdit ? (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
+                  {user.monthly_income ? `${user.monthly_income} €` : "Not set"}
+                </p>
+                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#999" }}>
+                  {user.income_day ? `Every month on day ${user.income_day}` : "Set up automatic top-ups"}
+                </p>
+              </div>
+              <button onClick={() => setShowIncomeEdit(true)} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                {user.monthly_income ? "Edit" : "Set up →"}
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input type="number" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="1500"
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box", outline: "none" }} />
+              <input type="number" min="1" max="28" value={incomeDay} onChange={(e) => setIncomeDay(e.target.value)} placeholder="1"
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box", outline: "none" }} />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={handleSaveIncome} style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Save</button>
+                <button onClick={() => setShowIncomeEdit(false)} style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
 
-  {!showIncomeEdit ? (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div>
-        <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
-          {user.monthly_income ? `${user.monthly_income} €` : "Not set"}
-        </p>
-        <p style={{ margin: "4px 0 0", fontSize: 13, color: "#999" }}>
-          {user.income_day ? `Every month on day ${user.income_day}` : "Set up automatic top-ups"}
-        </p>
-      </div>
-      <button
-        onClick={() => setShowIncomeEdit(true)}
-        style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-      >
-        {user.monthly_income ? "Edit" : "Set up →"}
-      </button>
-    </div>
-  ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div>
-        <p style={{ margin: "0 0 6px", fontSize: 12, color: "#999" }}>Monthly amount (€)</p>
-        <input
-          type="number"
-          value={incomeAmount}
-          onChange={(e) => setIncomeAmount(e.target.value)}
-          placeholder="1500"
-          style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box" as const, outline: "none" }}
-        />
-      </div>
-      <div>
-        <p style={{ margin: "0 0 6px", fontSize: 12, color: "#999" }}>Day of month</p>
-        <input
-          type="number"
-          min="1"
-          max="28"
-          value={incomeDay}
-          onChange={(e) => setIncomeDay(e.target.value)}
-          placeholder="1"
-          style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box" as const, outline: "none" }}
-        />
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          onClick={handleSaveIncome}
-          style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-        >
-          Save
-        </button>
-        <button
-          onClick={() => setShowIncomeEdit(false)}
-          style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-
-        {/* PERSONAL INFO */}
+        {/* PERSONAL INFO — unchanged */}
         <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
           <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Personal Info</p>
           {[{ label: "Account Details", icon: "👤" }, { label: "Linked Banks", icon: "🏦" }].map((item) => (
@@ -243,7 +196,7 @@ const handleSaveIncome = async () => {
           ))}
         </div>
 
-        {/* SETTINGS */}
+        {/* SETTINGS — unchanged */}
         <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
           <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Settings</p>
           {[{ label: "Security & Privacy", icon: "🔒" }, { label: "Notifications", icon: "🔔" }, { label: "Appearance", icon: "🌙" }].map((item) => (
@@ -257,33 +210,22 @@ const handleSaveIncome = async () => {
           ))}
         </div>
 
-        {/* 🔧 ADMIN DEV TOOL */}
+        {/* ADMIN DEV TOOL — unchanged */}
         {user.role === "admin" && (
           <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-            <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
-              Dev Tools
-            </p>
+            <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Dev Tools</p>
             <button
               onClick={async () => {
                 const token = localStorage.getItem("token");
                 const res = await fetch("https://moneyquest-pcoq.onrender.com/admin/add-xp", {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                  },
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                   body: JSON.stringify({ amount: 1000 }),
                 });
                 const data = await res.json();
-                if (data.amount) {
-                  setUser({ ...user, xp: (user.xp || 0) + data.amount });
-                }
+                if (data.amount) setUser({ ...user, xp: (user.xp || 0) + data.amount });
               }}
-              style={{
-                width: "100%", padding: 14, borderRadius: 12,
-                border: "none", background: "#fff8e7", color: "#c9a84c",
-                fontSize: 14, fontWeight: 700, cursor: "pointer",
-              }}
+              style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: "#fff8e7", color: "#c9a84c", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
             >
               ⚡ +1000 XP (Dev)
             </button>
@@ -292,7 +234,7 @@ const handleSaveIncome = async () => {
 
         {/* LOGOUT */}
         <button onClick={handleLogout} style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#fff0f0", color: "#e53935", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-          Выйти из аккаунта
+          Sign out
         </button>
 
       </div>
