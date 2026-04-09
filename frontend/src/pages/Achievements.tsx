@@ -1,9 +1,11 @@
 // src/pages/Achievements.tsx
-// Changes:
-//  - xp badge stays (for XP display)
-//  - added coins badge next to XP
-//  - quest cards show both +XP and +coins rewards
-//  - shop uses coins balance, not XP
+// KEY CHANGES vs previous version:
+//   - Quest type updated: progress, goal, remaining, claimable fields
+//   - Each quest shows "X / Y" progress bar + "N left" text
+//   - Quests near completion (>=80%) are highlighted with a yellow border
+//   - Claim button uses q.claimable (from backend) — no derived logic in frontend
+//   - Claimed quests no longer appear (backend excludes them)
+//   - Shop unchanged except coins display
 
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -16,8 +18,11 @@ type Quest = {
   description: string;
   xp_reward: number;
   coin_reward: number;
+  goal: number;
+  progress: number;
+  remaining: number;
+  claimable: boolean;
   completed: boolean;
-  claimed: boolean;
 };
 
 type ShopItem = {
@@ -42,14 +47,14 @@ function Achievements() {
     if (!token) { navigate("/"); return; }
     loadQuests();
     loadShop();
+    loadProfile();
   }, []);
 
   const loadQuests = async () => {
     const res = await fetch(`${API}/quests`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await res.json();
-    setQuests(data);
+    setQuests(await res.json());
   };
 
   const loadShop = async () => {
@@ -57,12 +62,10 @@ function Achievements() {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    // Shop now returns coins (not xp)
     setCoins(data.coins || 0);
     setItems(data.items || []);
   };
 
-  // Also refresh XP from profile when quests are claimed
   const loadProfile = async () => {
     const res = await fetch(`${API}/profile`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -79,6 +82,7 @@ function Achievements() {
     const data = await res.json();
     if (data.xp_reward !== undefined) {
       showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed! 🎉`);
+      // Refresh everything after claim
       loadQuests();
       loadShop();
       loadProfile();
@@ -122,7 +126,6 @@ function Achievements() {
       justifyContent: "space-between", alignItems: "center",
     },
     logo: { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
-    // Header badges row
     badges: { display: "flex", gap: 8, alignItems: "center" },
     xpBadge: {
       padding: "6px 14px", background: "#1a1a2e", color: "white",
@@ -143,13 +146,15 @@ function Achievements() {
       fontSize: 14, fontWeight: 600, cursor: "pointer",
       fontFamily: "'Inter', sans-serif",
     }),
-    card: {
+    // Quest card: highlighted (near complete) vs normal
+    card: (nearComplete: boolean): React.CSSProperties => ({
       background: "white", borderRadius: 20,
       padding: "20px", margin: "0 24px 14px",
-    },
-    questTitle: { margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
-    questDesc: { margin: "0 0 10px", fontSize: 13, color: "#999" },
-    rewardRow: { display: "flex", gap: 8, marginBottom: 14 },
+      border: nearComplete ? "2px solid #c9a84c" : "2px solid transparent",
+    }),
+    questTitle: { margin: "0 0 3px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
+    questDesc:  { margin: "0 0 10px", fontSize: 13, color: "#999" },
+    rewardRow:  { display: "flex", gap: 8, marginBottom: 12 },
     xpChip: {
       display: "inline-block", padding: "4px 10px",
       background: "#f0f4ff", borderRadius: 20,
@@ -160,15 +165,17 @@ function Achievements() {
       background: "#fff8e7", borderRadius: 20,
       fontSize: 12, color: "#c9a84c", fontWeight: 600,
     },
+    progressBarBg: {
+      height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px",
+    },
+    progressLabel: {
+      display: "flex", justifyContent: "space-between",
+      fontSize: 12, color: "#999", marginBottom: 12,
+    },
     claimBtn: {
       padding: "10px 20px", borderRadius: 10, border: "none",
       background: "#1a1a2e", color: "white",
       fontSize: 13, fontWeight: 600, cursor: "pointer",
-    },
-    claimedBtn: {
-      padding: "10px 20px", borderRadius: 10, border: "none",
-      background: "#f0f0ea", color: "#999",
-      fontSize: 13, fontWeight: 600, cursor: "default",
     },
     lockedBtn: {
       padding: "10px 20px", borderRadius: 10, border: "none",
@@ -226,40 +233,69 @@ function Achievements() {
       {/* TABS */}
       <div style={s.tabs}>
         <button style={s.tab(tab === "quests")} onClick={() => setTab("quests")}>🏆 Quests</button>
-        <button style={s.tab(tab === "shop")} onClick={() => setTab("shop")}>🛒 Shop</button>
+        <button style={s.tab(tab === "shop")}   onClick={() => setTab("shop")}>🛒 Shop</button>
       </div>
 
       {/* QUESTS TAB */}
-      {tab === "quests" && quests.map((q) => (
-        <div key={q.id} style={s.card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div style={{ flex: 1 }}>
-              <p style={s.questTitle}>{q.title}</p>
-              <p style={s.questDesc}>{q.description}</p>
-              {/* Reward chips: XP + coins */}
-              <div style={s.rewardRow}>
-                <span style={s.xpChip}>+{q.xp_reward} XP</span>
-                <span style={s.coinChip}>+{q.coin_reward} 🪙</span>
-              </div>
+      {tab === "quests" && (
+        <>
+          {quests.length === 0 && (
+            <div style={{ textAlign: "center", padding: "40px 24px", color: "#999", fontSize: 14 }}>
+              All quests completed! 🎉 Check back later.
             </div>
-            <span style={{ fontSize: 32, marginLeft: 12 }}>
-              {q.claimed ? "✅" : q.completed ? "🎁" : "🔒"}
-            </span>
-          </div>
-
-          {q.claimed ? (
-            <button style={s.claimedBtn} disabled>Claimed</button>
-          ) : q.completed ? (
-            <button style={s.claimBtn} onClick={() => claimQuest(q.id)}>
-              Claim +{q.xp_reward} XP +{q.coin_reward} 🪙
-            </button>
-          ) : (
-            <button style={s.lockedBtn} disabled>Not completed</button>
           )}
-        </div>
-      ))}
+          {quests.map((q) => {
+            const pct         = Math.min((q.progress / q.goal) * 100, 100);
+            const nearComplete = pct >= 80 && !q.claimable; // highlight but not yet claimable
 
-      {/* SHOP TAB — now uses coins */}
+            return (
+              <div key={q.id} style={s.card(nearComplete || q.claimable)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={s.questTitle}>{q.title}</p>
+                    <p style={s.questDesc}>{q.description}</p>
+                    {/* Reward chips */}
+                    <div style={s.rewardRow}>
+                      <span style={s.xpChip}>+{q.xp_reward} XP</span>
+                      <span style={s.coinChip}>+{q.coin_reward} 🪙</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 28, marginLeft: 12 }}>
+                    {q.claimable ? "🎁" : "🔒"}
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div style={s.progressBarBg}>
+                  <div style={{
+                    height: "100%", borderRadius: 3,
+                    background: q.claimable ? "#4caf50" : pct >= 80 ? "#c9a84c" : "#1a1a2e",
+                    width: `${pct}%`,
+                    transition: "width 0.3s",
+                  }} />
+                </div>
+                <div style={s.progressLabel}>
+                  <span>{q.progress} / {q.goal}</span>
+                  <span>{q.remaining > 0 ? `${q.remaining} left` : "Ready to claim!"}</span>
+                </div>
+
+                {/* Action button — uses q.claimable from backend, no frontend guessing */}
+                {q.claimable ? (
+                  <button style={s.claimBtn} onClick={() => claimQuest(q.id)}>
+                    Claim +{q.xp_reward} XP +{q.coin_reward} 🪙
+                  </button>
+                ) : (
+                  <button style={s.lockedBtn} disabled>
+                    {q.progress === 0 ? "Not started" : "In progress..."}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {/* SHOP TAB */}
       {tab === "shop" && (
         <>
           <div style={{ margin: "0 24px 16px", padding: "14px 20px", background: "white", borderRadius: 16 }}>
@@ -269,7 +305,7 @@ function Achievements() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "0 24px" }}>
             {items.map((item) => (
-              <div key={item.id} style={{ ...s.card, margin: 0, textAlign: "center" as const }}>
+              <div key={item.id} style={{ background: "white", borderRadius: 20, padding: "20px", textAlign: "center" as const }}>
                 <span style={s.itemEmoji}>{ITEM_EMOJI[item.id] || "🎁"}</span>
                 <p style={s.itemName}>{item.name}</p>
                 <p style={s.itemCost}>🪙 {item.cost} coins</p>
