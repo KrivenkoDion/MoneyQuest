@@ -168,7 +168,7 @@ app.post("/register", async (req, res) => {
     [email, hashedPassword, name, avatar || "brown"]
   );
 
-  const token = jwt.sign({ email, name }, SECRET, { expiresIn: "1h" });
+  const token = jwt.sign({ email, name, role: "user" }, SECRET, { expiresIn: "1h" });
   res.json({ message: "User created", token });
 });
 
@@ -210,7 +210,7 @@ app.get("/profile", authMiddleware, async (req: any, res) => {
   const email = req.user.email;
 
   const result = await pool.query(
-    "SELECT email, name, avatar, xp, monthly_income, income_day FROM users WHERE email = $1",
+    "SELECT email, name, avatar, xp, monthly_income, income_day, role FROM users WHERE email = $1",
     [email]
   );
 
@@ -403,6 +403,24 @@ app.post("/shop/buy/:itemId", authMiddleware, async (req: any, res) => {
   res.json({ message: "Item purchased", item_id: itemId });
 });
 
+// =======================
+// 🔧 ADMIN
+// =======================
+app.post("/admin/add-xp", authMiddleware, async (req: any, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  const { amount } = req.body;
+  const email = req.user.email;
+
+  await pool.query(
+    "UPDATE users SET xp = xp + $1 WHERE email = $2",
+    [amount, email]
+  );
+
+  res.json({ message: "XP added", amount });
+});
 
 // =======================
 // DEBUG USERS
