@@ -1,12 +1,16 @@
+// src/routes/quests.ts
+
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
 import { QUESTS } from "../config/quests";
-import { addXP } from "../utils/xp";
+import { addXP, addCoins } from "../utils/xp";
 
 export function questRoutes(pool: any) {
   const router = Router();
 
   // GET QUESTS
+  // Only shows quests that are either unlocked or have no lock requirement.
+  // A quest is visible if its locked_by quest has been claimed (or it has no lock).
   router.get("/quests", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
@@ -20,11 +24,21 @@ export function questRoutes(pool: any) {
       userQuestMap[row.quest_id] = row;
     }
 
-    const quests = QUESTS.map((q) => ({
-      ...q,
-      completed: userQuestMap[q.id]?.completed || false,
-      claimed:   userQuestMap[q.id]?.claimed   || false,
-    }));
+    const quests = QUESTS
+      // Filter: hide quest if its prerequisite hasn't been claimed yet
+      .filter((q: any) => {
+        if (!q.locked_by) return true;
+        return userQuestMap[q.locked_by]?.claimed === true;
+      })
+      .map((q: any) => ({
+        id: q.id,
+        title: q.title,
+        description: q.description,
+        xp_reward: q.xp_reward,
+        coin_reward: q.coin_reward,
+        completed: userQuestMap[q.id]?.completed || false,
+        claimed:   userQuestMap[q.id]?.claimed   || false,
+      }));
 
     res.json(quests);
   });
@@ -34,7 +48,7 @@ export function questRoutes(pool: any) {
     const email = req.user.email;
     const { questId } = req.params;
 
-    const quest = QUESTS.find((q) => q.id === questId);
+    const quest = QUESTS.find((q: any) => q.id === questId);
     if (!quest) return res.status(404).json({ error: "Quest not found" });
 
     const result = await pool.query(
@@ -55,9 +69,15 @@ export function questRoutes(pool: any) {
       [email, questId]
     );
 
-    await addXP(pool, email, quest.xp_reward);
+    // Award XP (for leveling) and Coins (for spending)
+    await addXP(pool, email, (quest as any).xp_reward);
+    await addCoins(pool, email, (quest as any).coin_reward);
 
-    res.json({ message: "Reward claimed", xp_reward: quest.xp_reward });
+    res.json({
+      message: "Reward claimed",
+      xp_reward: (quest as any).xp_reward,
+      coin_reward: (quest as any).coin_reward,
+    });
   });
 
   return router;

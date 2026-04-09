@@ -1,3 +1,5 @@
+// src/routes/shop.ts
+
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
 import { SHOP_ITEMS } from "../config/shop";
@@ -5,15 +7,15 @@ import { SHOP_ITEMS } from "../config/shop";
 export function shopRoutes(pool: any) {
   const router = Router();
 
-  // GET SHOP
+  // GET SHOP — returns user's coins balance + items with owned flag
   router.get("/shop", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
     const userResult = await pool.query(
-      "SELECT xp FROM users WHERE email = $1",
+      "SELECT coins FROM users WHERE email = $1",
       [email]
     );
-    const userXP = userResult.rows[0]?.xp || 0;
+    const userCoins = userResult.rows[0]?.coins || 0;
 
     const purchasedResult = await pool.query(
       "SELECT item_id FROM user_items WHERE email = $1",
@@ -26,10 +28,10 @@ export function shopRoutes(pool: any) {
       owned: purchasedIds.includes(item.id),
     }));
 
-    res.json({ xp: userXP, items });
+    res.json({ coins: userCoins, items });
   });
 
-  // BUY ITEM
+  // BUY ITEM — deducts coins (not XP)
   router.post("/shop/buy/:itemId", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
     const { itemId } = req.params;
@@ -38,13 +40,13 @@ export function shopRoutes(pool: any) {
     if (!item) return res.status(404).json({ error: "Item not found" });
 
     const userResult = await pool.query(
-      "SELECT xp FROM users WHERE email = $1",
+      "SELECT coins FROM users WHERE email = $1",
       [email]
     );
-    const userXP = userResult.rows[0]?.xp || 0;
+    const userCoins = userResult.rows[0]?.coins || 0;
 
-    if (userXP < item.cost) {
-      return res.status(400).json({ error: "Not enough XP" });
+    if (userCoins < item.cost) {
+      return res.status(400).json({ error: "Not enough coins" });
     }
 
     const alreadyOwned = await pool.query(
@@ -56,7 +58,7 @@ export function shopRoutes(pool: any) {
     }
 
     await pool.query(
-      "UPDATE users SET xp = xp - $1 WHERE email = $2",
+      "UPDATE users SET coins = coins - $1 WHERE email = $2",
       [item.cost, email]
     );
 
