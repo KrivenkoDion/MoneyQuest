@@ -257,10 +257,44 @@ const handleSaveIncome = async () => {
           ))}
         </div>
 
+        {/* 🔧 ADMIN DEV TOOL */}
+        {user.role === "admin" && (
+          <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
+            <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>
+              Dev Tools
+            </p>
+            <button
+              onClick={async () => {
+                const token = localStorage.getItem("token");
+                const res = await fetch("https://moneyquest-pcoq.onrender.com/admin/add-xp", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ amount: 1000 }),
+                });
+                const data = await res.json();
+                if (data.amount) {
+                  setUser({ ...user, xp: (user.xp || 0) + data.amount });
+                }
+              }}
+              style={{
+                width: "100%", padding: 14, borderRadius: 12,
+                border: "none", background: "#fff8e7", color: "#c9a84c",
+                fontSize: 14, fontWeight: 700, cursor: "pointer",
+              }}
+            >
+              ⚡ +1000 XP (Dev)
+            </button>
+          </div>
+        )}
+
         {/* LOGOUT */}
         <button onClick={handleLogout} style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#fff0f0", color: "#e53935", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
           Выйти из аккаунта
         </button>
+
       </div>
     </div>
   );
