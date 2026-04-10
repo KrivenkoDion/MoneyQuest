@@ -140,10 +140,10 @@ function Profile() {
     );
   }
 
-  const charColors   = CHARACTERS[user.avatar] || CHARACTERS.brown;
+  const charColors = CHARACTERS[user.avatar] || CHARACTERS.brown;
   const currentLevel = user.level || xpToLevel(user.xp || 0);
-  const xpInLevel    = xpProgressInLevel(user.xp || 0);
-  const xpNeeded     = 100; // always 100 XP per level
+  const xpInLevel = xpProgressInLevel(user.xp || 0);
+  const xpNeeded = xpForNextLevel(currentLevel);
 
   return (
     <div style={{ minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 40 }}>
