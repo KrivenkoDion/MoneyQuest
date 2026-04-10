@@ -1,9 +1,8 @@
 // src/routes/quests.ts
-// KEY FIXES vs previous version:
-//   - Returns progress and goal on every quest (for progress bar + "X/Y" display)
-//   - Claimed quests are EXCLUDED from the response entirely (hidden from active list)
-//   - locked_by check is unchanged
-//   - Claim endpoint double-checks completed && !claimed before awarding
+// Changes vs v2:
+//   - When a quest row is first INSERTed (quest unlocked), started_at = NOW()
+//   - Claim returns level_up info if XP crossed a threshold
+//   - Everything else unchanged from v2
 
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
@@ -14,14 +13,12 @@ export function questRoutes(pool: any) {
   const router = Router();
 
   // GET QUESTS
-  // Returns only active + claimable quests.
-  // Claimed quests are excluded — they've been completed and rewarded.
-  // Each quest includes: progress, goal, remaining for UI display.
+  // Also ensures quest rows exist for newly unlocked quests (sets started_at = NOW())
   router.get("/quests", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
     const result = await pool.query(
-      "SELECT quest_id, progress, completed, claimed FROM user_quests WHERE email = $1",
+      "SELECT quest_id, progress, completed, claimed, started_at FROM user_quests WHERE email = $1",
       [email]
     );
 
@@ -30,21 +27,34 @@ export function questRoutes(pool: any) {
       userQuestMap[row.quest_id] = row;
     }
 
-    const quests = QUESTS
-      // 1. Hide quests whose prerequisite hasn't been claimed yet
-      .filter((q: any) => {
-        if (!q.locked_by) return true;
-        return userQuestMap[q.locked_by]?.claimed === true;
-      })
-      // 2. Hide quests that are already claimed (completed + rewarded)
-      .filter((q: any) => {
-        return userQuestMap[q.id]?.claimed !== true;
-      })
+    // Determine which quests are now unlocked (locked_by is claimed)
+    const unlockedQuests = QUESTS.filter((q: any) => {
+      if (!q.locked_by) return true;
+      return userQuestMap[q.locked_by]?.claimed === true;
+    });
+
+    // For newly visible quests that have no DB row yet → insert with started_at = NOW()
+    // This is the key to "progress only counts from activation"
+    for (const q of unlockedQuests) {
+      if (!userQuestMap[q.id]) {
+        await pool.query(
+          `INSERT INTO user_quests (email, quest_id, progress, completed, claimed, started_at)
+           VALUES ($1, $2, 0, false, false, NOW())
+           ON CONFLICT (email, quest_id) DO NOTHING`,
+          [email, q.id]
+        );
+        // Reflect in the map so the map() below sees progress = 0
+        userQuestMap[q.id] = { progress: 0, completed: false, claimed: false };
+      }
+    }
+
+    const quests = unlockedQuests
+      // Hide quests already claimed
+      .filter((q: any) => userQuestMap[q.id]?.claimed !== true)
       .map((q: any) => {
-        const row = userQuestMap[q.id];
+        const row      = userQuestMap[q.id];
         const progress = row?.progress || 0;
         const goal     = q.goal;
-        // claimable = progress reached goal AND not yet claimed
         const claimable = progress >= goal && !row?.claimed;
 
         return {
@@ -56,8 +66,8 @@ export function questRoutes(pool: any) {
           goal,
           progress,
           remaining:   Math.max(goal - progress, 0),
-          claimable,  // explicit field — frontend uses this, not derived booleans
-          completed:   row?.completed || false,  // kept for icon logic
+          claimable,
+          completed:   row?.completed || false,
         };
       });
 
@@ -83,29 +93,28 @@ export function questRoutes(pool: any) {
 
     const row = result.rows[0];
 
-    // Guard: must be completed (progress >= goal)
     if (!row.completed) {
       return res.status(400).json({ error: "Quest not completed yet" });
     }
-
-    // Guard: must not already be claimed
     if (row.claimed) {
       return res.status(400).json({ error: "Already claimed" });
     }
 
-    // Mark as claimed — after this, transactions will never update this row again
     await pool.query(
       "UPDATE user_quests SET claimed = true WHERE email = $1 AND quest_id = $2",
       [email, questId]
     );
 
-    await addXP(pool, email, (quest as any).xp_reward);
+    // addXP now returns the new level if a level-up occurred
+    const newLevel = await addXP(pool, email, (quest as any).xp_reward);
     await addCoins(pool, email, (quest as any).coin_reward);
 
     res.json({
       message:     "Reward claimed",
       xp_reward:   (quest as any).xp_reward,
       coin_reward: (quest as any).coin_reward,
+      // level_up will be a number if the user just leveled up, otherwise null
+      level_up:    newLevel,
     });
   });
 

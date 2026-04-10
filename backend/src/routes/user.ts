@@ -1,5 +1,6 @@
 // src/routes/user.ts
-// Only change: SELECT now also returns coins and streak
+// Changes vs v2:
+//   - /profile SELECT now includes level, equipped_hat, equipped_glasses
 
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
@@ -7,12 +8,15 @@ import { authMiddleware } from "../middleware/auth";
 export function userRoutes(pool: any) {
   const router = Router();
 
-  // PROFILE — added coins, streak to SELECT
+  // PROFILE — includes level + equipped slots
   router.get("/profile", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
     const result = await pool.query(
-      "SELECT email, name, avatar, xp, coins, streak, monthly_income, income_day, role FROM users WHERE email = $1",
+      `SELECT email, name, avatar, xp, level, coins, streak,
+              equipped_hat, equipped_glasses,
+              monthly_income, income_day, role
+       FROM users WHERE email = $1`,
       [email]
     );
 
