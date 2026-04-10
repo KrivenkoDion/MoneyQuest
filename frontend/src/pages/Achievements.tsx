@@ -1,11 +1,9 @@
 // src/pages/Achievements.tsx
-// KEY CHANGES vs previous version:
-//   - Quest type updated: progress, goal, remaining, claimable fields
-//   - Each quest shows "X / Y" progress bar + "N left" text
-//   - Quests near completion (>=80%) are highlighted with a yellow border
-//   - Claim button uses q.claimable (from backend) — no derived logic in frontend
-//   - Claimed quests no longer appear (backend excludes them)
-//   - Shop unchanged except coins display
+// Changes vs v2:
+//   - Third tab: "🎒 Inventory" — shows owned items with Equip/Unequip buttons
+//   - Shop items show "Equip" button if owned (instead of just "Owned")
+//   - Claim quest shows level-up toast if backend returns level_up
+//   - Quest card unchanged from v2
 
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -28,78 +26,117 @@ type Quest = {
 type ShopItem = {
   id: string;
   name: string;
+  type: string;
   cost: number;
   owned: boolean;
+  equipped: boolean;
 };
 
 function Achievements() {
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const navigate  = useNavigate();
+  const token     = localStorage.getItem("token");
 
-  const [xp, setXp] = useState(0);
+  const [xp, setXp]       = useState(0);
+  const [level, setLevel] = useState(1);
   const [coins, setCoins] = useState(0);
-  const [quests, setQuests] = useState<Quest[]>([]);
-  const [items, setItems] = useState<ShopItem[]>([]);
-  const [tab, setTab] = useState<"quests" | "shop">("quests");
-  const [msg, setMsg] = useState("");
+  const [quests, setQuests]   = useState<Quest[]>([]);
+  const [items, setItems]     = useState<ShopItem[]>([]);
+  const [inventory, setInventory] = useState<ShopItem[]>([]);
+  const [tab, setTab]   = useState<"quests" | "shop" | "inventory">("quests");
+  const [msg, setMsg]   = useState("");
 
   useEffect(() => {
     if (!token) { navigate("/"); return; }
+    loadAll();
+  }, []);
+
+  const loadAll = () => {
     loadQuests();
     loadShop();
     loadProfile();
-  }, []);
+    loadInventory();
+  };
 
   const loadQuests = async () => {
-    const res = await fetch(`${API}/quests`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetch(`${API}/quests`, { headers: { Authorization: `Bearer ${token}` } });
     setQuests(await res.json());
   };
 
   const loadShop = async () => {
-    const res = await fetch(`${API}/shop`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res  = await fetch(`${API}/shop`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     setCoins(data.coins || 0);
     setItems(data.items || []);
   };
 
-  const loadProfile = async () => {
-    const res = await fetch(`${API}/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const loadInventory = async () => {
+    const res  = await fetch(`${API}/inventory`, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
-    setXp(data.user?.xp || 0);
+    setInventory(data.inventory || []);
+  };
+
+  const loadProfile = async () => {
+    const res  = await fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setXp(data.user?.xp    || 0);
+    setLevel(data.user?.level || 1);
   };
 
   const claimQuest = async (questId: string) => {
-    const res = await fetch(`${API}/quests/${questId}/claim`, {
+    const res  = await fetch(`${API}/quests/${questId}/claim`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     if (data.xp_reward !== undefined) {
-      showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed! 🎉`);
-      // Refresh everything after claim
-      loadQuests();
-      loadShop();
-      loadProfile();
+      const levelMsg = data.level_up ? `  ⬆️ Level ${data.level_up}!` : "";
+      showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed!${levelMsg} 🎉`);
+      loadAll();
     } else {
       showMsg(data.error || "Error");
     }
   };
 
   const buyItem = async (itemId: string) => {
-    const res = await fetch(`${API}/shop/buy/${itemId}`, {
+    const res  = await fetch(`${API}/shop/buy/${itemId}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
     if (data.item_id) {
-      showMsg("Item purchased! 🛍️");
+      showMsg("Added to inventory! 🛍️");
       loadShop();
+      loadInventory();
+    } else {
+      showMsg(data.error || "Error");
+    }
+  };
+
+  const equipItem = async (itemId: string) => {
+    const res  = await fetch(`${API}/shop/equip/${itemId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.item_id) {
+      showMsg("Equipped! ✨");
+      loadShop();
+      loadInventory();
+    } else {
+      showMsg(data.error || "Error");
+    }
+  };
+
+  const unequipItem = async (slot: string) => {
+    const res  = await fetch(`${API}/shop/unequip/${slot}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.slot) {
+      showMsg("Unequipped");
+      loadShop();
+      loadInventory();
     } else {
       showMsg(data.error || "Error");
     }
@@ -107,106 +144,55 @@ function Achievements() {
 
   const showMsg = (text: string) => {
     setMsg(text);
-    setTimeout(() => setMsg(""), 2500);
+    setTimeout(() => setMsg(""), 3000);
   };
 
   const ITEM_EMOJI: Record<string, string> = {
     glasses: "🕶️",
-    hat: "🎩",
+    monocle: "🧐",
+    hat:     "🎩",
+    crown:   "👑",
+    scarf:   "🧣",
   };
 
   const s: Record<string, any> = {
-    page: {
-      minHeight: "100vh", background: "#f5f5f0",
-      maxWidth: 390, margin: "0 auto",
-      fontFamily: "'Inter', sans-serif", paddingBottom: 100,
-    },
-    header: {
-      padding: "20px 24px", display: "flex",
-      justifyContent: "space-between", alignItems: "center",
-    },
+    page: { minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 },
+    header: { padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" },
     logo: { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
     badges: { display: "flex", gap: 8, alignItems: "center" },
-    xpBadge: {
-      padding: "6px 14px", background: "#1a1a2e", color: "white",
-      borderRadius: 20, fontSize: 13, fontWeight: 700,
-    },
-    coinBadge: {
-      padding: "6px 14px", background: "#c9a84c", color: "white",
-      borderRadius: 20, fontSize: 13, fontWeight: 700,
-    },
-    tabs: {
-      display: "flex", margin: "0 24px 20px",
-      background: "white", borderRadius: 14, padding: 4, gap: 4,
-    },
+    xpBadge:   { padding: "6px 12px", background: "#1a1a2e", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
+    levelBadge:{ padding: "6px 12px", background: "#3b5bdb", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
+    coinBadge: { padding: "6px 12px", background: "#c9a84c", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
+    tabs: { display: "flex", margin: "0 24px 20px", background: "white", borderRadius: 14, padding: 4, gap: 4 },
     tab: (active: boolean): React.CSSProperties => ({
       flex: 1, padding: "10px 0", borderRadius: 10, border: "none",
       background: active ? "#1a1a2e" : "transparent",
       color: active ? "white" : "#999",
-      fontSize: 14, fontWeight: 600, cursor: "pointer",
-      fontFamily: "'Inter', sans-serif",
+      fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif",
     }),
-    // Quest card: highlighted (near complete) vs normal
-    card: (nearComplete: boolean): React.CSSProperties => ({
-      background: "white", borderRadius: 20,
-      padding: "20px", margin: "0 24px 14px",
-      border: nearComplete ? "2px solid #c9a84c" : "2px solid transparent",
+    card: (highlight: boolean): React.CSSProperties => ({
+      background: "white", borderRadius: 20, padding: "20px", margin: "0 24px 14px",
+      border: highlight ? "2px solid #c9a84c" : "2px solid transparent",
     }),
     questTitle: { margin: "0 0 3px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
     questDesc:  { margin: "0 0 10px", fontSize: 13, color: "#999" },
     rewardRow:  { display: "flex", gap: 8, marginBottom: 12 },
-    xpChip: {
-      display: "inline-block", padding: "4px 10px",
-      background: "#f0f4ff", borderRadius: 20,
-      fontSize: 12, color: "#3b5bdb", fontWeight: 600,
-    },
-    coinChip: {
-      display: "inline-block", padding: "4px 10px",
-      background: "#fff8e7", borderRadius: 20,
-      fontSize: 12, color: "#c9a84c", fontWeight: 600,
-    },
-    progressBarBg: {
-      height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px",
-    },
-    progressLabel: {
-      display: "flex", justifyContent: "space-between",
-      fontSize: 12, color: "#999", marginBottom: 12,
-    },
-    claimBtn: {
-      padding: "10px 20px", borderRadius: 10, border: "none",
-      background: "#1a1a2e", color: "white",
-      fontSize: 13, fontWeight: 600, cursor: "pointer",
-    },
-    lockedBtn: {
-      padding: "10px 20px", borderRadius: 10, border: "none",
-      background: "#f0f0ea", color: "#bbb",
-      fontSize: 13, fontWeight: 600, cursor: "default",
-    },
-    itemEmoji: { fontSize: 40, marginBottom: 8, display: "block" },
-    itemName: { margin: "0 0 4px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
-    itemCost: { margin: "0 0 14px", fontSize: 13, color: "#c9a84c", fontWeight: 600 },
-    buyBtn: {
-      width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-      background: "#1a1a2e", color: "white",
-      fontSize: 14, fontWeight: 600, cursor: "pointer",
-    },
-    ownedBtn: {
-      width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
-      background: "#f0f0ea", color: "#999",
-      fontSize: 14, fontWeight: 600, cursor: "default",
-    },
-    toast: {
-      position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)",
-      background: "#1a1a2e", color: "white", borderRadius: 14,
-      padding: "12px 20px", fontSize: 14, fontWeight: 600,
-      zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
-    },
-    navBar: {
-      position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-      width: 390, background: "white", display: "flex",
-      justifyContent: "space-around", padding: "12px 0 24px",
-      borderTop: "1px solid #f0f0ea",
-    },
+    xpChip:   { display: "inline-block", padding: "4px 10px", background: "#f0f4ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 600 },
+    coinChip: { display: "inline-block", padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 },
+    progressBarBg:   { height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px" },
+    progressLabel:   { display: "flex", justifyContent: "space-between", fontSize: 12, color: "#999", marginBottom: 12 },
+    claimBtn:  { padding: "10px 20px", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+    lockedBtn: { padding: "10px 20px", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#bbb", fontSize: 13, fontWeight: 600, cursor: "default" },
+    itemCard:  { background: "white", borderRadius: 20, padding: "16px", textAlign: "center" as const },
+    itemEmoji: { fontSize: 36, marginBottom: 6, display: "block" },
+    itemName:  { margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1a1a2e" },
+    itemCost:  { margin: "0 0 10px", fontSize: 12, color: "#c9a84c", fontWeight: 600 },
+    equipBadge:{ display: "inline-block", padding: "2px 8px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#4caf50", fontWeight: 600, marginBottom: 8 },
+    buyBtn:    { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+    ownedBtn:  { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#e8f0fe", color: "#3b5bdb", fontSize: 13, fontWeight: 600, cursor: "pointer" },
+    unequipBtn:{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#999", fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 6 },
+    toast: { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 14, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" },
+    navBar: { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" },
     navItem: (active: boolean): React.CSSProperties => ({
       display: "flex", flexDirection: "column", alignItems: "center",
       gap: 4, fontSize: 10, color: active ? "#1a1a2e" : "#999",
@@ -218,68 +204,59 @@ function Achievements() {
   return (
     <div style={s.page}>
 
-      {/* TOAST */}
       {msg && <div style={s.toast}>{msg}</div>}
 
       {/* HEADER */}
       <div style={s.header}>
         <span style={s.logo}>MoneyQuest</span>
         <div style={s.badges}>
-          <span style={s.xpBadge}>⭐ {xp} XP</span>
+          <span style={s.levelBadge}>Lv.{level}</span>
+          <span style={s.xpBadge}>⭐ {xp}</span>
           <span style={s.coinBadge}>🪙 {coins}</span>
         </div>
       </div>
 
       {/* TABS */}
       <div style={s.tabs}>
-        <button style={s.tab(tab === "quests")} onClick={() => setTab("quests")}>🏆 Quests</button>
-        <button style={s.tab(tab === "shop")}   onClick={() => setTab("shop")}>🛒 Shop</button>
+        <button style={s.tab(tab === "quests")}    onClick={() => setTab("quests")}>🏆 Quests</button>
+        <button style={s.tab(tab === "shop")}      onClick={() => setTab("shop")}>🛒 Shop</button>
+        <button style={s.tab(tab === "inventory")} onClick={() => setTab("inventory")}>🎒 Items</button>
       </div>
 
-      {/* QUESTS TAB */}
+      {/* ── QUESTS TAB ── */}
       {tab === "quests" && (
         <>
           {quests.length === 0 && (
             <div style={{ textAlign: "center", padding: "40px 24px", color: "#999", fontSize: 14 }}>
-              All quests completed! 🎉 Check back later.
+              All quests completed! 🎉
             </div>
           )}
           {quests.map((q) => {
             const pct         = Math.min((q.progress / q.goal) * 100, 100);
-            const nearComplete = pct >= 80 && !q.claimable; // highlight but not yet claimable
-
+            const highlight   = pct >= 80 || q.claimable;
             return (
-              <div key={q.id} style={s.card(nearComplete || q.claimable)}>
+              <div key={q.id} style={s.card(highlight)}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
                     <p style={s.questTitle}>{q.title}</p>
                     <p style={s.questDesc}>{q.description}</p>
-                    {/* Reward chips */}
                     <div style={s.rewardRow}>
                       <span style={s.xpChip}>+{q.xp_reward} XP</span>
                       <span style={s.coinChip}>+{q.coin_reward} 🪙</span>
                     </div>
                   </div>
-                  <span style={{ fontSize: 28, marginLeft: 12 }}>
-                    {q.claimable ? "🎁" : "🔒"}
-                  </span>
+                  <span style={{ fontSize: 28, marginLeft: 12 }}>{q.claimable ? "🎁" : "🔒"}</span>
                 </div>
 
-                {/* Progress bar */}
                 <div style={s.progressBarBg}>
-                  <div style={{
-                    height: "100%", borderRadius: 3,
-                    background: q.claimable ? "#4caf50" : pct >= 80 ? "#c9a84c" : "#1a1a2e",
-                    width: `${pct}%`,
-                    transition: "width 0.3s",
-                  }} />
+                  <div style={{ height: "100%", borderRadius: 3, width: `${pct}%`, transition: "width 0.3s",
+                    background: q.claimable ? "#4caf50" : pct >= 80 ? "#c9a84c" : "#1a1a2e" }} />
                 </div>
                 <div style={s.progressLabel}>
                   <span>{q.progress} / {q.goal}</span>
-                  <span>{q.remaining > 0 ? `${q.remaining} left` : "Ready to claim!"}</span>
+                  <span>{q.remaining > 0 ? `${q.remaining} left` : "Ready!"}</span>
                 </div>
 
-                {/* Action button — uses q.claimable from backend, no frontend guessing */}
                 {q.claimable ? (
                   <button style={s.claimBtn} onClick={() => claimQuest(q.id)}>
                     Claim +{q.xp_reward} XP +{q.coin_reward} 🪙
@@ -295,30 +272,28 @@ function Achievements() {
         </>
       )}
 
-      {/* SHOP TAB */}
+      {/* ── SHOP TAB ── */}
       {tab === "shop" && (
         <>
           <div style={{ margin: "0 24px 16px", padding: "14px 20px", background: "white", borderRadius: 16 }}>
             <p style={{ margin: 0, fontSize: 13, color: "#999" }}>Your balance</p>
-            <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 800, color: "#1a1a2e" }}>🪙 {coins} coins</p>
+            <p style={{ margin: "4px 0 0", fontSize: 22, fontWeight: 800, color: "#1a1a2e" }}>🪙 {coins} coins</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "0 24px" }}>
             {items.map((item) => (
-              <div key={item.id} style={{ background: "white", borderRadius: 20, padding: "20px", textAlign: "center" as const }}>
+              <div key={item.id} style={s.itemCard}>
                 <span style={s.itemEmoji}>{ITEM_EMOJI[item.id] || "🎁"}</span>
                 <p style={s.itemName}>{item.name}</p>
-                <p style={s.itemCost}>🪙 {item.cost} coins</p>
+                <p style={s.itemCost}>🪙 {item.cost}</p>
+                {item.equipped && <span style={s.equipBadge}>✓ Equipped</span>}
                 {item.owned ? (
-                  <button style={s.ownedBtn} disabled>Owned</button>
+                  <button style={s.ownedBtn} onClick={() => equipItem(item.id)}>
+                    {item.equipped ? "Re-equip" : "Equip"}
+                  </button>
                 ) : (
                   <button
-                    style={{
-                      ...s.buyBtn,
-                      background: coins >= item.cost ? "#1a1a2e" : "#e8e8e0",
-                      color: coins >= item.cost ? "white" : "#999",
-                      cursor: coins >= item.cost ? "pointer" : "default",
-                    }}
+                    style={{ ...s.buyBtn, background: coins >= item.cost ? "#1a1a2e" : "#e8e8e0", color: coins >= item.cost ? "white" : "#999", cursor: coins >= item.cost ? "pointer" : "default" }}
                     onClick={() => coins >= item.cost && buyItem(item.id)}
                   >
                     {coins >= item.cost ? "Buy" : "Need more 🪙"}
@@ -327,6 +302,37 @@ function Achievements() {
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {/* ── INVENTORY TAB ── */}
+      {tab === "inventory" && (
+        <>
+          {inventory.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 24px", color: "#999", fontSize: 14 }}>
+              No items yet. Buy something from the shop! 🛒
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "0 24px" }}>
+              {inventory.map((item) => (
+                <div key={item.id} style={s.itemCard}>
+                  <span style={s.itemEmoji}>{ITEM_EMOJI[item.id] || "🎁"}</span>
+                  <p style={s.itemName}>{item.name}</p>
+                  <p style={{ margin: "0 0 8px", fontSize: 11, color: "#999", textTransform: "uppercase" as const }}>{item.type}</p>
+                  {item.equipped && <span style={s.equipBadge}>✓ Equipped</span>}
+                  {item.equipped ? (
+                    <button style={s.unequipBtn} onClick={() => unequipItem(item.type)}>
+                      Unequip
+                    </button>
+                  ) : (
+                    <button style={s.ownedBtn} onClick={() => equipItem(item.id)}>
+                      Equip
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 
