@@ -1,9 +1,8 @@
 // src/pages/Achievements.tsx
-// Changes vs v2:
-//   - Third tab: "🎒 Inventory" — shows owned items with Equip/Unequip buttons
-//   - Shop items show "Equip" button if owned (instead of just "Owned")
-//   - Claim quest shows level-up toast if backend returns level_up
-//   - Quest card unchanged from v2
+// Added vs previous:
+//   - Lootbox count badge in header
+//   - Quest claim shows lootbox_granted toast
+//   - Everything else unchanged
 
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -33,17 +32,18 @@ type ShopItem = {
 };
 
 function Achievements() {
-  const navigate  = useNavigate();
-  const token     = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const token    = localStorage.getItem("token");
 
-  const [xp, setXp]       = useState(0);
-  const [level, setLevel] = useState(1);
-  const [coins, setCoins] = useState(0);
+  const [xp, setXp]           = useState(0);
+  const [level, setLevel]     = useState(1);
+  const [coins, setCoins]     = useState(0);
+  const [lootboxes, setLootboxes] = useState(0);
   const [quests, setQuests]   = useState<Quest[]>([]);
   const [items, setItems]     = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<ShopItem[]>([]);
-  const [tab, setTab]   = useState<"quests" | "shop" | "inventory">("quests");
-  const [msg, setMsg]   = useState("");
+  const [tab, setTab]         = useState<"quests" | "shop" | "inventory">("quests");
+  const [msg, setMsg]         = useState("");
 
   useEffect(() => {
     if (!token) { navigate("/"); return; }
@@ -55,6 +55,7 @@ function Achievements() {
     loadShop();
     loadProfile();
     loadInventory();
+    loadLootboxes();
   };
 
   const loadQuests = async () => {
@@ -82,6 +83,12 @@ function Achievements() {
     setLevel(data.user?.level || 1);
   };
 
+  const loadLootboxes = async () => {
+    const res  = await fetch(`${API}/lootbox`, { headers: { Authorization: `Bearer ${token}` } });
+    const data = await res.json();
+    setLootboxes(data.lootboxes || 0);
+  };
+
   const claimQuest = async (questId: string) => {
     const res  = await fetch(`${API}/quests/${questId}/claim`, {
       method: "POST",
@@ -89,8 +96,9 @@ function Achievements() {
     });
     const data = await res.json();
     if (data.xp_reward !== undefined) {
-      const levelMsg = data.level_up ? `  ⬆️ Level ${data.level_up}!` : "";
-      showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed!${levelMsg} 🎉`);
+      const levelMsg   = data.level_up ? `  ⬆️ Level ${data.level_up}!` : "";
+      const lootboxMsg = data.lootbox_granted ? "  📦 +1 Lootbox!" : "";
+      showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed!${levelMsg}${lootboxMsg} 🎉`);
       loadAll();
     } else {
       showMsg(data.error || "Error");
@@ -144,7 +152,7 @@ function Achievements() {
 
   const showMsg = (text: string) => {
     setMsg(text);
-    setTimeout(() => setMsg(""), 3000);
+    setTimeout(() => setMsg(""), 3500);
   };
 
   const ITEM_EMOJI: Record<string, string> = {
@@ -156,13 +164,14 @@ function Achievements() {
   };
 
   const s: Record<string, any> = {
-    page: { minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 },
-    header: { padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-    logo: { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
-    badges: { display: "flex", gap: 8, alignItems: "center" },
-    xpBadge:   { padding: "6px 12px", background: "#1a1a2e", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
-    levelBadge:{ padding: "6px 12px", background: "#3b5bdb", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
-    coinBadge: { padding: "6px 12px", background: "#c9a84c", color: "white", borderRadius: 20, fontSize: 12, fontWeight: 700 },
+    page:       { minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 },
+    header:     { padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+    logo:       { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
+    badges:     { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" as const },
+    levelBadge: { padding: "5px 10px", background: "#3b5bdb", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
+    xpBadge:    { padding: "5px 10px", background: "#1a1a2e", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
+    coinBadge:  { padding: "5px 10px", background: "#c9a84c", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
+    boxBadge:   { padding: "5px 10px", background: "#9333ea", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
     tabs: { display: "flex", margin: "0 24px 20px", background: "white", borderRadius: 14, padding: 4, gap: 4 },
     tab: (active: boolean): React.CSSProperties => ({
       flex: 1, padding: "10px 0", borderRadius: 10, border: "none",
@@ -177,10 +186,10 @@ function Achievements() {
     questTitle: { margin: "0 0 3px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
     questDesc:  { margin: "0 0 10px", fontSize: 13, color: "#999" },
     rewardRow:  { display: "flex", gap: 8, marginBottom: 12 },
-    xpChip:   { display: "inline-block", padding: "4px 10px", background: "#f0f4ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 600 },
-    coinChip: { display: "inline-block", padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 },
-    progressBarBg:   { height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px" },
-    progressLabel:   { display: "flex", justifyContent: "space-between", fontSize: 12, color: "#999", marginBottom: 12 },
+    xpChip:    { display: "inline-block", padding: "4px 10px", background: "#f0f4ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 600 },
+    coinChip:  { display: "inline-block", padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 },
+    progressBarBg: { height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px" },
+    progressLabel: { display: "flex", justifyContent: "space-between", fontSize: 12, color: "#999", marginBottom: 12 },
     claimBtn:  { padding: "10px 20px", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
     lockedBtn: { padding: "10px 20px", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#bbb", fontSize: 13, fontWeight: 600, cursor: "default" },
     itemCard:  { background: "white", borderRadius: 20, padding: "16px", textAlign: "center" as const },
@@ -191,8 +200,8 @@ function Achievements() {
     buyBtn:    { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
     ownedBtn:  { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#e8f0fe", color: "#3b5bdb", fontSize: 13, fontWeight: 600, cursor: "pointer" },
     unequipBtn:{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#999", fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 6 },
-    toast: { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 14, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" },
-    navBar: { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" },
+    toast:     { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 13, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap" as const, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", maxWidth: "90vw", overflow: "hidden" },
+    navBar:    { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" },
     navItem: (active: boolean): React.CSSProperties => ({
       display: "flex", flexDirection: "column", alignItems: "center",
       gap: 4, fontSize: 10, color: active ? "#1a1a2e" : "#999",
@@ -213,6 +222,7 @@ function Achievements() {
           <span style={s.levelBadge}>Lv.{level}</span>
           <span style={s.xpBadge}>⭐ {xp}</span>
           <span style={s.coinBadge}>🪙 {coins}</span>
+          {lootboxes > 0 && <span style={s.boxBadge}>📦 {lootboxes}</span>}
         </div>
       </div>
 
@@ -232,8 +242,8 @@ function Achievements() {
             </div>
           )}
           {quests.map((q) => {
-            const pct         = Math.min((q.progress / q.goal) * 100, 100);
-            const highlight   = pct >= 80 || q.claimable;
+            const pct       = Math.min((q.progress / q.goal) * 100, 100);
+            const highlight = pct >= 80 || q.claimable;
             return (
               <div key={q.id} style={s.card(highlight)}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -243,6 +253,7 @@ function Achievements() {
                     <div style={s.rewardRow}>
                       <span style={s.xpChip}>+{q.xp_reward} XP</span>
                       <span style={s.coinChip}>+{q.coin_reward} 🪙</span>
+                      <span style={{ display: "inline-block", padding: "4px 10px", background: "#f3e8ff", borderRadius: 20, fontSize: 12, color: "#9333ea", fontWeight: 600 }}>+1 📦</span>
                     </div>
                   </div>
                   <span style={{ fontSize: 28, marginLeft: 12 }}>{q.claimable ? "🎁" : "🔒"}</span>
@@ -259,7 +270,7 @@ function Achievements() {
 
                 {q.claimable ? (
                   <button style={s.claimBtn} onClick={() => claimQuest(q.id)}>
-                    Claim +{q.xp_reward} XP +{q.coin_reward} 🪙
+                    Claim +{q.xp_reward} XP +{q.coin_reward} 🪙 +1 📦
                   </button>
                 ) : (
                   <button style={s.lockedBtn} disabled>
@@ -338,18 +349,10 @@ function Achievements() {
 
       {/* BOTTOM NAV */}
       <div style={s.navBar}>
-        <button style={s.navItem(false)} onClick={() => navigate("/home")}>
-          <span style={{ fontSize: 20 }}>🏠</span>HOME
-        </button>
-        <button style={s.navItem(true)}>
-          <span style={{ fontSize: 20 }}>🏆</span>QUESTS
-        </button>
-        <button style={s.navItem(false)}>
-          <span style={{ fontSize: 20 }}>🎖️</span>MEDALS
-        </button>
-        <button style={s.navItem(false)} onClick={() => navigate("/profile")}>
-          <span style={{ fontSize: 20 }}>👤</span>PROFILE
-        </button>
+        <button style={s.navItem(false)} onClick={() => navigate("/home")}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
+        <button style={s.navItem(true)}><span style={{ fontSize: 20 }}>🏆</span>QUESTS</button>
+        <button style={s.navItem(false)}><span style={{ fontSize: 20 }}>🎖️</span>MEDALS</button>
+        <button style={s.navItem(false)} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
       </div>
 
     </div>

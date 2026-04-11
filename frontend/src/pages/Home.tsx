@@ -1,12 +1,12 @@
 // src/pages/Home.tsx
-// Changes vs original:
-//   - addTransaction checks if expense > balance BEFORE calling the API
-//   - Shows "Insufficient balance" error in modal instead of silently failing
-//   - Quest toast updated to mention both XP and coins
-//   - Everything else (styles, nav, layout) is unchanged
+// Added vs previous:
+//   - Lootbox card showing count with open button
+//   - LootboxModal integration
+//   - Fetches lootbox count from /lootbox on load
 
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { LootboxModal } from "../components/LootboxModal";
 
 type Transaction = {
   amount: number;
@@ -21,6 +21,8 @@ const CATEGORY_ICONS: Record<string, string> = {
   income:    "💼",
 };
 
+const API = "https://moneyquest-pcoq.onrender.com";
+
 function Home() {
   const navigate = useNavigate();
   const token    = localStorage.getItem("token");
@@ -32,18 +34,28 @@ function Home() {
   const [description, setDescription]  = useState("");
   const [category, setCategory]         = useState("food");
   const [questToast, setQuestToast]     = useState(false);
-  const [balanceError, setBalanceError] = useState(""); // ← NEW
+  const [balanceError, setBalanceError] = useState("");
+  const [lootboxCount, setLootboxCount] = useState(0);
+  const [showLootbox, setShowLootbox]   = useState(false);
 
   useEffect(() => {
     if (!token) navigate("/");
   }, [token, navigate]);
 
   useEffect(() => {
-    fetch("https://moneyquest-pcoq.onrender.com/transactions", {
+    fetch(`${API}/transactions`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => setTransactions(data))
+      .catch(() => {});
+
+    // Fetch lootbox count
+    fetch(`${API}/lootbox`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setLootboxCount(data.lootboxes || 0))
       .catch(() => {});
   }, [token]);
 
@@ -55,8 +67,6 @@ function Home() {
     const value = Number(amount);
     if (!value || value <= 0) return;
 
-    // ── Client-side balance check (mirrors backend) ──────────
-    // This gives instant feedback without a round-trip
     if (type === "expense" && value > balance) {
       setBalanceError(`Insufficient balance. Available: ${balance.toFixed(2)}€`);
       return;
@@ -69,18 +79,13 @@ function Home() {
       category:    type === "income" ? "income" : category,
     };
 
-    const res = await fetch("https://moneyquest-pcoq.onrender.com/transactions", {
+    const res = await fetch(`${API}/transactions`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ transaction: newTransaction }),
     });
 
     const data = await res.json();
-
-    // Handle backend rejection (e.g. daily limit, minimum amount)
     if (!res.ok) {
       setBalanceError(data.error || "Transaction failed");
       return;
@@ -166,6 +171,38 @@ function Home() {
         </div>
       </div>
 
+      {/* 🎁 LOOTBOX CARD */}
+      <div style={{
+        ...s.card,
+        background: lootboxCount > 0
+          ? "linear-gradient(135deg, #1a1a2e 0%, #2d2d5e 100%)"
+          : "white",
+        cursor: lootboxCount > 0 ? "pointer" : "default",
+      }}
+        onClick={() => lootboxCount > 0 && setShowLootbox(true)}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <p style={{ ...s.cardLabel, color: lootboxCount > 0 ? "#c9a84c" : "#999" }}>
+              Lootboxes
+            </p>
+            <h3 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: lootboxCount > 0 ? "white" : "#1a1a2e" }}>
+              {lootboxCount > 0 ? `${lootboxCount} ready to open!` : "No lootboxes yet"}
+            </h3>
+            <p style={{ margin: 0, fontSize: 13, color: lootboxCount > 0 ? "rgba(255,255,255,0.6)" : "#999" }}>
+              {lootboxCount > 0 ? "Tap to open →" : "Complete quests to earn them"}
+            </p>
+          </div>
+          <div style={{
+            fontSize: 44,
+            filter: lootboxCount > 0 ? "drop-shadow(0 0 12px rgba(201,168,76,0.8))" : "none",
+            animation: lootboxCount > 0 ? "pulse 2s infinite" : "none",
+          }}>
+            📦
+          </div>
+        </div>
+      </div>
+
       {/* ACTIVE QUEST CARD */}
       <div style={s.card}>
         <p style={s.cardLabel}>Active Quest</p>
@@ -200,7 +237,7 @@ function Home() {
         )}
       </div>
 
-      {/* MODAL */}
+      {/* TRANSACTION MODAL */}
       {showModal && (
         <div style={s.overlay} onClick={() => setShowModal(false)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
@@ -225,7 +262,6 @@ function Home() {
               onChange={(e) => { setAmount(e.target.value); setBalanceError(""); }}
             />
 
-            {/* Balance error message */}
             {balanceError && (
               <p style={{ color: "#e53935", fontSize: 13, margin: "-4px 0 12px", fontWeight: 500 }}>
                 ⚠️ {balanceError}
@@ -238,6 +274,17 @@ function Home() {
         </div>
       )}
 
+      {/* LOOTBOX MODAL */}
+      {showLootbox && (
+        <LootboxModal
+          lootboxCount={lootboxCount}
+          onClose={() => setShowLootbox(false)}
+          onOpened={(_reward, remaining) => {
+            setLootboxCount(remaining);
+          }}
+        />
+      )}
+
       {/* BOTTOM NAV */}
       <div style={s.navBar}>
         <button style={s.navItemActive}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
@@ -245,6 +292,13 @@ function Home() {
         <button style={s.navItem}><span style={{ fontSize: 20 }}>🎖️</span>MEDALS</button>
         <button style={s.navItem} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+      `}</style>
 
     </div>
   );
