@@ -1,8 +1,7 @@
 // src/routes/quests.ts
-// Changes vs v2:
-//   - When a quest row is first INSERTed (quest unlocked), started_at = NOW()
-//   - Claim returns level_up info if XP crossed a threshold
-//   - Everything else unchanged from v2
+// Added vs previous version:
+//   - Claiming a quest now grants 1 lootbox (UPDATE users SET lootboxes = lootboxes + 1)
+//   - Response includes lootbox_granted: true so frontend can show the reward
 
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
@@ -12,8 +11,7 @@ import { addXP, addCoins } from "../utils/xp";
 export function questRoutes(pool: any) {
   const router = Router();
 
-  // GET QUESTS
-  // Also ensures quest rows exist for newly unlocked quests (sets started_at = NOW())
+  // GET /quests
   router.get("/quests", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
@@ -27,14 +25,11 @@ export function questRoutes(pool: any) {
       userQuestMap[row.quest_id] = row;
     }
 
-    // Determine which quests are now unlocked (locked_by is claimed)
     const unlockedQuests = QUESTS.filter((q: any) => {
       if (!q.locked_by) return true;
       return userQuestMap[q.locked_by]?.claimed === true;
     });
 
-    // For newly visible quests that have no DB row yet → insert with started_at = NOW()
-    // This is the key to "progress only counts from activation"
     for (const q of unlockedQuests) {
       if (!userQuestMap[q.id]) {
         await pool.query(
@@ -43,13 +38,11 @@ export function questRoutes(pool: any) {
            ON CONFLICT (email, quest_id) DO NOTHING`,
           [email, q.id]
         );
-        // Reflect in the map so the map() below sees progress = 0
         userQuestMap[q.id] = { progress: 0, completed: false, claimed: false };
       }
     }
 
     const quests = unlockedQuests
-      // Hide quests already claimed
       .filter((q: any) => userQuestMap[q.id]?.claimed !== true)
       .map((q: any) => {
         const row      = userQuestMap[q.id];
@@ -74,7 +67,7 @@ export function questRoutes(pool: any) {
     res.json(quests);
   });
 
-  // CLAIM QUEST REWARD
+  // POST /quests/:questId/claim
   router.post("/quests/:questId/claim", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
     const { questId } = req.params;
@@ -105,16 +98,21 @@ export function questRoutes(pool: any) {
       [email, questId]
     );
 
-    // addXP now returns the new level if a level-up occurred
     const newLevel = await addXP(pool, email, (quest as any).xp_reward);
     await addCoins(pool, email, (quest as any).coin_reward);
 
+    // 🎁 Grant 1 lootbox for every quest claimed
+    await pool.query(
+      "UPDATE users SET lootboxes = lootboxes + 1 WHERE email = $1",
+      [email]
+    );
+
     res.json({
-      message:     "Reward claimed",
-      xp_reward:   (quest as any).xp_reward,
-      coin_reward: (quest as any).coin_reward,
-      // level_up will be a number if the user just leveled up, otherwise null
-      level_up:    newLevel,
+      message:          "Reward claimed",
+      xp_reward:        (quest as any).xp_reward,
+      coin_reward:      (quest as any).coin_reward,
+      level_up:         newLevel,
+      lootbox_granted:  true,
     });
   });
 

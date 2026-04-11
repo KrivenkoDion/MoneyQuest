@@ -487,6 +487,7 @@ import { transactionRoutes } from "./routes/transactions";
 import { questRoutes }       from "./routes/quests";
 import { shopRoutes }        from "./routes/shop";
 import { adminRoutes }       from "./routes/admin";
+import { lootboxRoutes }     from "./routes/lootbox";
 
 dotenv.config();
 
@@ -494,13 +495,11 @@ console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 const app = express();
 
-// PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -511,10 +510,9 @@ app.use(transactionRoutes(pool));
 app.use(questRoutes(pool));
 app.use(shopRoutes(pool));
 app.use(adminRoutes(pool));
+app.use(lootboxRoutes(pool));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-//fix
