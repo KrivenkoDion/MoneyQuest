@@ -146,7 +146,7 @@ function Profile() {
   const xpNeeded = xpForNextLevel(currentLevel);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 40 }}>
+    <div style={{ minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 }}>
 
       {/* HEADER */}
       <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -309,6 +309,23 @@ function Profile() {
         </button>
 
       </div>
+
+      {/* BOTTOM NAV */}
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" }}>
+        {([ 
+          { icon: "🏠", label: "HOME",    path: "/home",          active: false },
+          { icon: "🏆", label: "QUESTS",  path: "/achievements",  active: false },
+          { icon: "📊", label: "STATS",   path: "/stats",         active: false },
+          { icon: "👤", label: "PROFILE", path: "/profile",       active: true  },
+        ] as { icon: string; label: string; path: string; active: boolean }[]).map(item => (
+          <button key={item.label}
+            onClick={() => !item.active && navigate(item.path)}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: item.active ? "#1a1a2e" : "#999", fontWeight: item.active ? 700 : 400, cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>{item.label}
+          </button>
+        ))}
+      </div>
+
     </div>
   );
 }

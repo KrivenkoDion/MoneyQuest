@@ -351,7 +351,7 @@ function Achievements() {
       <div style={s.navBar}>
         <button style={s.navItem(false)} onClick={() => navigate("/home")}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
         <button style={s.navItem(true)}><span style={{ fontSize: 20 }}>🏆</span>QUESTS</button>
-        <button style={s.navItem(false)}><span style={{ fontSize: 20 }}>🎖️</span>MEDALS</button>
+        <button style={s.navItem(false)} onClick={() => navigate("/stats")}><span style={{ fontSize: 20 }}>📊</span>STATS</button>
         <button style={s.navItem(false)} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
       </div>
 
