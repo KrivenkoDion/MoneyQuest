@@ -1,10 +1,3 @@
-// src/pages/Profile.tsx
-// Changes vs v2:
-//   - Shows level badge and level progress bar (XP toward next level)
-//   - Character SVG renders equipped_hat and equipped_glasses overlays
-//   - Stat grid shows Level card
-//   - /profile now returns level, equipped_hat, equipped_glasses (from updated user.ts)
-
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -15,28 +8,17 @@ const CHARACTERS: Record<string, { fur: string; inner: string }> = {
   orange: { fur: "#C2703A", inner: "#E8967A" },
 };
 
-// XP thresholds (same formula as backend: level = floor(xp/100)+1, cap 20)
-function xpToLevel(xp: number): number {
-  return Math.min(Math.floor(xp / 100) + 1, 20);
-}
-function xpForNextLevel(level: number): number {
-  return level * 100; // XP needed to reach next level
-}
-function xpProgressInLevel(xp: number): number {
-  return xp % 100; // progress within current level
-}
+function xpToLevel(xp: number) { return Math.min(Math.floor(xp / 100) + 1, 20); }
+function xpForNextLevel(level: number) { return level * 100; }
+function xpProgressInLevel(xp: number) { return xp % 100; }
 
-function ChillGuy({
-  fur, inner,
-  equippedHat, equippedGlasses,
-}: {
+function ChillGuy({ fur, inner, equippedHat, equippedGlasses }: {
   fur: string; inner: string;
   equippedHat: string | null;
   equippedGlasses: string | null;
 }) {
   return (
-    <svg width="120" height="140" viewBox="0 0 200 230">
-      {/* Base character — unchanged from original */}
+    <svg width="120" height="140" viewBox="0 0 200 230" className="profile-bear">
       <ellipse cx="55"  cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(-15,55,60)" />
       <ellipse cx="145" cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(15,145,60)" />
       <ellipse cx="55"  cy="62"  rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
@@ -59,24 +41,12 @@ function ChillGuy({
       <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
       <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
       <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
-
-      {/* ── Equipped overlays ── */}
-
-      {/* HAT: simple rect on top of the head */}
       {equippedHat === "hat" && (
-        <g>
-          <rect x="72" y="38" width="56" height="8"  rx="3" fill="#2D1B0E" />
-          <rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" />
-        </g>
+        <g><rect x="72" y="38" width="56" height="8" rx="3" fill="#2D1B0E" /><rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" /></g>
       )}
       {equippedHat === "crown" && (
-        <g>
-          <polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" />
-          <rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" />
-        </g>
+        <g><polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" /><rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" /></g>
       )}
-
-      {/* GLASSES: two circles over the eyes */}
       {equippedGlasses === "glasses" && (
         <g>
           <circle cx="78"  cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
@@ -96,23 +66,17 @@ function ChillGuy({
 
 function Profile() {
   const navigate = useNavigate();
-  const [user, setUser]                 = useState<any>(null);
+  const [user, setUser]                   = useState<any>(null);
   const [showIncomeEdit, setShowIncomeEdit] = useState(false);
-  const [incomeAmount, setIncomeAmount] = useState("");
-  const [incomeDay, setIncomeDay]       = useState("1");
+  const [incomeAmount, setIncomeAmount]   = useState("");
+  const [incomeDay, setIncomeDay]         = useState("1");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { navigate("/"); return; }
-
     fetch("https://moneyquest-pcoq.onrender.com/profile", {
       headers: { Authorization: "Bearer " + token },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.user) navigate("/");
-        else setUser(data.user);
-      })
+    }).then(r => r.json()).then(d => { if (!d.user) navigate("/"); else setUser(d.user); })
       .catch(() => navigate("/"));
   }, []);
 
@@ -127,208 +91,244 @@ function Profile() {
     setShowIncomeEdit(false);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const handleLogout = () => { localStorage.removeItem("token"); navigate("/"); };
 
-  if (!user) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#f5f5f0", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <p style={{ color: "#999" }}>Loading...</p>
-      </div>
-    );
-  }
+  if (!user) return (
+    <div style={{ minHeight: "100vh", background: "#efefea", display: "flex", justifyContent: "center", alignItems: "center", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
+      <p style={{ color: "#bbb", fontWeight: 600 }}>Loading…</p>
+    </div>
+  );
 
-  const charColors = CHARACTERS[user.avatar] || CHARACTERS.brown;
+  const charColors   = CHARACTERS[user.avatar] || CHARACTERS.brown;
   const currentLevel = user.level || xpToLevel(user.xp || 0);
-  const xpInLevel = xpProgressInLevel(user.xp || 0);
-  const xpNeeded = xpForNextLevel(currentLevel);
+  const xpInLevel    = xpProgressInLevel(user.xp || 0);
+  const xpNeeded     = xpForNextLevel(currentLevel);
+  const xpPct        = (xpInLevel / xpNeeded) * 100;
+
+  const NAV_ITEMS = [
+    { icon: "🏠", label: "HOME",    path: "/home",         active: false },
+    { icon: "🏆", label: "QUESTS",  path: "/achievements", active: false },
+    { icon: "📊", label: "STATS",   path: "/stats",        active: false },
+    { icon: "👤", label: "PROFILE", path: "/profile",      active: true  },
+  ] as const;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 }}>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        *, *::before, *::after { box-sizing: border-box; }
 
-      {/* HEADER */}
-      <div style={{ padding: "20px 24px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontWeight: 700, fontSize: 16 }}>MoneyQuest</span>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e8e8e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🔔</div>
-      </div>
+        @keyframes prof-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .prof-page { animation: prof-in 0.35s ease both; }
 
-      <div style={{ padding: "20px 24px 0" }}>
+        @keyframes breathe {
+          0%,100% { transform: scaleY(1) translateY(0); }
+          50%      { transform: scaleY(1.03) translateY(-2px); }
+        }
+        .profile-bear { transform-origin: 50% 90%; animation: breathe 3.6s ease-in-out infinite; }
 
-        {/* CHARACTER CARD — equipped items reflected on SVG */}
-        <div style={{ background: "white", borderRadius: 24, padding: "24px 20px", display: "flex", alignItems: "center", gap: 20, marginBottom: 12 }}>
-          <div style={{ flexShrink: 0 }}>
-            <ChillGuy
-              fur={charColors.fur}
-              inner={charColors.inner}
-              equippedHat={user.equipped_hat || null}
-              equippedGlasses={user.equipped_glasses || null}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ margin: "0 0 2px", fontSize: 20, fontWeight: 700, color: "#1a1a2e" }}>
-              {user.name || "User"}
-            </h2>
-            <p style={{ margin: "0 0 8px", fontSize: 12, color: "#999" }}>{user.email}</p>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ padding: "4px 10px", background: "#e8f0fe", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 700 }}>
-                Lv.{currentLevel}
-              </span>
-              <span style={{ padding: "4px 10px", background: "#f5f5f0", borderRadius: 20, fontSize: 12, color: "#1a1a2e", fontWeight: 600 }}>
-                ⭐ {user.xp || 0} XP
-              </span>
-              <span style={{ padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 }}>
-                🪙 {user.coins || 0}
-              </span>
+        @keyframes xp-in { from { width: 0 !important; } }
+        .xp-prof { animation: xp-in 0.9s cubic-bezier(0.22,1,0.36,1) both 0.3s; }
+
+        .p-card {
+          background: white; border-radius: 22px; padding: 20px;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.055);
+        }
+        .p-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 0; border-top: 1px solid #f0f0ea; cursor: pointer;
+          transition: background 0.14s;
+        }
+        .p-row:hover { background: #fafaf8; }
+
+        .tap {
+          -webkit-tap-highlight-color: transparent;
+          transition: transform 0.13s cubic-bezier(0.34,1.5,0.64,1), opacity 0.13s;
+          cursor: pointer;
+        }
+        .tap:active { transform: scale(0.94) !important; opacity: 0.8; }
+
+        .nav-btn {
+          display: flex; flex-direction: column; align-items: center;
+          gap: 3px; font-size: 10px; border: none; background: none;
+          font-family: inherit; cursor: pointer; padding: 0; position: relative;
+          -webkit-tap-highlight-color: transparent;
+          transition: transform 0.15s, color 0.2s;
+        }
+        .nav-btn:active { transform: scale(0.84); }
+        .nav-icon { font-size: 20px; transition: transform 0.2s cubic-bezier(0.34,1.5,0.64,1); display: block; }
+        .nav-btn:hover .nav-icon { transform: translateY(-3px); }
+        .nav-btn.active .nav-icon { transform: scale(1.12); }
+        .nav-pip { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); width: 28px; height: 3px; background: #11112a; border-radius: 0 0 4px 4px; }
+        .mq-input:focus { border-color: #11112a !important; box-shadow: 0 0 0 3px rgba(17,17,42,0.08) !important; outline: none; }
+      `}</style>
+
+      <div className="prof-page" style={{ minHeight: "100vh", background: "#efefea", maxWidth: 390, margin: "0 auto", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif", paddingBottom: 100 }}>
+
+        {/* HEADER */}
+        <div style={{ padding: "24px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontWeight: 900, fontSize: 18, color: "#11112a", letterSpacing: "-0.4px" }}>MoneyQuest</span>
+          <div className="tap" style={{ width: 40, height: 40, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>🔔</div>
+        </div>
+
+        <div style={{ padding: "0 20px" }}>
+
+          {/* CHARACTER CARD */}
+          <div className="p-card" style={{ display: "flex", alignItems: "center", gap: 20, padding: "22px 20px" }}>
+            <div style={{ flexShrink: 0 }}>
+              <ChillGuy fur={charColors.fur} inner={charColors.inner} equippedHat={user.equipped_hat || null} equippedGlasses={user.equipped_glasses || null} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ margin: "0 0 2px", fontSize: 20, fontWeight: 900, color: "#11112a", letterSpacing: "-0.4px" }}>
+                {user.name || "User"}
+              </h2>
+              <p style={{ margin: "0 0 10px", fontSize: 12, color: "#aaa", fontWeight: 500 }}>{user.email}</p>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" as const }}>
+                <span style={{ padding: "4px 10px", background: "#eff3ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 800 }}>Lv.{currentLevel}</span>
+                <span style={{ padding: "4px 10px", background: "#f0f0ea", borderRadius: 20, fontSize: 12, color: "#11112a", fontWeight: 700 }}>⭐ {user.xp || 0} XP</span>
+                <span style={{ padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 700 }}>🪙 {user.coins || 0}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* LEVEL PROGRESS BAR */}
-        <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>Level {currentLevel}</span>
-            {currentLevel < 20 && (
-              <span style={{ fontSize: 12, color: "#999" }}>→ Level {currentLevel + 1}</span>
-            )}
-          </div>
-          <div style={{ height: 8, borderRadius: 4, background: "#f0f0ea" }}>
-            <div style={{
-              width: `${(xpInLevel / xpNeeded) * 100}%`,
-              height: "100%", borderRadius: 4,
-              background: "linear-gradient(90deg, #3b5bdb, #1a1a2e)",
-              transition: "width 0.3s",
-            }} />
-          </div>
-          <p style={{ margin: "6px 0 0", fontSize: 12, color: "#999" }}>
-            {currentLevel < 20
-              ? `${xpInLevel} / ${xpNeeded} XP to next level`
-              : "Max level reached! 🎉"}
-          </p>
-        </div>
-
-        {/* STATS GRID */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-          <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Coins</p>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#c9a84c" }}>🪙 {user.coins || 0}</p>
-          </div>
-          <div style={{ background: "white", borderRadius: 16, padding: "16px 20px" }}>
-            <p style={{ margin: "0 0 4px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Daily Streak</p>
-            <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#e53935" }}>
-              🔥 {user.streak || 0} day{user.streak !== 1 ? "s" : ""}
+          {/* XP PROGRESS */}
+          <div className="p-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontWeight: 800, fontSize: 15, color: "#11112a" }}>Level {currentLevel}</span>
+              {currentLevel < 20 && <span style={{ fontSize: 12, color: "#aaa", fontWeight: 500 }}>→ Level {currentLevel + 1}</span>}
+            </div>
+            <div style={{ height: 9, borderRadius: 5, background: "#f0f0ea", overflow: "hidden" }}>
+              <div
+                className="xp-prof"
+                style={{
+                  width: `${xpPct}%`, height: "100%", borderRadius: 5,
+                  background: "linear-gradient(90deg, #3b5bdb, #11112a)",
+                  boxShadow: "0 0 8px rgba(59,91,219,0.4)",
+                }}
+              />
+            </div>
+            <p style={{ margin: "8px 0 0", fontSize: 12, color: "#aaa", fontWeight: 500 }}>
+              {currentLevel < 20 ? `${xpInLevel} / ${xpNeeded} XP to next level` : "Max level reached! 🎉"}
             </p>
           </div>
-        </div>
 
-        {/* MONTHLY INCOME — unchanged */}
-        <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-          <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Monthly Income</p>
-          {!showIncomeEdit ? (
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1a1a2e" }}>
-                  {user.monthly_income ? `${user.monthly_income} €` : "Not set"}
-                </p>
-                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#999" }}>
-                  {user.income_day ? `Every month on day ${user.income_day}` : "Set up automatic top-ups"}
-                </p>
-              </div>
-              <button onClick={() => setShowIncomeEdit(true)} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-                {user.monthly_income ? "Edit" : "Set up →"}
-              </button>
+          {/* STATS GRID */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+            <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+              <p style={{ margin: "0 0 4px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Coins</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#c9a84c", letterSpacing: "-0.4px" }}>🪙 {user.coins || 0}</p>
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input type="number" value={incomeAmount} onChange={(e) => setIncomeAmount(e.target.value)} placeholder="1500"
-                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box", outline: "none" }} />
-              <input type="number" min="1" max="28" value={incomeDay} onChange={(e) => setIncomeDay(e.target.value)} placeholder="1"
-                style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: "1.5px solid #e8e8e0", fontSize: 15, boxSizing: "border-box", outline: "none" }} />
-              <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleSaveIncome} style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Save</button>
-                <button onClick={() => setShowIncomeEdit(false)} style={{ flex: 1, padding: 12, borderRadius: 10, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+            <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+              <p style={{ margin: "0 0 4px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Streak</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#e53935", letterSpacing: "-0.4px" }}>🔥 {user.streak || 0}d</p>
+            </div>
+          </div>
+
+          {/* MONTHLY INCOME */}
+          <div className="p-card">
+            <p style={{ margin: "0 0 12px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Monthly Income</p>
+            {!showIncomeEdit ? (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#11112a", letterSpacing: "-0.4px" }}>
+                    {user.monthly_income ? `${user.monthly_income} €` : "Not set"}
+                  </p>
+                  <p style={{ margin: "4px 0 0", fontSize: 13, color: "#aaa", fontWeight: 500 }}>
+                    {user.income_day ? `Every month on day ${user.income_day}` : "Set up automatic top-ups"}
+                  </p>
+                </div>
+                <button className="tap" onClick={() => setShowIncomeEdit(true)} style={{ padding: "10px 18px", borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 13, fontWeight: 700, fontFamily: "inherit" }}>
+                  {user.monthly_income ? "Edit" : "Set up →"}
+                </button>
               </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <input type="number" value={incomeAmount} onChange={e => setIncomeAmount(e.target.value)} placeholder="1500" className="mq-input"
+                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 15, fontFamily: "inherit", fontWeight: 600 }} />
+                <input type="number" min="1" max="28" value={incomeDay} onChange={e => setIncomeDay(e.target.value)} placeholder="Day 1–28" className="mq-input"
+                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 15, fontFamily: "inherit", fontWeight: 600 }} />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="tap" onClick={handleSaveIncome} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}>Save</button>
+                  <button className="tap" onClick={() => setShowIncomeEdit(false)} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 14, fontWeight: 600, fontFamily: "inherit" }}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* PERSONAL INFO */}
+          <div className="p-card" style={{ padding: "8px 20px" }}>
+            <p style={{ margin: "10px 0 2px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Personal Info</p>
+            {[{ label: "Account Details", icon: "👤" }, { label: "Linked Banks", icon: "🏦" }].map(item => (
+              <div key={item.label} className="p-row" style={{ borderRadius: 8, margin: "0 -4px", padding: "14px 4px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  <span style={{ fontSize: 15, color: "#11112a", fontWeight: 500 }}>{item.label}</span>
+                </div>
+                <span style={{ color: "#ccc", fontSize: 18 }}>›</span>
+              </div>
+            ))}
+          </div>
+
+          {/* SETTINGS */}
+          <div className="p-card" style={{ padding: "8px 20px" }}>
+            <p style={{ margin: "10px 0 2px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Settings</p>
+            {[{ label: "Security & Privacy", icon: "🔒" }, { label: "Notifications", icon: "🔔" }, { label: "Appearance", icon: "🌙" }].map(item => (
+              <div key={item.label} className="p-row" style={{ borderRadius: 8, margin: "0 -4px", padding: "14px 4px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  <span style={{ fontSize: 15, color: "#11112a", fontWeight: 500 }}>{item.label}</span>
+                </div>
+                <span style={{ color: "#ccc", fontSize: 18 }}>›</span>
+              </div>
+            ))}
+          </div>
+
+          {/* ADMIN DEV TOOLS */}
+          {user.role === "admin" && (
+            <div className="p-card">
+              <p style={{ margin: "0 0 12px", fontSize: 10, color: "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Dev Tools</p>
+              <button
+                className="tap"
+                onClick={async () => {
+                  const token = localStorage.getItem("token");
+                  const r = await fetch("https://moneyquest-pcoq.onrender.com/admin/add-xp", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ amount: 100 }),
+                  });
+                  const d = await r.json();
+                  if (d.amount) setUser({ ...user, xp: (user.xp || 0) + d.amount });
+                }}
+                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "#fff8e7", color: "#c9a84c", fontSize: 14, fontWeight: 800, fontFamily: "inherit" }}
+              >⚡ +100 XP (Dev)</button>
             </div>
           )}
-        </div>
 
-        {/* PERSONAL INFO — unchanged */}
-        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
-          <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Personal Info</p>
-          {[{ label: "Account Details", icon: "👤" }, { label: "Linked Banks", icon: "🏦" }].map((item) => (
-            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderTop: "1px solid #f5f5f0", cursor: "pointer" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span style={{ fontSize: 15, color: "#1a1a2e" }}>{item.label}</span>
-              </div>
-              <span style={{ color: "#ccc" }}>›</span>
-            </div>
-          ))}
-        </div>
-
-        {/* SETTINGS — unchanged */}
-        <div style={{ background: "white", borderRadius: 16, padding: "8px 0", marginBottom: 12 }}>
-          <p style={{ margin: "8px 20px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Settings</p>
-          {[{ label: "Security & Privacy", icon: "🔒" }, { label: "Notifications", icon: "🔔" }, { label: "Appearance", icon: "🌙" }].map((item) => (
-            <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderTop: "1px solid #f5f5f0", cursor: "pointer" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 18 }}>{item.icon}</span>
-                <span style={{ fontSize: 15, color: "#1a1a2e" }}>{item.label}</span>
-              </div>
-              <span style={{ color: "#ccc" }}>›</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ADMIN DEV TOOLS — unchanged */}
-        {user.role === "admin" && (
-          <div style={{ background: "white", borderRadius: 16, padding: "16px 20px", marginBottom: 12 }}>
-            <p style={{ margin: "0 0 12px", fontSize: 11, color: "#999", textTransform: "uppercase", letterSpacing: 1 }}>Dev Tools</p>
-            <button
-              onClick={async () => {
-                const token = localStorage.getItem("token");
-                const res = await fetch("https://moneyquest-pcoq.onrender.com/admin/add-xp", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ amount: 100 }),
-                });
-                const data = await res.json();
-                if (data.amount) setUser({ ...user, xp: (user.xp || 0) + data.amount });
-              }}
-              style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: "#fff8e7", color: "#c9a84c", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-            >
-              ⚡ +100 XP (Dev)
-            </button>
-          </div>
-        )}
-
-        {/* LOGOUT */}
-        <button onClick={handleLogout} style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#fff0f0", color: "#e53935", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-          Sign out
-        </button>
-
-      </div>
-
-      {/* BOTTOM NAV */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "10px 0 26px", borderTop: "1px solid #efefec", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)" }}>
-        {([ 
-          { icon: "🏠", label: "HOME",    path: "/home",          active: false },
-          { icon: "🏆", label: "QUESTS",  path: "/achievements",  active: false },
-          { icon: "📊", label: "STATS",   path: "/stats",         active: false },
-          { icon: "👤", label: "PROFILE", path: "/profile",       active: true  },
-        ] as { icon: string; label: string; path: string; active: boolean }[]).map(item => (
-          <button key={item.label}
-            onClick={() => !item.active && navigate(item.path)}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: item.active ? "#1a1a2e" : "#bbb", fontWeight: item.active ? 700 : 400, cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" }}>
-            <span style={{ fontSize: 20 }}>{item.icon}</span>
-            {item.label}
-            {item.active && <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#1a1a2e", marginTop: 1 }} />}
+          {/* LOGOUT */}
+          <button
+            className="tap"
+            onClick={handleLogout}
+            style={{ width: "100%", padding: 17, borderRadius: 16, border: "none", background: "#fff0f0", color: "#c62828", fontSize: 15, fontWeight: 700, fontFamily: "inherit", marginBottom: 12 }}
+          >
+            Sign out
           </button>
-        ))}
-      </div>
+        </div>
 
-    </div>
+        {/* BOTTOM NAV */}
+        <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 28px", borderTop: "1px solid #eaeae4", boxShadow: "0 -6px 24px rgba(0,0,0,0.06)" }}>
+          {NAV_ITEMS.map(item => (
+            <button key={item.label} className={`nav-btn ${item.active ? "active" : ""}`}
+              style={{ color: item.active ? "#11112a" : "#bbb", fontWeight: item.active ? 800 : 500, letterSpacing: "0.3px" }}
+              onClick={() => !item.active && navigate(item.path)}>
+              {item.active && <span className="nav-pip" />}
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 

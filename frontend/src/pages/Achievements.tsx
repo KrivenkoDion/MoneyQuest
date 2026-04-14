@@ -1,9 +1,3 @@
-// src/pages/Achievements.tsx
-// Added vs previous:
-//   - Lootbox count badge in header
-//   - Quest claim shows lootbox_granted toast
-//   - Everything else unchanged
-
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -31,331 +25,361 @@ type ShopItem = {
   equipped: boolean;
 };
 
+const ITEM_EMOJI: Record<string, string> = {
+  glasses: "🕶️",
+  monocle: "🧐",
+  hat:     "🎩",
+  crown:   "👑",
+  scarf:   "🧣",
+};
+
 function Achievements() {
   const navigate = useNavigate();
   const token    = localStorage.getItem("token");
 
-  const [xp, setXp]           = useState(0);
-  const [level, setLevel]     = useState(1);
-  const [coins, setCoins]     = useState(0);
+  const [xp, setXp]               = useState(0);
+  const [level, setLevel]         = useState(1);
+  const [coins, setCoins]         = useState(0);
   const [lootboxes, setLootboxes] = useState(0);
-  const [quests, setQuests]   = useState<Quest[]>([]);
-  const [items, setItems]     = useState<ShopItem[]>([]);
+  const [quests, setQuests]       = useState<Quest[]>([]);
+  const [items, setItems]         = useState<ShopItem[]>([]);
   const [inventory, setInventory] = useState<ShopItem[]>([]);
-  const [tab, setTab]         = useState<"quests" | "shop" | "inventory">("quests");
-  const [msg, setMsg]         = useState("");
+  const [tab, setTab]             = useState<"quests" | "shop" | "inventory">("quests");
+  const [msg, setMsg]             = useState("");
 
   useEffect(() => {
     if (!token) { navigate("/"); return; }
     loadAll();
   }, []);
 
-  const loadAll = () => {
-    loadQuests();
-    loadShop();
-    loadProfile();
-    loadInventory();
-    loadLootboxes();
-  };
+  const loadAll = () => { loadQuests(); loadShop(); loadProfile(); loadInventory(); loadLootboxes(); };
 
-  const loadQuests = async () => {
-    const res = await fetch(`${API}/quests`, { headers: { Authorization: `Bearer ${token}` } });
-    setQuests(await res.json());
-  };
+  const loadQuests    = async () => { const r = await fetch(`${API}/quests`,    { headers: { Authorization: `Bearer ${token}` } }); setQuests(await r.json()); };
+  const loadInventory = async () => { const r = await fetch(`${API}/inventory`, { headers: { Authorization: `Bearer ${token}` } }); const d = await r.json(); setInventory(d.inventory || []); };
+  const loadLootboxes = async () => { const r = await fetch(`${API}/lootbox`,   { headers: { Authorization: `Bearer ${token}` } }); const d = await r.json(); setLootboxes(d.lootboxes || 0); };
+  const loadShop      = async () => { const r = await fetch(`${API}/shop`,      { headers: { Authorization: `Bearer ${token}` } }); const d = await r.json(); setCoins(d.coins || 0); setItems(d.items || []); };
+  const loadProfile   = async () => { const r = await fetch(`${API}/profile`,   { headers: { Authorization: `Bearer ${token}` } }); const d = await r.json(); setXp(d.user?.xp || 0); setLevel(d.user?.level || 1); };
 
-  const loadShop = async () => {
-    const res  = await fetch(`${API}/shop`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setCoins(data.coins || 0);
-    setItems(data.items || []);
-  };
-
-  const loadInventory = async () => {
-    const res  = await fetch(`${API}/inventory`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setInventory(data.inventory || []);
-  };
-
-  const loadProfile = async () => {
-    const res  = await fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setXp(data.user?.xp    || 0);
-    setLevel(data.user?.level || 1);
-  };
-
-  const loadLootboxes = async () => {
-    const res  = await fetch(`${API}/lootbox`, { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setLootboxes(data.lootboxes || 0);
-  };
-
-  const claimQuest = async (questId: string) => {
-    const res  = await fetch(`${API}/quests/${questId}/claim`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.xp_reward !== undefined) {
-      const levelMsg   = data.level_up ? `  ⬆️ Level ${data.level_up}!` : "";
-      const lootboxMsg = data.lootbox_granted ? "  📦 +1 Lootbox!" : "";
-      showMsg(`+${data.xp_reward} XP  +${data.coin_reward} 🪙 claimed!${levelMsg}${lootboxMsg} 🎉`);
+  const claimQuest = async (id: string) => {
+    const r = await fetch(`${API}/quests/${id}/claim`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+    if (d.xp_reward !== undefined) {
+      const lv  = d.level_up    ? `  ⬆️ Level ${d.level_up}!`  : "";
+      const lb  = d.lootbox_granted ? "  📦 +1 Lootbox!" : "";
+      showMsg(`+${d.xp_reward} XP  +${d.coin_reward} 🪙 claimed!${lv}${lb} 🎉`);
       loadAll();
     } else {
-      showMsg(data.error || "Error");
+      showMsg(d.error || "Error");
     }
   };
 
-  const buyItem = async (itemId: string) => {
-    const res  = await fetch(`${API}/shop/buy/${itemId}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.item_id) {
-      showMsg("Added to inventory! 🛍️");
-      loadShop();
-      loadInventory();
-    } else {
-      showMsg(data.error || "Error");
-    }
+  const buyItem = async (id: string) => {
+    const r = await fetch(`${API}/shop/buy/${id}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+    if (d.item_id) { showMsg("Added to inventory! 🛍️"); loadShop(); loadInventory(); }
+    else showMsg(d.error || "Error");
   };
 
-  const equipItem = async (itemId: string) => {
-    const res  = await fetch(`${API}/shop/equip/${itemId}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.item_id) {
-      showMsg("Equipped! ✨");
-      loadShop();
-      loadInventory();
-    } else {
-      showMsg(data.error || "Error");
-    }
+  const equipItem = async (id: string) => {
+    const r = await fetch(`${API}/shop/equip/${id}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+    if (d.item_id) { showMsg("Equipped! ✨"); loadShop(); loadInventory(); }
+    else showMsg(d.error || "Error");
   };
 
   const unequipItem = async (slot: string) => {
-    const res  = await fetch(`${API}/shop/unequip/${slot}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    if (data.slot) {
-      showMsg("Unequipped");
-      loadShop();
-      loadInventory();
-    } else {
-      showMsg(data.error || "Error");
-    }
+    const r = await fetch(`${API}/shop/unequip/${slot}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    const d = await r.json();
+    if (d.slot) { showMsg("Unequipped"); loadShop(); loadInventory(); }
+    else showMsg(d.error || "Error");
   };
 
-  const showMsg = (text: string) => {
-    setMsg(text);
-    setTimeout(() => setMsg(""), 3500);
-  };
+  const showMsg = (text: string) => { setMsg(text); setTimeout(() => setMsg(""), 3500); };
 
-  const ITEM_EMOJI: Record<string, string> = {
-    glasses: "🕶️",
-    monocle: "🧐",
-    hat:     "🎩",
-    crown:   "👑",
-    scarf:   "🧣",
-  };
-
-  const s: Record<string, any> = {
-    page:       { minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 },
-    header:     { padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-    logo:       { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
-    badges:     { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" as const },
-    levelBadge: { padding: "5px 10px", background: "#3b5bdb", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
-    xpBadge:    { padding: "5px 10px", background: "#1a1a2e", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
-    coinBadge:  { padding: "5px 10px", background: "#c9a84c", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
-    boxBadge:   { padding: "5px 10px", background: "#9333ea", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 },
-    tabs: { display: "flex", margin: "0 24px 20px", background: "white", borderRadius: 14, padding: 4, gap: 4 },
-    tab: (active: boolean): React.CSSProperties => ({
-      flex: 1, padding: "10px 0", borderRadius: 10, border: "none",
-      background: active ? "#1a1a2e" : "transparent",
-      color: active ? "white" : "#999",
-      fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif",
-    }),
-    card: (highlight: boolean): React.CSSProperties => ({
-      background: "white", borderRadius: 20, padding: "20px", margin: "0 24px 14px",
-      border: highlight ? "2px solid #c9a84c" : "2px solid transparent",
-    }),
-    questTitle: { margin: "0 0 3px", fontSize: 16, fontWeight: 700, color: "#1a1a2e" },
-    questDesc:  { margin: "0 0 10px", fontSize: 13, color: "#999" },
-    rewardRow:  { display: "flex", gap: 8, marginBottom: 12 },
-    xpChip:    { display: "inline-block", padding: "4px 10px", background: "#f0f4ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 600 },
-    coinChip:  { display: "inline-block", padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 600 },
-    progressBarBg: { height: 6, borderRadius: 3, background: "#f0f0ea", margin: "0 0 6px" },
-    progressLabel: { display: "flex", justifyContent: "space-between", fontSize: 12, color: "#999", marginBottom: 12 },
-    claimBtn:  { padding: "10px 20px", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-    lockedBtn: { padding: "10px 20px", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#bbb", fontSize: 13, fontWeight: 600, cursor: "default" },
-    itemCard:  { background: "white", borderRadius: 20, padding: "16px", textAlign: "center" as const },
-    itemEmoji: { fontSize: 36, marginBottom: 6, display: "block" },
-    itemName:  { margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1a1a2e" },
-    itemCost:  { margin: "0 0 10px", fontSize: 12, color: "#c9a84c", fontWeight: 600 },
-    equipBadge:{ display: "inline-block", padding: "2px 8px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#4caf50", fontWeight: 600, marginBottom: 8 },
-    buyBtn:    { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#1a1a2e", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-    ownedBtn:  { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#e8f0fe", color: "#3b5bdb", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-    unequipBtn:{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#999", fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 6 },
-    toast:     { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 13, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap" as const, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", maxWidth: "90vw", overflow: "hidden" },
-    navBar:    { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "10px 0 26px", borderTop: "1px solid #efefec", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)" },
-    navItem: (active: boolean): React.CSSProperties => ({
-      display: "flex", flexDirection: "column", alignItems: "center",
-      gap: 4, fontSize: 10, color: active ? "#1a1a2e" : "#bbb",
-      fontWeight: active ? 700 : 400, cursor: "pointer",
-      border: "none", background: "none", fontFamily: "'Inter', sans-serif",
-    }),
-  };
+  const NAV_ITEMS = [
+    { icon: "🏠", label: "HOME",    path: "/home",         active: false },
+    { icon: "🏆", label: "QUESTS",  path: "/achievements", active: true  },
+    { icon: "📊", label: "STATS",   path: "/stats",        active: false },
+    { icon: "👤", label: "PROFILE", path: "/profile",      active: false },
+  ] as const;
 
   return (
-    <div style={s.page}>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        *, *::before, *::after { box-sizing: border-box; }
 
-      {msg && <div style={s.toast}>{msg}</div>}
+        @keyframes ach-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ach-page { animation: ach-in 0.35s ease both; font-family: 'Plus Jakarta Sans','Inter',sans-serif; }
 
-      {/* HEADER */}
-      <div style={s.header}>
-        <span style={s.logo}>MoneyQuest</span>
-        <div style={s.badges}>
-          <span style={s.levelBadge}>Lv.{level}</span>
-          <span style={s.xpBadge}>⭐ {xp}</span>
-          <span style={s.coinBadge}>🪙 {coins}</span>
-          {lootboxes > 0 && <span style={s.boxBadge}>📦 {lootboxes}</span>}
+        @keyframes toast-in {
+          from { opacity: 0; transform: translateX(-50%) translateY(-16px) scale(0.92); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+        }
+        .ach-toast { animation: toast-in 0.3s cubic-bezier(0.34,1.3,0.64,1) both; }
+
+        /* Quest cards */
+        .quest-card {
+          background: white;
+          border-radius: 22px;
+          padding: 20px;
+          margin: 0 16px 12px;
+          border: 2px solid transparent;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+          transition: transform 0.2s ease, box-shadow 0.22s ease;
+        }
+        .quest-card.highlight {
+          border-color: #c9a84c;
+          box-shadow: 0 4px 20px rgba(201,168,76,0.18);
+        }
+        .quest-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+        }
+
+        /* Progress fill animation */
+        @keyframes prog-fill {
+          from { width: 0 !important; }
+        }
+        .prog-bar {
+          animation: prog-fill 0.8s cubic-bezier(0.22,1,0.36,1) both 0.2s;
+        }
+
+        /* Shop/inventory item cards */
+        .item-card {
+          background: white;
+          border-radius: 20px;
+          padding: 18px 14px;
+          text-align: center;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .item-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+          padding: 11px 20px; border-radius: 12px; border: none;
+          background: #11112a; color: white; font-size: 13px; font-weight: 700;
+          cursor: pointer; font-family: inherit;
+          transition: transform 0.13s cubic-bezier(0.34,1.5,0.64,1), opacity 0.13s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .btn-primary:active { transform: scale(0.94); opacity: 0.8; }
+        .btn-secondary {
+          padding: 11px 20px; border-radius: 12px; border: none;
+          background: #f0f0ea; color: #aaa; font-size: 13px; font-weight: 600;
+          cursor: default; font-family: inherit;
+        }
+        .btn-shop {
+          width: 100%; padding: 11px 0; border-radius: 12px; border: none;
+          font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+          transition: transform 0.13s cubic-bezier(0.34,1.5,0.64,1), opacity 0.13s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .btn-shop:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* Nav */
+        .nav-btn {
+          display: flex; flex-direction: column; align-items: center;
+          gap: 3px; font-size: 10px; border: none; background: none;
+          font-family: inherit; cursor: pointer; padding: 0; position: relative;
+          -webkit-tap-highlight-color: transparent;
+          transition: transform 0.15s ease, color 0.2s;
+        }
+        .nav-btn:active { transform: scale(0.84); }
+        .nav-icon { font-size: 20px; transition: transform 0.2s cubic-bezier(0.34,1.5,0.64,1); display: block; }
+        .nav-btn:hover .nav-icon { transform: translateY(-3px); }
+        .nav-btn.active .nav-icon { transform: scale(1.12); }
+        .nav-pip {
+          position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+          width: 28px; height: 3px; background: #11112a; border-radius: 0 0 4px 4px;
+        }
+      `}</style>
+
+      <div className="ach-page" style={{ minHeight: "100vh", background: "#efefea", maxWidth: 390, margin: "0 auto", paddingBottom: 100 }}>
+
+        {msg && (
+          <div className="ach-toast" style={{ position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)", background: "#11112a", color: "white", borderRadius: 20, padding: "13px 22px", fontSize: 13, fontWeight: 700, zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 8px 28px rgba(0,0,0,0.3)", maxWidth: "92vw", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {msg}
+          </div>
+        )}
+
+        {/* HEADER */}
+        <div style={{ padding: "24px 20px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontWeight: 900, fontSize: 18, color: "#11112a", letterSpacing: "-0.4px" }}>MoneyQuest</span>
+          <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" as const }}>
+            <span style={{ padding: "5px 10px", background: "#3b5bdb", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 800 }}>Lv.{level}</span>
+            <span style={{ padding: "5px 10px", background: "#11112a", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>⭐ {xp}</span>
+            <span style={{ padding: "5px 10px", background: "#c9a84c", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>🪙 {coins}</span>
+            {lootboxes > 0 && <span style={{ padding: "5px 10px", background: "#9333ea", color: "white", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>📦 {lootboxes}</span>}
+          </div>
         </div>
-      </div>
 
-      {/* TABS */}
-      <div style={s.tabs}>
-        <button style={s.tab(tab === "quests")}    onClick={() => setTab("quests")}>🏆 Quests</button>
-        <button style={s.tab(tab === "shop")}      onClick={() => setTab("shop")}>🛒 Shop</button>
-        <button style={s.tab(tab === "inventory")} onClick={() => setTab("inventory")}>🎒 Items</button>
-      </div>
+        {/* TABS */}
+        <div style={{ display: "flex", margin: "0 16px 18px", background: "white", borderRadius: 16, padding: 4, gap: 4, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+          {(["quests", "shop", "inventory"] as const).map(t => (
+            <button
+              key={t}
+              style={{
+                flex: 1, padding: "11px 0", borderRadius: 12, border: "none",
+                background: tab === t ? "#11112a" : "transparent",
+                color: tab === t ? "white" : "#aaa",
+                fontSize: 13, fontWeight: 700, cursor: "pointer",
+                fontFamily: "inherit", transition: "background 0.2s, color 0.2s",
+              }}
+              onClick={() => setTab(t)}
+            >
+              {t === "quests" ? "🏆 Quests" : t === "shop" ? "🛒 Shop" : "🎒 Items"}
+            </button>
+          ))}
+        </div>
 
-      {/* ── QUESTS TAB ── */}
-      {tab === "quests" && (
-        <>
-          {quests.length === 0 && (
-            <div style={{ textAlign: "center", padding: "40px 24px", color: "#999", fontSize: 14 }}>
-              All quests completed! 🎉
-            </div>
-          )}
-          {quests.map((q) => {
-            const pct       = Math.min((q.progress / q.goal) * 100, 100);
-            const highlight = pct >= 80 || q.claimable;
-            return (
-              <div key={q.id} style={s.card(highlight)}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={s.questTitle}>{q.title}</p>
-                    <p style={s.questDesc}>{q.description}</p>
-                    <div style={s.rewardRow}>
-                      <span style={s.xpChip}>+{q.xp_reward} XP</span>
-                      <span style={s.coinChip}>+{q.coin_reward} 🪙</span>
-                      <span style={{ display: "inline-block", padding: "4px 10px", background: "#f3e8ff", borderRadius: 20, fontSize: 12, color: "#9333ea", fontWeight: 600 }}>+1 📦</span>
+        {/* ── QUESTS ── */}
+        {tab === "quests" && (
+          <>
+            {quests.length === 0 && (
+              <div style={{ textAlign: "center", padding: "48px 24px", color: "#bbb", fontSize: 14, fontWeight: 500 }}>
+                All quests completed! 🎉
+              </div>
+            )}
+            {quests.map(q => {
+              const pct = Math.min((q.progress / q.goal) * 100, 100);
+              return (
+                <div key={q.id} className={`quest-card ${pct >= 80 || q.claimable ? "highlight" : ""}`}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: "0 0 3px", fontSize: 16, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>{q.title}</p>
+                      <p style={{ margin: "0 0 12px", fontSize: 13, color: "#999", fontWeight: 500 }}>{q.description}</p>
+                      <div style={{ display: "flex", gap: 7, marginBottom: 14, flexWrap: "wrap" as const }}>
+                        <span style={{ padding: "4px 10px", background: "#eff3ff", borderRadius: 20, fontSize: 12, color: "#3b5bdb", fontWeight: 700 }}>+{q.xp_reward} XP</span>
+                        <span style={{ padding: "4px 10px", background: "#fff8e7", borderRadius: 20, fontSize: 12, color: "#c9a84c", fontWeight: 700 }}>+{q.coin_reward} 🪙</span>
+                        <span style={{ padding: "4px 10px", background: "#f3e8ff", borderRadius: 20, fontSize: 12, color: "#9333ea", fontWeight: 700 }}>+1 📦</span>
+                      </div>
                     </div>
+                    <span style={{ fontSize: 30, marginLeft: 10 }}>{q.claimable ? "🎁" : "🔒"}</span>
                   </div>
-                  <span style={{ fontSize: 28, marginLeft: 12 }}>{q.claimable ? "🎁" : "🔒"}</span>
-                </div>
 
-                <div style={s.progressBarBg}>
-                  <div style={{ height: "100%", borderRadius: 3, width: `${pct}%`, transition: "width 0.3s",
-                    background: q.claimable ? "#4caf50" : pct >= 80 ? "#c9a84c" : "#1a1a2e" }} />
-                </div>
-                <div style={s.progressLabel}>
-                  <span>{q.progress} / {q.goal}</span>
-                  <span>{q.remaining > 0 ? `${q.remaining} left` : "Ready!"}</span>
-                </div>
+                  <div style={{ height: 7, borderRadius: 4, background: "#f0f0ea", marginBottom: 8, overflow: "hidden" }}>
+                    <div
+                      className="prog-bar"
+                      style={{
+                        height: "100%", borderRadius: 4,
+                        width: `${pct}%`,
+                        background: q.claimable ? "#4caf50" : pct >= 80 ? "#c9a84c" : "#11112a",
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#bbb", fontWeight: 600, marginBottom: 14 }}>
+                    <span>{q.progress} / {q.goal}</span>
+                    <span>{q.remaining > 0 ? `${q.remaining} to go` : "Ready to claim!"}</span>
+                  </div>
 
-                {q.claimable ? (
-                  <button style={s.claimBtn} onClick={() => claimQuest(q.id)}>
-                    Claim +{q.xp_reward} XP +{q.coin_reward} 🪙 +1 📦
-                  </button>
-                ) : (
-                  <button style={s.lockedBtn} disabled>
-                    {q.progress === 0 ? "Not started" : "In progress..."}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </>
-      )}
-
-      {/* ── SHOP TAB ── */}
-      {tab === "shop" && (
-        <>
-          <div style={{ margin: "0 24px 16px", padding: "14px 20px", background: "white", borderRadius: 16 }}>
-            <p style={{ margin: 0, fontSize: 13, color: "#999" }}>Your balance</p>
-            <p style={{ margin: "4px 0 0", fontSize: 22, fontWeight: 800, color: "#1a1a2e" }}>🪙 {coins} coins</p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "0 24px" }}>
-            {items.map((item) => (
-              <div key={item.id} style={s.itemCard}>
-                <span style={s.itemEmoji}>{ITEM_EMOJI[item.id] || "🎁"}</span>
-                <p style={s.itemName}>{item.name}</p>
-                <p style={s.itemCost}>🪙 {item.cost}</p>
-                {item.equipped && <span style={s.equipBadge}>✓ Equipped</span>}
-                {item.owned ? (
-                  <button style={s.ownedBtn} onClick={() => equipItem(item.id)}>
-                    {item.equipped ? "Re-equip" : "Equip"}
-                  </button>
-                ) : (
-                  <button
-                    style={{ ...s.buyBtn, background: coins >= item.cost ? "#1a1a2e" : "#e8e8e0", color: coins >= item.cost ? "white" : "#999", cursor: coins >= item.cost ? "pointer" : "default" }}
-                    onClick={() => coins >= item.cost && buyItem(item.id)}
-                  >
-                    {coins >= item.cost ? "Buy" : "Need more 🪙"}
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* ── INVENTORY TAB ── */}
-      {tab === "inventory" && (
-        <>
-          {inventory.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 24px", color: "#999", fontSize: 14 }}>
-              No items yet. Buy something from the shop! 🛒
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, margin: "0 24px" }}>
-              {inventory.map((item) => (
-                <div key={item.id} style={s.itemCard}>
-                  <span style={s.itemEmoji}>{ITEM_EMOJI[item.id] || "🎁"}</span>
-                  <p style={s.itemName}>{item.name}</p>
-                  <p style={{ margin: "0 0 8px", fontSize: 11, color: "#999", textTransform: "uppercase" as const }}>{item.type}</p>
-                  {item.equipped && <span style={s.equipBadge}>✓ Equipped</span>}
-                  {item.equipped ? (
-                    <button style={s.unequipBtn} onClick={() => unequipItem(item.type)}>
-                      Unequip
+                  {q.claimable ? (
+                    <button className="btn-primary" style={{ width: "100%", padding: 14, borderRadius: 14, fontSize: 14 }} onClick={() => claimQuest(q.id)}>
+                      Claim Reward 🎉
                     </button>
                   ) : (
-                    <button style={s.ownedBtn} onClick={() => equipItem(item.id)}>
-                      Equip
+                    <button className="btn-secondary" style={{ width: "100%", padding: 14, borderRadius: 14, fontSize: 14 }} disabled>
+                      {q.progress === 0 ? "Not started" : "In progress…"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
+
+        {/* ── SHOP ── */}
+        {tab === "shop" && (
+          <>
+            <div style={{ margin: "0 16px 16px", padding: "16px 20px", background: "white", borderRadius: 18, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+              <p style={{ margin: 0, fontSize: 12, color: "#aaa", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>Your Balance</p>
+              <p style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 900, color: "#11112a", letterSpacing: "-0.5px" }}>🪙 {coins} coins</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
+              {items.map(item => (
+                <div key={item.id} className="item-card">
+                  <span style={{ fontSize: 38, marginBottom: 8, display: "block" }}>{ITEM_EMOJI[item.id] || "🎁"}</span>
+                  <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
+                  <p style={{ margin: "0 0 10px", fontSize: 12, color: "#c9a84c", fontWeight: 700 }}>🪙 {item.cost}</p>
+                  {item.equipped && (
+                    <span style={{ display: "inline-block", padding: "3px 10px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#2e7d32", fontWeight: 700, marginBottom: 8 }}>
+                      ✓ On
+                    </span>
+                  )}
+                  {item.owned ? (
+                    <button className="btn-shop" style={{ background: "#eff3ff", color: "#3b5bdb" }} onClick={() => equipItem(item.id)}>
+                      {item.equipped ? "Re-equip" : "Equip"}
+                    </button>
+                  ) : (
+                    <button
+                      className="btn-shop"
+                      style={{ background: coins >= item.cost ? "#11112a" : "#eaeae4", color: coins >= item.cost ? "white" : "#aaa", cursor: coins >= item.cost ? "pointer" : "default" }}
+                      onClick={() => coins >= item.cost && buyItem(item.id)}
+                    >
+                      {coins >= item.cost ? "Buy" : "Need more 🪙"}
                     </button>
                   )}
                 </div>
               ))}
             </div>
-          )}
-        </>
-      )}
+          </>
+        )}
 
-      {/* BOTTOM NAV */}
-      <div style={s.navBar}>
-        <button style={s.navItem(false)} onClick={() => navigate("/home")}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
-        <button style={s.navItem(true)}><span style={{ fontSize: 20 }}>🏆</span>QUESTS<span style={{ width: 4, height: 4, borderRadius: "50%", background: "#1a1a2e", display: "block", margin: "1px auto 0" }} /></button>
-        <button style={s.navItem(false)} onClick={() => navigate("/stats")}><span style={{ fontSize: 20 }}>📊</span>STATS</button>
-        <button style={s.navItem(false)} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
+        {/* ── INVENTORY ── */}
+        {tab === "inventory" && (
+          <>
+            {inventory.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 24px", color: "#bbb", fontSize: 14, fontWeight: 500 }}>
+                Nothing here yet. Visit the Shop! 🛒
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
+                {inventory.map(item => (
+                  <div key={item.id} className="item-card">
+                    <span style={{ fontSize: 38, marginBottom: 8, display: "block" }}>{ITEM_EMOJI[item.id] || "🎁"}</span>
+                    <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
+                    <p style={{ margin: "0 0 10px", fontSize: 11, color: "#aaa", textTransform: "uppercase" as const, fontWeight: 600, letterSpacing: "0.5px" }}>{item.type}</p>
+                    {item.equipped && (
+                      <span style={{ display: "inline-block", padding: "3px 10px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#2e7d32", fontWeight: 700, marginBottom: 8 }}>
+                        ✓ Equipped
+                      </span>
+                    )}
+                    {item.equipped ? (
+                      <button className="btn-shop" style={{ background: "#f0f0ea", color: "#aaa" }} onClick={() => unequipItem(item.type)}>Unequip</button>
+                    ) : (
+                      <button className="btn-shop" style={{ background: "#eff3ff", color: "#3b5bdb", cursor: "pointer" }} onClick={() => equipItem(item.id)}>Equip</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* BOTTOM NAV */}
+        <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 28px", borderTop: "1px solid #eaeae4", boxShadow: "0 -6px 24px rgba(0,0,0,0.06)" }}>
+          {NAV_ITEMS.map(item => (
+            <button
+              key={item.label}
+              className={`nav-btn ${item.active ? "active" : ""}`}
+              style={{ color: item.active ? "#11112a" : "#bbb", fontWeight: item.active ? 800 : 500, letterSpacing: "0.3px" }}
+              onClick={() => !item.active && navigate(item.path)}
+            >
+              {item.active && <span className="nav-pip" />}
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
-
-    </div>
+    </>
   );
 }
 
