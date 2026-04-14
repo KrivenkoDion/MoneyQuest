@@ -1,8 +1,14 @@
 // src/pages/Home.tsx
-// Changes:
-//   1. Transaction type extended with created_at; timestamp shown in Recent Activity
-//   2. Hero card: character (left) + balance (right) + XP bar + random phrase
-//   3. Stats nav button added to bottom navbar
+// UI/UX polish pass:
+//   - Page fade-in on load
+//   - Button hover/active scale feedback via CSS classes
+//   - Cards: softer shadows, tighter border-radius consistency
+//   - Hero card: better internal spacing, cleaner XP bar with glow
+//   - Recent Activity: hover row highlight, amount right-aligned
+//   - Bottom nav: active indicator dot, smooth icon scale on tap
+//   - Toast: slide-down entrance animation
+//   - Modal: smoother slide-up entrance
+//   - All transitions 0.15–0.2s
 
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
@@ -39,8 +45,7 @@ const CHARACTERS: Record<string, { fur: string; inner: string }> = {
 };
 
 function MiniCharacter({
-  fur, inner,
-  equippedHat, equippedGlasses,
+  fur, inner, equippedHat, equippedGlasses,
 }: {
   fur: string; inner: string;
   equippedHat?: string | null;
@@ -128,8 +133,8 @@ function Home() {
   const [lootboxCount, setLootboxCount] = useState(0);
   const [showLootbox, setShowLootbox]   = useState(false);
   const [user, setUser]                 = useState<any>(null);
+  const [loaded, setLoaded]             = useState(false);
 
-  // Pick a random phrase once on mount
   const phrase = useMemo(() => PHRASES[Math.floor(Math.random() * PHRASES.length)], []);
 
   useEffect(() => {
@@ -144,20 +149,22 @@ function Home() {
       .then(res => res.json()).then(data => setLootboxCount(data.lootboxes || 0)).catch(() => {});
 
     fetch(`${API}/profile`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.json()).then(data => { if (data.user) setUser(data.user); }).catch(() => {});
+      .then(res => res.json()).then(data => {
+        if (data.user) setUser(data.user);
+        setTimeout(() => setLoaded(true), 60);
+      }).catch(() => setLoaded(true));
   }, [token]);
 
   const fetchTransactions = () =>
     fetch(`${API}/transactions`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json()).then(data => setTransactions(data)).catch(() => {});
 
-  const balance = transactions.reduce((sum, t) =>
+  const balance    = transactions.reduce((sum, t) =>
     t.category === "income" ? sum + t.amount : sum - t.amount, 0);
-
-  const xp        = user?.xp ?? 0;
-  const level     = Math.min(Math.floor(xp / 100) + 1, 20);
-  const xpInLevel = xp % 100;
-  const charKey   = user?.character ?? "brown";
+  const xp         = user?.xp ?? 0;
+  const level      = Math.min(Math.floor(xp / 100) + 1, 20);
+  const xpInLevel  = xp % 100;
+  const charKey    = user?.character ?? "brown";
   const charColors = CHARACTERS[charKey] ?? CHARACTERS.brown;
 
   const addTransaction = async () => {
@@ -180,207 +187,441 @@ function Home() {
     });
     const data = await res.json();
     if (!res.ok) { setBalanceError(data.error || "Transaction failed"); return; }
-
-    // Re-fetch to get server-side created_at
     fetchTransactions();
     setAmount(""); setDescription(""); setBalanceError(""); setShowModal(false);
     if (type === "expense") { setQuestToast(true); setTimeout(() => setQuestToast(false), 3000); }
   };
 
-  const s: Record<string, React.CSSProperties> = {
-    page:         { minHeight: "100vh", background: "#f5f5f0", maxWidth: 390, margin: "0 auto", fontFamily: "'Inter', sans-serif", paddingBottom: 100 },
-    header:       { padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-    logo:         { fontWeight: 700, fontSize: 16, color: "#1a1a2e" },
-    bell:         { width: 36, height: 36, borderRadius: "50%", background: "#e8e8e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
-    card:         { background: "white", borderRadius: 20, padding: "20px", margin: "0 24px 16px" },
-    cardLabel:    { margin: "0 0 4px", fontSize: 11, color: "#c9a84c", textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 },
-    cardTitle:    { margin: "0 0 12px", fontSize: 20, fontWeight: 700, color: "#1a1a2e" },
-    progressBar:  { height: 6, borderRadius: 3, background: "#f0f0ea", marginBottom: 8 },
-    progressFill: { height: "100%", borderRadius: 3, background: "#1a1a2e", width: "65%" },
-    progressRow:  { display: "flex", justifyContent: "space-between", fontSize: 13, color: "#999" },
-    activityItem: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #f5f5f0" },
-    activityLeft: { display: "flex", alignItems: "center", gap: 12 },
-    activityIcon: { width: 40, height: 40, borderRadius: 12, background: "#f5f5f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 },
-    activityName: { margin: 0, fontSize: 14, fontWeight: 600, color: "#1a1a2e" },
-    activityDate: { margin: 0, fontSize: 12, color: "#999" },
-    income:       { fontSize: 14, fontWeight: 700, color: "#4caf50" },
-    expense:      { fontSize: 14, fontWeight: 700, color: "#e53935" },
-    navBar:       { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" },
-    navItem:      { display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: "#999", cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" },
-    navItemActive:{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: "#1a1a2e", fontWeight: 700, cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" },
-    overlay:      { position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 },
-    modal:        { background: "white", borderRadius: "24px 24px 0 0", padding: "28px 24px 48px", width: "100%", maxWidth: 390 },
-    modalTitle:   { margin: "0 0 20px", fontSize: 20, fontWeight: 700, color: "#1a1a2e" },
-    input:        { width: "100%", padding: "14px 16px", borderRadius: 12, border: "1.5px solid #e8e8e0", fontSize: 15, marginBottom: 12, boxSizing: "border-box" as const, outline: "none", fontFamily: "'Inter', sans-serif" },
-    select:       { width: "100%", padding: "14px 16px", borderRadius: 12, border: "1.5px solid #e8e8e0", fontSize: 15, marginBottom: 12, boxSizing: "border-box" as const, outline: "none", fontFamily: "'Inter', sans-serif", background: "white" },
-    saveBtn:      { width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#1a1a2e", color: "white", fontSize: 15, fontWeight: 600, cursor: "pointer", marginBottom: 10 },
-    cancelBtn:    { width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 15, fontWeight: 600, cursor: "pointer" },
-  };
-
   return (
-    <div style={s.page}>
+    <>
+      <style>{`
+        /* ── Reset & base ── */
+        * { box-sizing: border-box; }
 
-      {questToast && (
-        <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 14, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
-          🏆 Quest progress updated! Check Quests →
-        </div>
-      )}
+        /* ── Page fade-in ── */
+        @keyframes mq-fadein {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .mq-page {
+          animation: mq-fadein 0.35s ease both;
+        }
 
-      {/* HEADER */}
-      <div style={s.header}>
-        <span style={s.logo}>MoneyQuest</span>
-        <div style={s.bell}>🔔</div>
-      </div>
+        /* ── Toast slide-down ── */
+        @keyframes mq-toast {
+          from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .mq-toast {
+          animation: mq-toast 0.25s ease both;
+        }
 
-      {/* ── HERO CARD ── */}
-      <div style={{ margin: "0 24px 16px", background: "linear-gradient(135deg, #1a1a2e 0%, #2d2d5e 100%)", borderRadius: 20, padding: "20px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          {/* Character side */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-            <MiniCharacter
-              fur={charColors.fur}
-              inner={charColors.inner}
-              equippedHat={user?.equipped_hat}
-              equippedGlasses={user?.equipped_glasses}
-            />
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontStyle: "italic", textAlign: "center", maxWidth: 90 }}>
-              "{phrase}"
-            </span>
+        /* ── Modal slide-up ── */
+        @keyframes mq-modal {
+          from { transform: translateY(40px); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
+        }
+        .mq-modal-sheet {
+          animation: mq-modal 0.28s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+        }
+
+        /* ── Overlay fade ── */
+        @keyframes mq-overlay {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .mq-overlay {
+          animation: mq-overlay 0.2s ease both;
+        }
+
+        /* ── Tap/press feedback ── */
+        .mq-btn {
+          transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+          cursor: pointer;
+        }
+        .mq-btn:hover  { opacity: 0.88; }
+        .mq-btn:active { transform: scale(0.95); opacity: 0.75; }
+
+        /* ── Nav buttons ── */
+        .mq-nav-btn {
+          display: flex; flex-direction: column; align-items: center;
+          gap: 4px; font-size: 10px; border: none; background: none;
+          font-family: 'Inter', sans-serif; cursor: pointer;
+          transition: transform 0.15s ease, color 0.15s ease;
+          padding: 0; position: relative;
+        }
+        .mq-nav-btn:active { transform: scale(0.88); }
+        .mq-nav-btn .nav-icon {
+          font-size: 20px;
+          transition: transform 0.15s ease;
+        }
+        .mq-nav-btn:hover .nav-icon { transform: translateY(-2px); }
+
+        /* ── Cards ── */
+        .mq-card {
+          background: white;
+          border-radius: 22px;
+          padding: 20px;
+          margin: 0 16px 14px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+          transition: box-shadow 0.2s ease;
+        }
+
+        /* ── Hero card ── */
+        .mq-hero {
+          margin: 0 16px 14px;
+          background: linear-gradient(135deg, #1a1a2e 0%, #2d2d5e 100%);
+          border-radius: 22px;
+          padding: 20px 20px 18px;
+          box-shadow: 0 6px 24px rgba(26,26,46,0.28), 0 2px 8px rgba(26,26,46,0.16);
+        }
+
+        /* ── Lootbox card ── */
+        .mq-lootbox-active {
+          background: linear-gradient(135deg, #1a1a2e 0%, #2d2d5e 100%) !important;
+          box-shadow: 0 6px 24px rgba(26,26,46,0.28) !important;
+          cursor: pointer;
+          transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+        }
+        .mq-lootbox-active:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(26,26,46,0.35) !important; }
+        .mq-lootbox-active:active { transform: scale(0.97); }
+
+        /* ── Activity rows ── */
+        .mq-activity-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 11px 8px; border-radius: 12px; margin: 0 -8px;
+          border-bottom: 1px solid #f5f5f0;
+          transition: background 0.15s ease;
+        }
+        .mq-activity-row:last-child { border-bottom: none; }
+        .mq-activity-row:hover { background: #f9f9f6; }
+
+        /* ── XP bar fill animation on mount ── */
+        @keyframes mq-xp {
+          from { width: 0%; }
+        }
+        .mq-xp-fill {
+          animation: mq-xp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both 0.4s;
+        }
+
+        /* ── Input focus ── */
+        .mq-input:focus {
+          border-color: #1a1a2e !important;
+          box-shadow: 0 0 0 3px rgba(26,26,46,0.08);
+          outline: none;
+        }
+
+        /* ── Pulse for lootbox icon ── */
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50%       { transform: scale(1.1); }
+        }
+      `}</style>
+
+      <div
+        className="mq-page"
+        style={{
+          minHeight: "100vh",
+          background: "#f5f5f0",
+          maxWidth: 390,
+          margin: "0 auto",
+          fontFamily: "'Inter', sans-serif",
+          paddingBottom: 100,
+          opacity: loaded ? 1 : 0,
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        {/* QUEST TOAST */}
+        {questToast && (
+          <div className="mq-toast" style={{
+            position: "fixed", top: 20, left: "50%",
+            background: "#1a1a2e", color: "white",
+            borderRadius: 16, padding: "13px 22px",
+            fontSize: 14, fontWeight: 600, zIndex: 200,
+            whiteSpace: "nowrap",
+            boxShadow: "0 8px 28px rgba(0,0,0,0.25)",
+          }}>
+            🏆 Quest progress updated! Check Quests →
           </div>
+        )}
 
-          {/* Balance side */}
-          <div style={{ flex: 1, paddingLeft: 16 }}>
-            <p style={{ margin: "0 0 2px", fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: 1 }}>Balance</p>
-            <h1 style={{ margin: "0 0 4px", fontSize: 28, fontWeight: 800, color: "white", lineHeight: 1 }}>{balance.toFixed(2)} €</h1>
-            <p style={{ margin: "0 0 14px", fontSize: 12, color: "rgba(255,255,255,0.4)" }}>tracked via MoneyQuest</p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", background: "white", color: "#1a1a2e", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                onClick={() => { setType("expense"); setBalanceError(""); setShowModal(true); }}>
-                + Expense
-              </button>
-              <button style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "1.5px solid rgba(255,255,255,0.3)", background: "transparent", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
-                onClick={() => { setType("income"); setBalanceError(""); setShowModal(true); }}>
-                + Income
-              </button>
-            </div>
-          </div>
+        {/* HEADER */}
+        <div style={{ padding: "22px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontWeight: 800, fontSize: 17, color: "#1a1a2e", letterSpacing: "-0.3px" }}>MoneyQuest</span>
+          <div className="mq-btn" style={{
+            width: 38, height: 38, borderRadius: "50%",
+            background: "white", display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: 16,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          }}>🔔</div>
         </div>
 
-        {/* XP bar */}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>Lv. {level}</span>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{xpInLevel} / 100 XP</span>
-          </div>
-          <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.12)" }}>
-            <div style={{ height: "100%", borderRadius: 3, background: "#c9a84c", width: `${xpInLevel}%`, transition: "width 0.4s ease" }} />
-          </div>
-        </div>
-      </div>
-
-      {/* 🎁 LOOTBOX CARD */}
-      <div style={{
-        ...s.card,
-        background: lootboxCount > 0 ? "linear-gradient(135deg, #1a1a2e 0%, #2d2d5e 100%)" : "white",
-        cursor: lootboxCount > 0 ? "pointer" : "default",
-      }} onClick={() => lootboxCount > 0 && setShowLootbox(true)}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <p style={{ ...s.cardLabel, color: lootboxCount > 0 ? "#c9a84c" : "#999" }}>Lootboxes</p>
-            <h3 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 700, color: lootboxCount > 0 ? "white" : "#1a1a2e" }}>
-              {lootboxCount > 0 ? `${lootboxCount} ready to open!` : "No lootboxes yet"}
-            </h3>
-            <p style={{ margin: 0, fontSize: 13, color: lootboxCount > 0 ? "rgba(255,255,255,0.6)" : "#999" }}>
-              {lootboxCount > 0 ? "Tap to open →" : "Complete quests to earn them"}
-            </p>
-          </div>
-          <div style={{ fontSize: 44, filter: lootboxCount > 0 ? "drop-shadow(0 0 12px rgba(201,168,76,0.8))" : "none", animation: lootboxCount > 0 ? "pulse 2s infinite" : "none" }}>📦</div>
-        </div>
-      </div>
-
-      {/* ACTIVE QUEST CARD */}
-      <div style={s.card}>
-        <p style={s.cardLabel}>Active Quest</p>
-        <h3 style={s.cardTitle}>Track your spending</h3>
-        <div style={s.progressBar}><div style={s.progressFill} /></div>
-        <div style={s.progressRow}><span>Keep going!</span><span>→ Quests</span></div>
-      </div>
-
-      {/* RECENT ACTIVITY */}
-      <div style={s.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#1a1a2e" }}>Recent Activity</h3>
-          <span style={{ fontSize: 13, color: "#999", cursor: "pointer" }}>View all</span>
-        </div>
-        {transactions.length === 0 ? (
-          <p style={{ color: "#999", fontSize: 14 }}>No transactions yet</p>
-        ) : (
-          transactions.slice(0, 5).map((t, i) => (
-            <div key={i} style={s.activityItem}>
-              <div style={s.activityLeft}>
-                <div style={s.activityIcon}>{CATEGORY_ICONS[t.category] || "💳"}</div>
-                <div>
-                  <p style={s.activityName}>{t.description}</p>
-                  <p style={s.activityDate}>
-                    {t.category}{t.created_at ? ` · ${formatTime(t.created_at)}` : ""}
-                  </p>
-                </div>
-              </div>
-              <span style={t.category === "income" ? s.income : s.expense}>
-                {t.category === "income" ? "+" : "-"}{t.amount}€
+        {/* ── HERO CARD ── */}
+        <div className="mq-hero">
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 4 }}>
+            {/* Character */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 96 }}>
+              <MiniCharacter
+                fur={charColors.fur}
+                inner={charColors.inner}
+                equippedHat={user?.equipped_hat}
+                equippedGlasses={user?.equipped_glasses}
+              />
+              <span style={{
+                fontSize: 11, color: "rgba(255,255,255,0.4)",
+                fontStyle: "italic", textAlign: "center",
+                lineHeight: 1.3, maxWidth: 88,
+              }}>
+                "{phrase}"
               </span>
             </div>
-          ))
-        )}
-      </div>
 
-      {/* TRANSACTION MODAL */}
-      {showModal && (
-        <div style={s.overlay} onClick={() => setShowModal(false)}>
-          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={s.modalTitle}>{type === "income" ? "Add Income" : "Add Expense"}</h3>
-            {type === "expense" && (
-              <>
-                <input style={s.input} placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-                <select style={s.select} value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="food">🍕 Food</option>
-                  <option value="transport">🚗 Transport</option>
-                  <option value="fun">🎮 Fun</option>
-                </select>
-              </>
-            )}
-            <input style={s.input} type="number" placeholder="Amount (€)" value={amount}
-              onChange={(e) => { setAmount(e.target.value); setBalanceError(""); }} />
-            {balanceError && (
-              <p style={{ color: "#e53935", fontSize: 13, margin: "-4px 0 12px", fontWeight: 500 }}>⚠️ {balanceError}</p>
-            )}
-            <button style={s.saveBtn} onClick={addTransaction}>Save</button>
-            <button style={s.cancelBtn} onClick={() => { setShowModal(false); setBalanceError(""); }}>Cancel</button>
+            {/* Balance */}
+            <div style={{ flex: 1, paddingLeft: 12, paddingTop: 4 }}>
+              <p style={{ margin: "0 0 1px", fontSize: 10, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 600 }}>
+                Balance
+              </p>
+              <h1 style={{ margin: "0 0 2px", fontSize: 30, fontWeight: 800, color: "white", lineHeight: 1.1, letterSpacing: "-0.5px" }}>
+                {balance.toFixed(2)} €
+              </h1>
+              <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>
+                tracked via MoneyQuest
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  className="mq-btn"
+                  style={{ flex: 1, padding: "11px 0", borderRadius: 13, border: "none", background: "white", color: "#1a1a2e", fontSize: 13, fontWeight: 700 }}
+                  onClick={() => { setType("expense"); setBalanceError(""); setShowModal(true); }}
+                >
+                  + Expense
+                </button>
+                <button
+                  className="mq-btn"
+                  style={{ flex: 1, padding: "11px 0", borderRadius: 13, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.07)", color: "white", fontSize: 13, fontWeight: 700 }}
+                  onClick={() => { setType("income"); setBalanceError(""); setShowModal(true); }}
+                >
+                  + Income
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* XP bar */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", fontWeight: 700 }}>
+                Lv. {level}
+              </span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", fontWeight: 500 }}>
+                {xpInLevel} / 100 XP
+              </span>
+            </div>
+            <div style={{ height: 7, borderRadius: 4, background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
+              <div
+                className="mq-xp-fill"
+                style={{
+                  height: "100%", borderRadius: 4,
+                  background: "linear-gradient(90deg, #c9a84c, #f0ca6a)",
+                  width: `${xpInLevel}%`,
+                  boxShadow: "0 0 8px rgba(201,168,76,0.6)",
+                  transition: "width 0.6s cubic-bezier(0.22,1,0.36,1)",
+                }}
+              />
+            </div>
           </div>
         </div>
-      )}
 
-      {/* LOOTBOX MODAL */}
-      {showLootbox && (
-        <LootboxModal
-          lootboxCount={lootboxCount}
-          onClose={() => setShowLootbox(false)}
-          onOpened={(_reward, remaining) => setLootboxCount(remaining)}
-        />
-      )}
+        {/* LOOTBOX CARD */}
+        <div
+          className={`mq-card ${lootboxCount > 0 ? "mq-lootbox-active" : ""}`}
+          onClick={() => lootboxCount > 0 && setShowLootbox(true)}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <p style={{ margin: "0 0 3px", fontSize: 11, color: lootboxCount > 0 ? "#c9a84c" : "#aaa", textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>
+                Lootboxes
+              </p>
+              <h3 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 700, color: lootboxCount > 0 ? "white" : "#1a1a2e" }}>
+                {lootboxCount > 0 ? `${lootboxCount} ready to open!` : "No lootboxes yet"}
+              </h3>
+              <p style={{ margin: 0, fontSize: 13, color: lootboxCount > 0 ? "rgba(255,255,255,0.55)" : "#bbb" }}>
+                {lootboxCount > 0 ? "Tap to open →" : "Complete quests to earn them"}
+              </p>
+            </div>
+            <div style={{
+              fontSize: 42,
+              filter: lootboxCount > 0 ? "drop-shadow(0 0 10px rgba(201,168,76,0.75))" : "grayscale(1) opacity(0.3)",
+              animation: lootboxCount > 0 ? "pulse 2.2s ease-in-out infinite" : "none",
+            }}>📦</div>
+          </div>
+        </div>
 
-      {/* BOTTOM NAV */}
-      <div style={s.navBar}>
-        <button style={s.navItemActive}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
-        <button style={s.navItem} onClick={() => navigate("/achievements")}><span style={{ fontSize: 20 }}>🏆</span>QUESTS</button>
-        <button style={s.navItem} onClick={() => navigate("/stats")}><span style={{ fontSize: 20 }}>📊</span>STATS</button>
-        <button style={s.navItem} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
+        {/* ACTIVE QUEST CARD */}
+        <div className="mq-card">
+          <p style={{ margin: "0 0 3px", fontSize: 11, color: "#c9a84c", textTransform: "uppercase", letterSpacing: 1, fontWeight: 600 }}>
+            Active Quest
+          </p>
+          <h3 style={{ margin: "0 0 14px", fontSize: 18, fontWeight: 700, color: "#1a1a2e" }}>
+            Track your spending
+          </h3>
+          <div style={{ height: 6, borderRadius: 3, background: "#f0f0ea", marginBottom: 8, overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: 3, background: "#1a1a2e", width: "65%", transition: "width 0.5s ease" }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#bbb" }}>
+            <span>Keep going!</span>
+            <span style={{ color: "#999", fontWeight: 600 }}>→ Quests</span>
+          </div>
+        </div>
+
+        {/* RECENT ACTIVITY */}
+        <div className="mq-card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Recent Activity</h3>
+            <span style={{ fontSize: 12, color: "#bbb", fontWeight: 500, cursor: "pointer" }}>View all</span>
+          </div>
+          {transactions.length === 0 ? (
+            <p style={{ color: "#bbb", fontSize: 14, textAlign: "center", padding: "20px 0" }}>No transactions yet</p>
+          ) : (
+            transactions.slice(0, 5).map((t, i) => (
+              <div key={i} className="mq-activity-row">
+                <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                  <div style={{
+                    width: 42, height: 42, borderRadius: 13,
+                    background: "#f5f5f0", display: "flex",
+                    alignItems: "center", justifyContent: "center", fontSize: 19,
+                    flexShrink: 0,
+                  }}>
+                    {CATEGORY_ICONS[t.category] || "💳"}
+                  </div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1a1a2e", lineHeight: 1.3 }}>
+                      {t.description}
+                    </p>
+                    <p style={{ margin: 0, fontSize: 11, color: "#bbb", fontWeight: 400, marginTop: 2 }}>
+                      {t.category}{t.created_at ? ` · ${formatTime(t.created_at)}` : ""}
+                    </p>
+                  </div>
+                </div>
+                <span style={{
+                  fontSize: 14, fontWeight: 700,
+                  color: t.category === "income" ? "#4caf50" : "#e53935",
+                  flexShrink: 0, marginLeft: 8,
+                }}>
+                  {t.category === "income" ? "+" : "-"}{t.amount}€
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* TRANSACTION MODAL */}
+        {showModal && (
+          <div
+            className="mq-overlay"
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 }}
+            onClick={() => setShowModal(false)}
+          >
+            <div
+              className="mq-modal-sheet"
+              style={{ background: "white", borderRadius: "26px 26px 0 0", padding: "28px 20px 52px", width: "100%", maxWidth: 390 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* drag handle */}
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "#e0e0e0", margin: "0 auto 20px" }} />
+              <h3 style={{ margin: "0 0 20px", fontSize: 19, fontWeight: 700, color: "#1a1a2e" }}>
+                {type === "income" ? "Add Income" : "Add Expense"}
+              </h3>
+              {type === "expense" && (
+                <>
+                  <input
+                    className="mq-input"
+                    style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid #e8e8e0", fontSize: 15, marginBottom: 12, boxSizing: "border-box", fontFamily: "'Inter', sans-serif", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                  <select
+                    style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid #e8e8e0", fontSize: 15, marginBottom: 12, boxSizing: "border-box", fontFamily: "'Inter', sans-serif", background: "white", outline: "none" }}
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    <option value="food">🍕 Food</option>
+                    <option value="transport">🚗 Transport</option>
+                    <option value="fun">🎮 Fun</option>
+                  </select>
+                </>
+              )}
+              <input
+                className="mq-input"
+                style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: "1.5px solid #e8e8e0", fontSize: 15, marginBottom: 12, boxSizing: "border-box", fontFamily: "'Inter', sans-serif", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                type="number"
+                placeholder="Amount (€)"
+                value={amount}
+                onChange={(e) => { setAmount(e.target.value); setBalanceError(""); }}
+              />
+              {balanceError && (
+                <p style={{ color: "#e53935", fontSize: 13, margin: "-4px 0 12px", fontWeight: 500 }}>
+                  ⚠️ {balanceError}
+                </p>
+              )}
+              <button
+                className="mq-btn"
+                style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#1a1a2e", color: "white", fontSize: 15, fontWeight: 700, marginBottom: 10, boxShadow: "0 4px 14px rgba(26,26,46,0.25)" }}
+                onClick={addTransaction}
+              >
+                Save
+              </button>
+              <button
+                className="mq-btn"
+                style={{ width: "100%", padding: 16, borderRadius: 14, border: "none", background: "#f5f5f0", color: "#1a1a2e", fontSize: 15, fontWeight: 600 }}
+                onClick={() => { setShowModal(false); setBalanceError(""); }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* LOOTBOX MODAL */}
+        {showLootbox && (
+          <LootboxModal
+            lootboxCount={lootboxCount}
+            onClose={() => setShowLootbox(false)}
+            onOpened={(_reward, remaining) => setLootboxCount(remaining)}
+          />
+        )}
+
+        {/* BOTTOM NAV */}
+        <div style={{
+          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: 390, background: "white",
+          display: "flex", justifyContent: "space-around",
+          padding: "10px 0 26px",
+          borderTop: "1px solid #efefec",
+          boxShadow: "0 -4px 16px rgba(0,0,0,0.05)",
+        }}>
+          {([
+            { icon: "🏠", label: "HOME",   path: "/home",          active: true },
+            { icon: "🏆", label: "QUESTS", path: "/achievements",  active: false },
+            { icon: "📊", label: "STATS",  path: "/stats",         active: false },
+            { icon: "👤", label: "PROFILE", path: "/profile",      active: false },
+          ] as { icon: string; label: string; path: string; active: boolean }[]).map(item => (
+            <button
+              key={item.label}
+              className="mq-nav-btn"
+              style={{ color: item.active ? "#1a1a2e" : "#bbb", fontWeight: item.active ? 700 : 400 }}
+              onClick={() => !item.active && navigate(item.path)}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+              {item.active && (
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#1a1a2e", marginTop: 1 }} />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
-
-      <style>{`
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-      `}</style>
-    </div>
+    </>
   );
 }
 

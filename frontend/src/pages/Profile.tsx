@@ -311,7 +311,7 @@ function Profile() {
       </div>
 
       {/* BOTTOM NAV */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "10px 0 26px", borderTop: "1px solid #efefec", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)" }}>
         {([ 
           { icon: "🏠", label: "HOME",    path: "/home",          active: false },
           { icon: "🏆", label: "QUESTS",  path: "/achievements",  active: false },
@@ -320,8 +320,10 @@ function Profile() {
         ] as { icon: string; label: string; path: string; active: boolean }[]).map(item => (
           <button key={item.label}
             onClick={() => !item.active && navigate(item.path)}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: item.active ? "#1a1a2e" : "#999", fontWeight: item.active ? 700 : 400, cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" }}>
-            <span style={{ fontSize: 20 }}>{item.icon}</span>{item.label}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, fontSize: 10, color: item.active ? "#1a1a2e" : "#bbb", fontWeight: item.active ? 700 : 400, cursor: "pointer", border: "none", background: "none", fontFamily: "'Inter', sans-serif" }}>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            {item.label}
+            {item.active && <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#1a1a2e", marginTop: 1 }} />}
           </button>
         ))}
       </div>

@@ -201,10 +201,10 @@ function Achievements() {
     ownedBtn:  { width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#e8f0fe", color: "#3b5bdb", fontSize: 13, fontWeight: 600, cursor: "pointer" },
     unequipBtn:{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "#f0f0ea", color: "#999", fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 6 },
     toast:     { position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: "#1a1a2e", color: "white", borderRadius: 14, padding: "12px 20px", fontSize: 13, fontWeight: 600, zIndex: 200, whiteSpace: "nowrap" as const, boxShadow: "0 4px 20px rgba(0,0,0,0.2)", maxWidth: "90vw", overflow: "hidden" },
-    navBar:    { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "12px 0 24px", borderTop: "1px solid #f0f0ea" },
+    navBar:    { position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 390, background: "white", display: "flex", justifyContent: "space-around", padding: "10px 0 26px", borderTop: "1px solid #efefec", boxShadow: "0 -4px 16px rgba(0,0,0,0.05)" },
     navItem: (active: boolean): React.CSSProperties => ({
       display: "flex", flexDirection: "column", alignItems: "center",
-      gap: 4, fontSize: 10, color: active ? "#1a1a2e" : "#999",
+      gap: 4, fontSize: 10, color: active ? "#1a1a2e" : "#bbb",
       fontWeight: active ? 700 : 400, cursor: "pointer",
       border: "none", background: "none", fontFamily: "'Inter', sans-serif",
     }),
@@ -350,7 +350,7 @@ function Achievements() {
       {/* BOTTOM NAV */}
       <div style={s.navBar}>
         <button style={s.navItem(false)} onClick={() => navigate("/home")}><span style={{ fontSize: 20 }}>🏠</span>HOME</button>
-        <button style={s.navItem(true)}><span style={{ fontSize: 20 }}>🏆</span>QUESTS</button>
+        <button style={s.navItem(true)}><span style={{ fontSize: 20 }}>🏆</span>QUESTS<span style={{ width: 4, height: 4, borderRadius: "50%", background: "#1a1a2e", display: "block", margin: "1px auto 0" }} /></button>
         <button style={s.navItem(false)} onClick={() => navigate("/stats")}><span style={{ fontSize: 20 }}>📊</span>STATS</button>
         <button style={s.navItem(false)} onClick={() => navigate("/profile")}><span style={{ fontSize: 20 }}>👤</span>PROFILE</button>
       </div>
