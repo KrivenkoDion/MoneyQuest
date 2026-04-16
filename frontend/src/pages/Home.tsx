@@ -201,7 +201,7 @@ function Home() {
     setBalanceError("");
     const tx = {
       amount: value,
-      description: type === "income" ? "Income" : description,
+      description: type === "income" ? "Income" : (description.trim() || category),
       category:    type === "income" ? "income" : category,
     };
     const res = await fetch(`${API}/transactions`, {
@@ -458,7 +458,7 @@ function Home() {
           maxWidth: 390,
           margin: "0 auto",
           fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-          paddingBottom: 100,
+          paddingBottom: 120,
           opacity: loaded ? 1 : 0,
           transition: "opacity 0.35s ease",
         }}
@@ -609,7 +609,7 @@ function Home() {
 
         {/* SAVINGS GOAL */}
         {savingsGoal ? (
-          <div className="mq-card s4" style={{ marginBottom: 14 }}>
+          <div className="mq-card s4" style={{ marginBottom: 14, boxShadow: savingsGoal.saved_amount >= savingsGoal.target_amount ? "0 4px 24px rgba(46,125,50,0.13), 0 1px 4px rgba(0,0,0,0.04)" : undefined }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <div>
                 <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
@@ -628,15 +628,18 @@ function Home() {
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 14 }}>
                     <span style={{ color: "#3b5bdb", fontWeight: 700 }}>{pct}%</span>
-                    <span style={{ color: "#bbb", fontWeight: 600 }}>{savingsGoal.saved_amount}€ / {savingsGoal.target_amount}€</span>
+                    <span style={{ color: "#bbb", fontWeight: 600 }}>
+                      {savingsGoal.saved_amount}€ / {savingsGoal.target_amount}€
+                      {pct < 100 && <span style={{ color: "#e67e22", fontWeight: 700, marginLeft: 6 }}>· {savingsGoal.target_amount - savingsGoal.saved_amount}€ left</span>}
+                    </span>
                   </div>
                   {pct < 100 ? (
                     <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>
                       You're getting closer to your goal 💪
                     </p>
                   ) : (
-                    <p style={{ margin: "0 0 12px", fontSize: 12, color: "#2e7d32", fontWeight: 700 }}>
-                      🎉 Goal reached! Congratulations!
+                    <p style={{ margin: "0 0 12px", fontSize: 14, color: "#2e7d32", fontWeight: 800, letterSpacing: "-0.2px" }}>
+                      You did it 🎉
                     </p>
                   )}
                 </>
@@ -759,7 +762,7 @@ function Home() {
                   <input
                     className="mq-input"
                     style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", fontWeight: 500, transition: "border-color 0.15s, box-shadow 0.15s" }}
-                    placeholder="What did you spend on?"
+                    placeholder="What did you spend on? (optional)"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                   />
@@ -776,12 +779,24 @@ function Home() {
               )}
               <input
                 className="mq-input"
-                style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 18, marginBottom: 12, fontFamily: "inherit", fontWeight: 800, letterSpacing: "-0.3px", transition: "border-color 0.15s, box-shadow 0.15s" }}
+                style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 18, marginBottom: 8, fontFamily: "inherit", fontWeight: 800, letterSpacing: "-0.3px", transition: "border-color 0.15s, box-shadow 0.15s" }}
                 type="number"
+                inputMode="decimal"
                 placeholder="0.00 €"
                 value={amount}
                 onChange={e => { setAmount(e.target.value); setBalanceError(""); }}
               />
+              {/* Quick amount buttons */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                {[5, 10, 20].map(q => (
+                  <button
+                    key={q}
+                    className="mq-btn"
+                    style={{ flex: 1, padding: "9px 0", borderRadius: 12, border: "1.5px solid #e4e4de", background: "white", color: "#11112a", fontSize: 13, fontWeight: 700 }}
+                    onClick={() => setAmount(a => a ? String(Number(a) + q) : String(q))}
+                  >+{q}€</button>
+                ))}
+              </div>
               {balanceError && (
                 <p style={{ color: "#c62828", fontSize: 13, margin: "-4px 0 14px", fontWeight: 600 }}>⚠️ {balanceError}</p>
               )}
@@ -815,11 +830,12 @@ function Home() {
         {/* BOTTOM NAV */}
         <div style={{
           position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-          width: 390, background: "white",
+          width: "100%", maxWidth: 390, background: "white",
           display: "flex", justifyContent: "space-around",
           padding: "12px 0 28px",
           borderTop: "1px solid #eaeae4",
           boxShadow: "0 -6px 24px rgba(0,0,0,0.06)",
+          zIndex: 50,
         }}>
           {NAV_ITEMS.map(item => (
             <button
