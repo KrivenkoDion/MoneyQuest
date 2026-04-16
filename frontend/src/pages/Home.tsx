@@ -829,8 +829,8 @@ function Home() {
 
         {/* BOTTOM NAV */}
         <div style={{
-          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-          width: "100%", maxWidth: 390, background: "white",
+          position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", maxWidth: 390,
+          margin: "0 auto",
           display: "flex", justifyContent: "space-around",
           padding: "12px 0 28px",
           borderTop: "1px solid #eaeae4",
