@@ -92,10 +92,12 @@ function Stats() {
         }
 
         .stat-box {
-          flex: 1; border-radius: 18px; padding: 15px 14px;
+          flex: 1 1 0; min-width: 0; border-radius: 18px; padding: 15px 14px;
           display: flex; flex-direction: column; gap: 3px;
+          overflow: hidden;
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .stat-box span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .stat-box:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,0,0,0.1); }
 
         .activity-row {

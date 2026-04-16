@@ -153,6 +153,12 @@ function Home() {
   const [showLootbox, setShowLootbox]   = useState(false);
   const [user, setUser]                 = useState<any>(null);
   const [loaded, setLoaded]             = useState(false);
+  const [savingsGoal, setSavingsGoal]   = useState<any>(null);
+  const [xpParticles, setXpParticles]   = useState<{ id: number; label: string; x: number; y: number }[]>([]);
+  const [showSavingsCreate, setShowSavingsCreate] = useState(false);
+  const [savingsName, setSavingsName]   = useState("");
+  const [savingsTarget, setSavingsTarget] = useState("");
+  const [savingsAdd, setSavingsAdd]     = useState("");
 
   const phrase = useMemo(() => PHRASES[Math.floor(Math.random() * PHRASES.length)], []);
 
@@ -170,6 +176,8 @@ function Home() {
         if (d.user) setUser(d.user);
         setTimeout(() => setLoaded(true), 60);
       }).catch(() => setLoaded(true));
+    fetch(`${API}/savings`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => setSavingsGoal(d.goal || null)).catch(() => {});
   }, [token]);
 
   const fetchTransactions = () =>
@@ -183,7 +191,7 @@ function Home() {
   const charKey   = user?.character ?? "brown";
   const charColors = CHARACTERS[charKey] ?? CHARACTERS.brown;
 
-  const addTransaction = async () => {
+  const addTransaction = async (e?: React.MouseEvent) => {
     const value = Number(amount);
     if (!value || value <= 0) return;
     if (type === "expense" && value > balance) {
@@ -205,7 +213,40 @@ function Home() {
     if (!res.ok) { setBalanceError(data.error || "Transaction failed"); return; }
     fetchTransactions();
     setAmount(""); setDescription(""); setBalanceError(""); setShowModal(false);
+    spawnXP(type === "income" ? "+10 XP" : "+5 XP", e);
     if (type === "expense") { setQuestToast(true); setTimeout(() => setQuestToast(false), 3000); }
+  };
+
+  const spawnXP = (label: string, e?: React.MouseEvent) => {
+    const x = e ? e.clientX : window.innerWidth / 2;
+    const y = e ? e.clientY : window.innerHeight / 2;
+    const id = Date.now() + Math.random();
+    setXpParticles(p => [...p, { id, label, x, y }]);
+    setTimeout(() => setXpParticles(p => p.filter(pt => pt.id !== id)), 1100);
+  };
+
+  const createSavingsGoal = async () => {
+    const target = Number(savingsTarget);
+    if (!savingsName.trim() || !target || target <= 0) return;
+    const res = await fetch(`${API}/savings`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: savingsName.trim(), target_amount: target }),
+    });
+    const data = await res.json();
+    if (res.ok) { setSavingsGoal(data.goal); setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }
+  };
+
+  const addToSavings = async (e?: React.MouseEvent) => {
+    const amount = Number(savingsAdd);
+    if (!amount || amount <= 0) return;
+    const res = await fetch(`${API}/savings`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount }),
+    });
+    const data = await res.json();
+    if (res.ok) { setSavingsGoal(data.goal); setSavingsAdd(""); spawnXP("+3 XP", e); }
   };
 
   const NAV_ITEMS = [
@@ -356,6 +397,33 @@ function Home() {
           50%      { transform: scale(1.14) rotate(3deg); }
         }
 
+        /* ── Floating XP ── */
+        @keyframes xp-float {
+          0%   { opacity: 1;   transform: translateY(0)   scale(1); }
+          60%  { opacity: 1;   transform: translateY(-38px) scale(1.08); }
+          100% { opacity: 0;   transform: translateY(-62px) scale(0.9); }
+        }
+        .xp-particle {
+          position: fixed;
+          pointer-events: none;
+          z-index: 9999;
+          font-size: 15px;
+          font-weight: 900;
+          color: #c9a84c;
+          text-shadow: 0 0 12px rgba(201,168,76,0.7), 0 1px 3px rgba(0,0,0,0.25);
+          white-space: nowrap;
+          animation: xp-float 1.05s cubic-bezier(0.22,1,0.36,1) both;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          letter-spacing: -0.3px;
+        }
+
+        /* ── Savings progress bar ── */
+        @keyframes savings-in { from { width: 0%; } }
+        .savings-bar {
+          animation: savings-in 1s cubic-bezier(0.22,1,0.36,1) both 0.3s;
+          background: linear-gradient(90deg, #3b5bdb 0%, #748ffc 100%);
+        }
+
         /* ── Nav ── */
         .nav-btn {
           display: flex; flex-direction: column; align-items: center;
@@ -408,6 +476,17 @@ function Home() {
             🏆 Quest progress updated!
           </div>
         )}
+
+        {/* FLOATING XP PARTICLES */}
+        {xpParticles.map(pt => (
+          <div
+            key={pt.id}
+            className="xp-particle"
+            style={{ left: pt.x - 24, top: pt.y - 16 }}
+          >
+            {pt.label}
+          </div>
+        ))}
 
         {/* HEADER */}
         <div style={{ padding: "24px 20px 12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -528,6 +607,100 @@ function Home() {
           </div>
         </div>
 
+        {/* SAVINGS GOAL */}
+        {savingsGoal ? (
+          <div className="mq-card s4" style={{ marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div>
+                <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>{savingsGoal.name}</h3>
+              </div>
+              <span style={{ fontSize: 28 }}>🎯</span>
+            </div>
+
+            {/* Progress bar */}
+            {(() => {
+              const pct = Math.min(100, Math.round((savingsGoal.saved_amount / savingsGoal.target_amount) * 100));
+              return (
+                <>
+                  <div style={{ height: 8, borderRadius: 4, background: "#eaeae4", overflow: "hidden", marginBottom: 8 }}>
+                    <div className="savings-bar" style={{ height: "100%", borderRadius: 4, width: `${pct}%` }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 14 }}>
+                    <span style={{ color: "#3b5bdb", fontWeight: 700 }}>{pct}%</span>
+                    <span style={{ color: "#bbb", fontWeight: 600 }}>{savingsGoal.saved_amount}€ / {savingsGoal.target_amount}€</span>
+                  </div>
+                  {pct < 100 ? (
+                    <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>
+                      You're getting closer to your goal 💪
+                    </p>
+                  ) : (
+                    <p style={{ margin: "0 0 12px", fontSize: 12, color: "#2e7d32", fontWeight: 700 }}>
+                      🎉 Goal reached! Congratulations!
+                    </p>
+                  )}
+                </>
+              );
+            })()}
+
+            {/* Add savings input */}
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                className="mq-input"
+                type="number"
+                placeholder="Amount €"
+                value={savingsAdd}
+                onChange={e => setSavingsAdd(e.target.value)}
+                style={{ flex: 1, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, outline: "none" }}
+              />
+              <button
+                className="mq-btn"
+                onClick={(e) => addToSavings(e)}
+                style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#3b5bdb", color: "white", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}
+              >+ Save</button>
+            </div>
+          </div>
+        ) : (
+          <div className="mq-card s4" style={{ marginBottom: 14 }}>
+            {!showSavingsCreate ? (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
+                  <p style={{ margin: 0, fontSize: 14, color: "#bbb", fontWeight: 500 }}>No goal set yet</p>
+                </div>
+                <button
+                  className="mq-btn"
+                  onClick={() => setShowSavingsCreate(true)}
+                  style={{ padding: "10px 16px", borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 13, fontWeight: 800 }}
+                >+ Create Goal</button>
+              </div>
+            ) : (
+              <>
+                <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#11112a" }}>🎯 New Savings Goal</p>
+                <input
+                  className="mq-input"
+                  placeholder="Goal name (e.g. New laptop)"
+                  value={savingsName}
+                  onChange={e => setSavingsName(e.target.value)}
+                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 500, marginBottom: 10, outline: "none", boxSizing: "border-box" }}
+                />
+                <input
+                  className="mq-input"
+                  type="number"
+                  placeholder="Target amount €"
+                  value={savingsTarget}
+                  onChange={e => setSavingsTarget(e.target.value)}
+                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, marginBottom: 12, outline: "none", boxSizing: "border-box" }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="mq-btn" onClick={createSavingsGoal} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 800 }}>Create</button>
+                  <button className="mq-btn" onClick={() => { setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 14, fontWeight: 600 }}>Cancel</button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* RECENT ACTIVITY */}
         <div className="mq-card s4">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -615,7 +788,7 @@ function Home() {
               <button
                 className="mq-btn"
                 style={{ width: "100%", padding: 17, borderRadius: 16, border: "none", background: "#11112a", color: "white", fontSize: 16, fontWeight: 800, marginBottom: 10, boxShadow: "0 4px 20px rgba(17,17,42,0.28)", letterSpacing: "-0.2px" }}
-                onClick={addTransaction}
+                onClick={(e) => addTransaction(e)}
               >
                 Save Transaction
               </button>
