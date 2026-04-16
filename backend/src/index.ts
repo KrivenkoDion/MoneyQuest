@@ -488,6 +488,7 @@ import { questRoutes }       from "./routes/quests";
 import { shopRoutes }        from "./routes/shop";
 import { adminRoutes }       from "./routes/admin";
 import { lootboxRoutes }     from "./routes/lootbox";
+import { savingsRoutes }     from "./routes/savings";
 
 dotenv.config();
 
@@ -511,6 +512,7 @@ app.use(questRoutes(pool));
 app.use(shopRoutes(pool));
 app.use(adminRoutes(pool));
 app.use(lootboxRoutes(pool));
+app.use(savingsRoutes(pool));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
