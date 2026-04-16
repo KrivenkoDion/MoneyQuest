@@ -826,30 +826,30 @@ function Home() {
             onOpened={(_r, rem) => setLootboxCount(rem)}
           />
         )}
+      </div>
 
-        {/* BOTTOM NAV */}
-        <div style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", maxWidth: 390,
-          margin: "0 auto",
-          display: "flex", justifyContent: "space-around",
-          padding: "12px 0 28px",
-          borderTop: "1px solid #eaeae4",
-          boxShadow: "0 -6px 24px rgba(0,0,0,0.06)",
-          zIndex: 50,
-        }}>
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.label}
-              className={`nav-btn ${item.active ? "is-active" : ""}`}
-              style={{ color: item.active ? "#11112a" : "#bbb", fontWeight: item.active ? 800 : 500, letterSpacing: "0.3px" }}
-              onClick={() => !item.active && navigate(item.path)}
-            >
-              {item.active && <span className="nav-pip" />}
-              <span className="nav-icon">{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-        </div>
+      {/* BOTTOM NAV — outside scrollable container */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        width: "100%", maxWidth: 390, margin: "0 auto", background: "white",
+        display: "flex", justifyContent: "space-around",
+        padding: "12px 0 28px",
+        borderTop: "1px solid #eaeae4",
+        boxShadow: "0 -6px 24px rgba(0,0,0,0.06)",
+        zIndex: 50,
+      }}>
+        {NAV_ITEMS.map(item => (
+          <button
+            key={item.label}
+            className={`nav-btn ${item.active ? "is-active" : ""}`}
+            style={{ color: item.active ? "#11112a" : "#bbb", fontWeight: item.active ? 800 : 500, letterSpacing: "0.3px" }}
+            onClick={() => !item.active && navigate(item.path)}
+          >
+            {item.active && <span className="nav-pip" />}
+            <span className="nav-icon">{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
       </div>
     </>
   );
