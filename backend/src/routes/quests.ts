@@ -101,18 +101,20 @@ export function questRoutes(pool: any) {
     const newLevel = await addXP(pool, email, (quest as any).xp_reward);
     await addCoins(pool, email, (quest as any).coin_reward);
 
-    // 🎁 Grant 1 lootbox for every quest claimed
-    await pool.query(
-      "UPDATE users SET lootboxes = lootboxes + 1 WHERE email = $1",
-      [email]
-    );
+    // 🎁 Grant 1 lootbox only on level-up
+    if (newLevel) {
+      await pool.query(
+        "UPDATE users SET lootboxes = lootboxes + 1 WHERE email = $1",
+        [email]
+      );
+    }
 
     res.json({
       message:          "Reward claimed",
       xp_reward:        (quest as any).xp_reward,
       coin_reward:      (quest as any).coin_reward,
       level_up:         newLevel,
-      lootbox_granted:  true,
+      lootbox_granted:  !!newLevel,
     });
   });
 
