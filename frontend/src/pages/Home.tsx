@@ -154,6 +154,8 @@ function Home() {
   const [user, setUser]                 = useState<any>(null);
   const [loaded, setLoaded]             = useState(false);
   const [savingsGoal, setSavingsGoal]   = useState<any>(null);
+  const [savingsCompleted, setSavingsCompleted] = useState(false);
+  const [savingsFading, setSavingsFading]       = useState(false);
   const [xpParticles, setXpParticles]   = useState<{ id: number; label: string; x: number; y: number }[]>([]);
   const [showSavingsCreate, setShowSavingsCreate] = useState(false);
   const [savingsName, setSavingsName]   = useState("");
@@ -234,7 +236,7 @@ function Home() {
       body: JSON.stringify({ name: savingsName.trim(), target_amount: target }),
     });
     const data = await res.json();
-    if (res.ok) { setSavingsGoal(data.goal); setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }
+    if (res.ok) { setSavingsGoal(data.goal); setSavingsCompleted(false); setSavingsFading(false); setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }
   };
 
   const addToSavings = async (e?: React.MouseEvent) => {
@@ -246,7 +248,17 @@ function Home() {
       body: JSON.stringify({ amount }),
     });
     const data = await res.json();
-    if (res.ok) { setSavingsGoal(data.goal); setSavingsAdd(""); spawnXP("+3 XP", e); }
+    if (res.ok) {
+      const goal = data.goal;
+      setSavingsGoal(goal);
+      setSavingsAdd("");
+      spawnXP("+3 XP", e);
+      if (goal.saved_amount >= goal.target_amount && !savingsCompleted) {
+        setSavingsCompleted(true);
+        setTimeout(() => setSavingsFading(true), 1500);
+        setTimeout(() => { setSavingsGoal(null); setSavingsCompleted(false); setSavingsFading(false); }, 2700);
+      }
+    }
   };
 
   const NAV_ITEMS = [
@@ -415,6 +427,18 @@ function Home() {
           animation: xp-float 1.05s cubic-bezier(0.22,1,0.36,1) both;
           font-family: 'Plus Jakarta Sans', sans-serif;
           letter-spacing: -0.3px;
+        }
+
+        /* ── Savings goal fade-out ── */
+        @keyframes savings-fade-out {
+          from { opacity: 1; transform: scaleY(1); max-height: 300px; }
+          to   { opacity: 0; transform: scaleY(0.92); max-height: 0; margin-bottom: 0; padding: 0; }
+        }
+        .savings-fading {
+          animation: savings-fade-out 1s cubic-bezier(0.4,0,0.2,1) both;
+          overflow: hidden;
+          transform-origin: top;
+          pointer-events: none;
         }
 
         /* ── Savings progress bar ── */
@@ -608,101 +632,108 @@ function Home() {
         </div>
 
         {/* SAVINGS GOAL */}
-        {savingsGoal ? (
-          <div className="mq-card s4" style={{ marginBottom: 14, boxShadow: savingsGoal.saved_amount >= savingsGoal.target_amount ? "0 4px 24px rgba(46,125,50,0.13), 0 1px 4px rgba(0,0,0,0.04)" : undefined }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div className="mq-card s4" style={{ marginBottom: 14 }}>
+
+          {/* Active goal — fades out on completion */}
+          {savingsGoal && (
+            <div
+              className={savingsFading ? "savings-fading" : ""}
+              style={{ marginBottom: savingsGoal ? 0 : undefined }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div>
+                  <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>{savingsGoal.name}</h3>
+                </div>
+                <span style={{ fontSize: 28 }}>🎯</span>
+              </div>
+              {(() => {
+                const pct = Math.min(100, Math.round((savingsGoal.saved_amount / savingsGoal.target_amount) * 100));
+                return (
+                  <>
+                    <div style={{ height: 8, borderRadius: 4, background: "#eaeae4", overflow: "hidden", marginBottom: 8 }}>
+                      <div className="savings-bar" style={{ height: "100%", borderRadius: 4, width: `${pct}%` }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 14 }}>
+                      <span style={{ color: "#3b5bdb", fontWeight: 700 }}>{pct}%</span>
+                      <span style={{ color: "#bbb", fontWeight: 600 }}>
+                        {savingsGoal.saved_amount}€ / {savingsGoal.target_amount}€
+                        {pct < 100 && <span style={{ color: "#e67e22", fontWeight: 700, marginLeft: 6 }}>· {savingsGoal.target_amount - savingsGoal.saved_amount}€ left</span>}
+                      </span>
+                    </div>
+                    {pct < 100 ? (
+                      <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>
+                        You're getting closer to your goal 💪
+                      </p>
+                    ) : (
+                      <p style={{ margin: "0 0 12px", fontSize: 14, color: "#2e7d32", fontWeight: 800, letterSpacing: "-0.2px" }}>
+                        You did it 🎉
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
+              {!savingsCompleted && (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    className="mq-input"
+                    type="number"
+                    placeholder="Amount €"
+                    value={savingsAdd}
+                    onChange={e => setSavingsAdd(e.target.value)}
+                    style={{ flex: 1, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, outline: "none" }}
+                  />
+                  <button
+                    className="mq-btn"
+                    onClick={(e) => addToSavings(e)}
+                    style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#3b5bdb", color: "white", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}
+                  >+ Save</button>
+                </div>
+              )}
+              <div style={{ height: 1, background: "#f0f0ea", margin: "14px -20px 14px" }} />
+            </div>
+          )}
+
+          {/* Create new goal — always visible */}
+          {!showSavingsCreate ? (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
-                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>{savingsGoal.name}</h3>
+                <p style={{ margin: 0, fontSize: 14, color: "#bbb", fontWeight: 500 }}>
+                  {savingsGoal ? "Start a new goal" : "No goal set yet"}
+                </p>
               </div>
-              <span style={{ fontSize: 28 }}>🎯</span>
+              <button
+                className="mq-btn"
+                onClick={() => setShowSavingsCreate(true)}
+                style={{ padding: "10px 16px", borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 13, fontWeight: 800 }}
+              >+ Create Goal</button>
             </div>
-
-            {/* Progress bar */}
-            {(() => {
-              const pct = Math.min(100, Math.round((savingsGoal.saved_amount / savingsGoal.target_amount) * 100));
-              return (
-                <>
-                  <div style={{ height: 8, borderRadius: 4, background: "#eaeae4", overflow: "hidden", marginBottom: 8 }}>
-                    <div className="savings-bar" style={{ height: "100%", borderRadius: 4, width: `${pct}%` }} />
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 14 }}>
-                    <span style={{ color: "#3b5bdb", fontWeight: 700 }}>{pct}%</span>
-                    <span style={{ color: "#bbb", fontWeight: 600 }}>
-                      {savingsGoal.saved_amount}€ / {savingsGoal.target_amount}€
-                      {pct < 100 && <span style={{ color: "#e67e22", fontWeight: 700, marginLeft: 6 }}>· {savingsGoal.target_amount - savingsGoal.saved_amount}€ left</span>}
-                    </span>
-                  </div>
-                  {pct < 100 ? (
-                    <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>
-                      You're getting closer to your goal 💪
-                    </p>
-                  ) : (
-                    <p style={{ margin: "0 0 12px", fontSize: 14, color: "#2e7d32", fontWeight: 800, letterSpacing: "-0.2px" }}>
-                      You did it 🎉
-                    </p>
-                  )}
-                </>
-              );
-            })()}
-
-            {/* Add savings input */}
-            <div style={{ display: "flex", gap: 8 }}>
+          ) : (
+            <>
+              <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#11112a" }}>🎯 New Savings Goal</p>
+              <input
+                className="mq-input"
+                placeholder="Goal name (e.g. New laptop)"
+                value={savingsName}
+                onChange={e => setSavingsName(e.target.value)}
+                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 500, marginBottom: 10, outline: "none", boxSizing: "border-box" }}
+              />
               <input
                 className="mq-input"
                 type="number"
-                placeholder="Amount €"
-                value={savingsAdd}
-                onChange={e => setSavingsAdd(e.target.value)}
-                style={{ flex: 1, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, outline: "none" }}
+                placeholder="Target amount €"
+                value={savingsTarget}
+                onChange={e => setSavingsTarget(e.target.value)}
+                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, marginBottom: 12, outline: "none", boxSizing: "border-box" }}
               />
-              <button
-                className="mq-btn"
-                onClick={(e) => addToSavings(e)}
-                style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#3b5bdb", color: "white", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}
-              >+ Save</button>
-            </div>
-          </div>
-        ) : (
-          <div className="mq-card s4" style={{ marginBottom: 14 }}>
-            {!showSavingsCreate ? (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
-                  <p style={{ margin: 0, fontSize: 14, color: "#bbb", fontWeight: 500 }}>No goal set yet</p>
-                </div>
-                <button
-                  className="mq-btn"
-                  onClick={() => setShowSavingsCreate(true)}
-                  style={{ padding: "10px 16px", borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 13, fontWeight: 800 }}
-                >+ Create Goal</button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="mq-btn" onClick={createSavingsGoal} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 800 }}>Create</button>
+                <button className="mq-btn" onClick={() => { setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 14, fontWeight: 600 }}>Cancel</button>
               </div>
-            ) : (
-              <>
-                <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#11112a" }}>🎯 New Savings Goal</p>
-                <input
-                  className="mq-input"
-                  placeholder="Goal name (e.g. New laptop)"
-                  value={savingsName}
-                  onChange={e => setSavingsName(e.target.value)}
-                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 500, marginBottom: 10, outline: "none", boxSizing: "border-box" }}
-                />
-                <input
-                  className="mq-input"
-                  type="number"
-                  placeholder="Target amount €"
-                  value={savingsTarget}
-                  onChange={e => setSavingsTarget(e.target.value)}
-                  style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, marginBottom: 12, outline: "none", boxSizing: "border-box" }}
-                />
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button className="mq-btn" onClick={createSavingsGoal} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 800 }}>Create</button>
-                  <button className="mq-btn" onClick={() => { setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 14, fontWeight: 600 }}>Cancel</button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* RECENT ACTIVITY */}
         <div className="mq-card s4">
@@ -858,4 +889,4 @@ function Home() {
 export default Home;
 
 
-//dd 
+//dd
