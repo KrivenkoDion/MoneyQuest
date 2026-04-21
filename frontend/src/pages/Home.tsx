@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { LootboxModal } from "../components/LootboxModal";
 
 type Transaction = {
@@ -32,13 +32,29 @@ const CHARACTERS: Record<string, { fur: string; inner: string }> = {
   orange: { fur: "#C2703A", inner: "#E8967A" },
 };
 
+type BearMood = "idle" | "happy" | "sad" | "excited" | "proud";
+
+function useBearReaction(resetDelay = 1500) {
+  const [mood, setMood] = useState<BearMood>("idle");
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const react = useCallback((nextMood: BearMood) => {
+    if (timer.current) clearTimeout(timer.current);
+    setMood(nextMood);
+    timer.current = setTimeout(() => setMood("idle"), resetDelay);
+  }, [resetDelay]);
+
+  return { mood, react };
+}
+
 function BearCharacter({
-  fur, inner, equippedHat, equippedGlasses, onClick,
+  fur, inner, equippedHat, equippedGlasses, onClick, mood = "idle",
 }: {
   fur: string; inner: string;
   equippedHat?: string | null;
   equippedGlasses?: string | null;
   onClick?: () => void;
+  mood?: BearMood;
 }) {
   const [blink, setBlink] = useState(false);
   const [happy, setHappy] = useState(false);
@@ -62,8 +78,10 @@ function BearCharacter({
   };
 
   const eyeRy = blink ? 1 : 5;
-  const mouthPath = happy
+  const mouthPath = happy || mood === "happy" || mood === "excited" || mood === "proud"
     ? "M84 126 Q100 140 116 126"
+    : mood === "sad"
+    ? "M88 132 Q100 124 112 132"
     : "M88 126 Q100 134 112 126";
 
   return (
@@ -71,10 +89,10 @@ function BearCharacter({
       width="90" height="105"
       viewBox="0 0 200 230"
       onClick={handleClick}
-      className="bear-idle"
+      className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
       style={{
         cursor: "pointer",
-        filter: happy ? "drop-shadow(0 0 14px rgba(201,168,76,0.9))" : "none",
+        filter: happy || mood === "excited" ? "drop-shadow(0 0 14px rgba(201,168,76,0.9))" : mood === "proud" ? "drop-shadow(0 0 10px rgba(59,91,219,0.7))" : "none",
         transition: "filter 0.3s ease",
       }}
     >
@@ -140,6 +158,8 @@ const API = "https://moneyquest-pcoq.onrender.com";
 function Home() {
   const navigate = useNavigate();
   const token    = localStorage.getItem("token");
+
+  const { mood, react } = useBearReaction();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showModal, setShowModal]       = useState(false);
@@ -216,6 +236,11 @@ function Home() {
     fetchTransactions();
     setAmount(""); setDescription(""); setBalanceError(""); setShowModal(false);
     spawnXP(type === "income" ? "+10 XP" : "+5 XP", e);
+    if (type === "income") {
+      react("happy");
+    } else {
+      react("sad");
+    }
     if (type === "expense") { setQuestToast(true); setTimeout(() => setQuestToast(false), 3000); }
   };
 
@@ -254,9 +279,12 @@ function Home() {
       setSavingsAdd("");
       spawnXP("+3 XP", e);
       if (goal.saved_amount >= goal.target_amount && !savingsCompleted) {
+        react("excited");
         setSavingsCompleted(true);
         setTimeout(() => setSavingsFading(true), 1500);
         setTimeout(() => { setSavingsGoal(null); setSavingsCompleted(false); setSavingsFading(false); }, 2700);
+      } else {
+        react("proud");
       }
     }
   };
@@ -316,6 +344,34 @@ function Home() {
           transform-origin: 50% 90%;
           animation: breathe 3.4s ease-in-out infinite;
         }
+
+        /* ── Bear reactions ── */
+        @keyframes bear-bounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          40%       { transform: translateY(-12px) scale(1.06); }
+          70%       { transform: translateY(-5px) scale(1.02); }
+        }
+        @keyframes bear-excited {
+          0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+          25%       { transform: translateY(-14px) rotate(4deg) scale(1.07); }
+          50%       { transform: translateY(-10px) rotate(-3deg) scale(1.05); }
+          75%       { transform: translateY(-12px) rotate(2deg) scale(1.06); }
+        }
+        @keyframes bear-proud {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          30%       { transform: translateY(-8px) rotate(3deg); }
+          60%       { transform: translateY(-5px) rotate(-2deg); }
+        }
+        @keyframes bear-sad {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          40%       { transform: translateY(5px) rotate(-5deg); }
+          70%       { transform: translateY(3px) rotate(-3deg); }
+        }
+
+        .bear--happy    { animation: bear-bounce  0.55s cubic-bezier(0.34,1.4,0.64,1) both !important; }
+        .bear--excited  { animation: bear-excited 0.7s  cubic-bezier(0.34,1.2,0.64,1) both !important; }
+        .bear--proud    { animation: bear-proud   0.65s cubic-bezier(0.34,1.3,0.64,1) both !important; }
+        .bear--sad      { animation: bear-sad     0.55s cubic-bezier(0.34,1.2,0.64,1) both !important; }
 
         /* ── Button press ── */
         .mq-btn {
@@ -533,6 +589,7 @@ function Home() {
                 inner={charColors.inner}
                 equippedHat={user?.equipped_hat}
                 equippedGlasses={user?.equipped_glasses}
+                mood={mood}
               />
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.36)", fontStyle: "italic", textAlign: "center", lineHeight: 1.4, maxWidth: 88 }}>
                 "{phrase}"
@@ -887,6 +944,3 @@ function Home() {
 }
 
 export default Home;
-
-
-//dd
