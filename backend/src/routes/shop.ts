@@ -1,37 +1,31 @@
-// src/routes/shop.ts
-// Added vs previous version:
-//   - GET /inventory — returns owned items with equipped flags
-//   - POST /shop/equip/:itemId — equips an item into its slot
-//   - POST /shop/unequip/:slot — unequips a slot (hat / glasses / scarf)
-//   - GET /shop still returns `equipped` flag per item
-//   - Buy now uses coins (unchanged)
-
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
 import { SHOP_ITEMS } from "../config/shop";
 
-// Map item type → DB column
 const EQUIP_SLOT: Record<string, string> = {
   hat:     "equipped_hat",
   glasses: "equipped_glasses",
   scarf:   "equipped_scarf",
+  outfit:  "equipped_outfit",
 };
 
 export function shopRoutes(pool: any) {
   const router = Router();
 
-  // GET /shop — returns user's coins + items with owned + equipped flags
+  // GET /shop
   router.get("/shop", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
     const userResult = await pool.query(
-      "SELECT coins, equipped_hat, equipped_glasses, equipped_scarf FROM users WHERE email = $1",
+      "SELECT coins, equipped_hat, equipped_glasses, equipped_scarf, equipped_outfit FROM users WHERE email = $1",
       [email]
     );
-    const userCoins       = userResult.rows[0]?.coins            || 0;
-    const equippedHat     = userResult.rows[0]?.equipped_hat     || null;
-    const equippedGlasses = userResult.rows[0]?.equipped_glasses || null;
-    const equippedScarf   = userResult.rows[0]?.equipped_scarf   || null;
+    const u               = userResult.rows[0];
+    const userCoins       = u?.coins            || 0;
+    const equippedHat     = u?.equipped_hat     || null;
+    const equippedGlasses = u?.equipped_glasses || null;
+    const equippedScarf   = u?.equipped_scarf   || null;
+    const equippedOutfit  = u?.equipped_outfit  || null;
 
     const purchasedResult = await pool.query(
       "SELECT item_id FROM user_items WHERE email = $1",
@@ -43,28 +37,27 @@ export function shopRoutes(pool: any) {
       const isEquipped =
         (item.type === "hat"     && equippedHat     === item.id) ||
         (item.type === "glasses" && equippedGlasses === item.id) ||
-        (item.type === "scarf"   && equippedScarf   === item.id);
-      return {
-        ...item,
-        owned:    purchasedIds.includes(item.id),
-        equipped: isEquipped,
-      };
+        (item.type === "scarf"   && equippedScarf   === item.id) ||
+        (item.type === "outfit"  && equippedOutfit  === item.id);
+      return { ...item, owned: purchasedIds.includes(item.id), equipped: isEquipped };
     });
 
     res.json({ coins: userCoins, items });
   });
 
-  // GET /inventory — owned items with equipped flag (for Inventory tab)
+  // GET /inventory
   router.get("/inventory", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
 
     const userResult = await pool.query(
-      "SELECT equipped_hat, equipped_glasses, equipped_scarf FROM users WHERE email = $1",
+      "SELECT equipped_hat, equipped_glasses, equipped_scarf, equipped_outfit FROM users WHERE email = $1",
       [email]
     );
-    const equippedHat     = userResult.rows[0]?.equipped_hat     || null;
-    const equippedGlasses = userResult.rows[0]?.equipped_glasses || null;
-    const equippedScarf   = userResult.rows[0]?.equipped_scarf   || null;
+    const u               = userResult.rows[0];
+    const equippedHat     = u?.equipped_hat     || null;
+    const equippedGlasses = u?.equipped_glasses || null;
+    const equippedScarf   = u?.equipped_scarf   || null;
+    const equippedOutfit  = u?.equipped_outfit  || null;
 
     const purchasedResult = await pool.query(
       "SELECT item_id FROM user_items WHERE email = $1",
@@ -78,14 +71,15 @@ export function shopRoutes(pool: any) {
         const isEquipped =
           (item.type === "hat"     && equippedHat     === item.id) ||
           (item.type === "glasses" && equippedGlasses === item.id) ||
-          (item.type === "scarf"   && equippedScarf   === item.id);
+          (item.type === "scarf"   && equippedScarf   === item.id) ||
+          (item.type === "outfit"  && equippedOutfit  === item.id);
         return { ...item, owned: true, equipped: isEquipped };
       });
 
     res.json({ inventory });
   });
 
-  // BUY ITEM — deducts coins
+  // POST /shop/buy/:itemId
   router.post("/shop/buy/:itemId", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
     const { itemId } = req.params;
@@ -123,7 +117,7 @@ export function shopRoutes(pool: any) {
     res.json({ message: "Item purchased", item_id: itemId });
   });
 
-  // EQUIP ITEM
+  // POST /shop/equip/:itemId
   router.post("/shop/equip/:itemId", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
     const { itemId } = req.params;
@@ -134,7 +128,6 @@ export function shopRoutes(pool: any) {
     const slot = EQUIP_SLOT[item.type];
     if (!slot) return res.status(400).json({ error: "Item has no equip slot" });
 
-    // Must own it
     const owns = await pool.query(
       "SELECT 1 FROM user_items WHERE email = $1 AND item_id = $2",
       [email, itemId]
@@ -151,10 +144,10 @@ export function shopRoutes(pool: any) {
     res.json({ message: "Item equipped", item_id: itemId, slot });
   });
 
-  // UNEQUIP SLOT
+  // POST /shop/unequip/:slot
   router.post("/shop/unequip/:slot", authMiddleware, async (req: any, res) => {
     const email = req.user.email;
-    const { slot } = req.params; // "hat" | "glasses" | "scarf"
+    const { slot } = req.params;
 
     const col = EQUIP_SLOT[slot];
     if (!col) return res.status(400).json({ error: "Unknown slot" });
