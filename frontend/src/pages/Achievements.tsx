@@ -1,6 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+import baseballCap    from "../assets/items/baseball_cap.png";
+import beanie         from "../assets/items/beanie.png";
+import santaHat       from "../assets/items/santa_hat.png";
+import wizardHat      from "../assets/items/wizard_hat.png";
+import crownImg       from "../assets/items/crown.png";
+import glassesBasic   from "../assets/items/glasses_basic.png";
+import sunglassesImg  from "../assets/items/sunglasses.png";
+import pixelGlasses   from "../assets/items/pixel_glasses.png";
+import diamondGlasses from "../assets/items/diamond_glasses.png";
+import hoodie         from "../assets/items/hoodie.png";
+import suit           from "../assets/items/suit.png";
+import royalRobe      from "../assets/items/royal_robe.png";
+
 const API = "https://moneyquest-pcoq.onrender.com";
 
 type Quest = {
@@ -25,12 +38,29 @@ type ShopItem = {
   equipped: boolean;
 };
 
-const ITEM_EMOJI: Record<string, string> = {
-  glasses: "🕶️",
-  monocle: "🧐",
-  hat:     "🎩",
-  crown:   "👑",
-  scarf:   "🧣",
+const ITEM_IMAGE: Record<string, string> = {
+  hat:             baseballCap,
+  beanie:          beanie,
+  santa_hat:       santaHat,
+  wizard_hat:      wizardHat,
+  crown:           crownImg,
+  glasses:         glassesBasic,
+  sunglasses:      sunglassesImg,
+  monocle:         pixelGlasses,
+  pixel_glasses:   pixelGlasses,
+  diamond_glasses: diamondGlasses,
+  hoodie:          hoodie,
+  suit:            suit,
+  royal_robe:      royalRobe,
+};
+
+const ITEM_RARITY: Record<string, React.CSSProperties> = {
+  crown:           { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
+  diamond_glasses: { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
+  royal_robe:      { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
+  wizard_hat:      { boxShadow: "0 0 8px rgba(147,51,234,0.35)",  border: "1.5px solid rgba(147,51,234,0.3)"  },
+  suit:            { boxShadow: "0 0 8px rgba(59,91,219,0.3)",    border: "1.5px solid rgba(59,91,219,0.25)"  },
+  hoodie:          { boxShadow: "0 0 8px rgba(59,91,219,0.3)",    border: "1.5px solid rgba(59,91,219,0.25)"  },
 };
 
 function Achievements() {
@@ -64,7 +94,7 @@ function Achievements() {
     const r = await fetch(`${API}/quests/${id}/claim`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
     const d = await r.json();
     if (d.xp_reward !== undefined) {
-      const lv  = d.level_up    ? `  ⬆️ Level ${d.level_up}!`  : "";
+      const lv  = d.level_up        ? `  ⬆️ Level ${d.level_up}!`  : "";
       const lb  = d.lootbox_granted ? "  📦 +1 Lootbox!" : "";
       showMsg(`+${d.xp_reward} XP  +${d.coin_reward} 🪙 claimed!${lv}${lb} 🎉`);
       loadAll();
@@ -304,8 +334,18 @@ function Achievements() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
               {items.map(item => (
-                <div key={item.id} className="item-card">
-                  <span style={{ fontSize: 38, marginBottom: 8, display: "block" }}>{ITEM_EMOJI[item.id] || "🎁"}</span>
+                <div key={item.id} className="item-card" style={ITEM_RARITY[item.id] ?? {}}>
+                  <div style={{
+                    width: 64, height: 64, margin: "0 auto 8px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    borderRadius: 16, background: "#f5f5f0",
+                    ...(ITEM_RARITY[item.id] ?? {}),
+                  }}>
+                    {ITEM_IMAGE[item.id]
+                      ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 44, height: 44, objectFit: "contain" }} />
+                      : <span style={{ fontSize: 32 }}>🎁</span>
+                    }
+                  </div>
                   <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
                   <p style={{ margin: "0 0 10px", fontSize: 12, color: "#c9a84c", fontWeight: 700 }}>🪙 {item.cost}</p>
                   {item.equipped && (
@@ -342,8 +382,18 @@ function Achievements() {
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
                 {inventory.map(item => (
-                  <div key={item.id} className="item-card">
-                    <span style={{ fontSize: 38, marginBottom: 8, display: "block" }}>{ITEM_EMOJI[item.id] || "🎁"}</span>
+                  <div key={item.id} className="item-card" style={ITEM_RARITY[item.id] ?? {}}>
+                    <div style={{
+                      width: 64, height: 64, margin: "0 auto 8px",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      borderRadius: 16, background: "#f5f5f0",
+                      ...(ITEM_RARITY[item.id] ?? {}),
+                    }}>
+                      {ITEM_IMAGE[item.id]
+                        ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 44, height: 44, objectFit: "contain" }} />
+                        : <span style={{ fontSize: 32 }}>🎁</span>
+                      }
+                    </div>
                     <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
                     <p style={{ margin: "0 0 10px", fontSize: 11, color: "#aaa", textTransform: "uppercase" as const, fontWeight: 600, letterSpacing: "0.5px" }}>{item.type}</p>
                     {item.equipped && (
