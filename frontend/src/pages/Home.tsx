@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import ReactDOM from "react-dom";
 import { LootboxModal } from "../components/LootboxModal";
 import { useXP } from "../hooks/useXP";
 import { useSavings } from "../hooks/useSavings";
@@ -791,83 +792,6 @@ function Home() {
           )}
         </div>
 
-        {/* MODAL */}
-        {showModal && (
-          <div
-            className="mq-overlay"
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 }}
-            onClick={() => setShowModal(false)}
-          >
-            <div
-              className="mq-sheet"
-              style={{ background: "white", borderRadius: "28px 28px 0 0", padding: "10px 20px 52px", width: "100%", maxWidth: 390 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: "#e0e0da", margin: "8px auto 22px" }} />
-              <h3 style={{ margin: "0 0 22px", fontSize: 20, fontWeight: 900, color: "#11112a", letterSpacing: "-0.4px" }}>
-                {type === "income" ? "💼 Add Income" : "🧾 Add Expense"}
-              </h3>
-              {type === "expense" && (
-                <>
-                  <input
-                    className="mq-input"
-                    style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", fontWeight: 500, transition: "border-color 0.15s, box-shadow 0.15s" }}
-                    placeholder="What did you spend on? (optional)"
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                  />
-                  <select
-                    style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", background: "white", outline: "none", color: "#11112a", fontWeight: 500, appearance: "none" as const }}
-                    value={category}
-                    onChange={e => setCategory(e.target.value)}
-                  >
-                    <option value="food">☕ Food & Coffee</option>
-                    <option value="transport">🚗 Transport</option>
-                    <option value="fun">🎮 Entertainment</option>
-                  </select>
-                </>
-              )}
-              <input
-                className="mq-input"
-                style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 18, marginBottom: 8, fontFamily: "inherit", fontWeight: 800, letterSpacing: "-0.3px", transition: "border-color 0.15s, box-shadow 0.15s" }}
-                type="number"
-                inputMode="decimal"
-                placeholder="0.00 €"
-                value={amount}
-                onChange={e => { setAmount(e.target.value); setBalanceError(""); }}
-              />
-              {/* Quick amount buttons */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                {[5, 10, 20].map(q => (
-                  <button
-                    key={q}
-                    className="mq-btn"
-                    style={{ flex: 1, padding: "9px 0", borderRadius: 12, border: "1.5px solid #e4e4de", background: "white", color: "#11112a", fontSize: 13, fontWeight: 700 }}
-                    onClick={() => setAmount(a => a ? String(Number(a) + q) : String(q))}
-                  >+{q}€</button>
-                ))}
-              </div>
-              {balanceError && (
-                <p style={{ color: "#c62828", fontSize: 13, margin: "-4px 0 14px", fontWeight: 600 }}>⚠️ {balanceError}</p>
-              )}
-              <button
-                className="mq-btn"
-                style={{ width: "100%", padding: 17, borderRadius: 16, border: "none", background: "#11112a", color: "white", fontSize: 16, fontWeight: 800, marginBottom: 10, boxShadow: "0 4px 20px rgba(17,17,42,0.28)", letterSpacing: "-0.2px" }}
-                onClick={(e) => addTransaction(e)}
-              >
-                Save Transaction
-              </button>
-              <button
-                className="mq-btn"
-                style={{ width: "100%", padding: 16, borderRadius: 16, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 15, fontWeight: 600 }}
-                onClick={() => { setShowModal(false); setBalanceError(""); }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* LOOTBOX MODAL */}
         {showLootbox && (
           <LootboxModal
@@ -901,6 +825,83 @@ function Home() {
           </button>
         ))}
       </div>
+
+      {/* MODAL — rendered via portal to escape scroll container */}
+      {showModal && ReactDOM.createPortal(
+        <div
+          className="mq-overlay"
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="mq-sheet"
+            style={{ background: "white", borderRadius: "28px 28px 0 0", padding: "10px 20px 52px", width: "100%", maxWidth: 390 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: "#e0e0da", margin: "8px auto 22px" }} />
+            <h3 style={{ margin: "0 0 22px", fontSize: 20, fontWeight: 900, color: "#11112a", letterSpacing: "-0.4px" }}>
+              {type === "income" ? "💼 Add Income" : "🧾 Add Expense"}
+            </h3>
+            {type === "expense" && (
+              <>
+                <input
+                  className="mq-input"
+                  style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", fontWeight: 500, transition: "border-color 0.15s, box-shadow 0.15s" }}
+                  placeholder="What did you spend on? (optional)"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                />
+                <select
+                  style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", background: "white", outline: "none", color: "#11112a", fontWeight: 500, appearance: "none" as const }}
+                  value={category}
+                  onChange={e => setCategory(e.target.value)}
+                >
+                  <option value="food">☕ Food & Coffee</option>
+                  <option value="transport">🚗 Transport</option>
+                  <option value="fun">🎮 Entertainment</option>
+                </select>
+              </>
+            )}
+            <input
+              className="mq-input"
+              style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 18, marginBottom: 8, fontFamily: "inherit", fontWeight: 800, letterSpacing: "-0.3px", transition: "border-color 0.15s, box-shadow 0.15s" }}
+              type="number"
+              inputMode="decimal"
+              placeholder="0.00 €"
+              value={amount}
+              onChange={e => { setAmount(e.target.value); setBalanceError(""); }}
+            />
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {[5, 10, 20].map(q => (
+                <button
+                  key={q}
+                  className="mq-btn"
+                  style={{ flex: 1, padding: "9px 0", borderRadius: 12, border: "1.5px solid #e4e4de", background: "white", color: "#11112a", fontSize: 13, fontWeight: 700 }}
+                  onClick={() => setAmount(a => a ? String(Number(a) + q) : String(q))}
+                >+{q}€</button>
+              ))}
+            </div>
+            {balanceError && (
+              <p style={{ color: "#c62828", fontSize: 13, margin: "-4px 0 14px", fontWeight: 600 }}>⚠️ {balanceError}</p>
+            )}
+            <button
+              className="mq-btn"
+              style={{ width: "100%", padding: 17, borderRadius: 16, border: "none", background: "#11112a", color: "white", fontSize: 16, fontWeight: 800, marginBottom: 10, boxShadow: "0 4px 20px rgba(17,17,42,0.28)", letterSpacing: "-0.2px" }}
+              onClick={(e) => addTransaction(e)}
+            >
+              Save Transaction
+            </button>
+            <button
+              className="mq-btn"
+              style={{ width: "100%", padding: 16, borderRadius: 16, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 15, fontWeight: 600 }}
+              onClick={() => { setShowModal(false); setBalanceError(""); }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 }
