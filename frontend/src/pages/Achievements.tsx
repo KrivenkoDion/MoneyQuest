@@ -55,12 +55,12 @@ const ITEM_IMAGE: Record<string, string> = {
 };
 
 const ITEM_RARITY: Record<string, React.CSSProperties> = {
-  crown:           { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
-  diamond_glasses: { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
-  royal_robe:      { boxShadow: "0 0 14px rgba(201,168,76,0.55)", border: "1.5px solid rgba(201,168,76,0.45)" },
-  wizard_hat:      { boxShadow: "0 0 8px rgba(147,51,234,0.35)",  border: "1.5px solid rgba(147,51,234,0.3)"  },
-  suit:            { boxShadow: "0 0 8px rgba(59,91,219,0.3)",    border: "1.5px solid rgba(59,91,219,0.25)"  },
-  hoodie:          { boxShadow: "0 0 8px rgba(59,91,219,0.3)",    border: "1.5px solid rgba(59,91,219,0.25)"  },
+  crown:           { boxShadow: "0 0 18px rgba(201,168,76,0.6)",  border: "2px solid rgba(201,168,76,0.5)"  },
+  diamond_glasses: { boxShadow: "0 0 18px rgba(201,168,76,0.6)",  border: "2px solid rgba(201,168,76,0.5)"  },
+  royal_robe:      { boxShadow: "0 0 18px rgba(201,168,76,0.6)",  border: "2px solid rgba(201,168,76,0.5)"  },
+  wizard_hat:      { boxShadow: "0 0 12px rgba(147,51,234,0.4)",  border: "2px solid rgba(147,51,234,0.35)" },
+  suit:            { boxShadow: "0 0 12px rgba(59,91,219,0.35)",  border: "2px solid rgba(59,91,219,0.3)"   },
+  hoodie:          { boxShadow: "0 0 12px rgba(59,91,219,0.35)",  border: "2px solid rgba(59,91,219,0.3)"   },
 };
 
 function Achievements() {
@@ -181,15 +181,31 @@ function Achievements() {
         /* Shop/inventory item cards */
         .item-card {
           background: white;
-          border-radius: 20px;
-          padding: 18px 14px;
+          border-radius: 22px;
+          padding: 20px 14px 16px;
           text-align: center;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
           transition: transform 0.2s ease, box-shadow 0.2s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         .item-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+          transform: translateY(-4px);
+          box-shadow: 0 10px 28px rgba(0,0,0,0.11);
+        }
+
+        /* Icon container inside card */
+        .item-icon-wrap {
+          width: 88px;
+          height: 88px;
+          border-radius: 22px;
+          background: linear-gradient(145deg, #f8f8f4, #efefea);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 12px;
+          flex-shrink: 0;
         }
 
         /* Buttons */
@@ -211,6 +227,7 @@ function Achievements() {
           font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
           transition: transform 0.13s cubic-bezier(0.34,1.5,0.64,1), opacity 0.13s;
           -webkit-tap-highlight-color: transparent;
+          margin-top: auto;
         }
         .btn-shop:active { transform: scale(0.95); opacity: 0.8; }
 
@@ -335,19 +352,14 @@ function Achievements() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
               {items.map(item => (
                 <div key={item.id} className="item-card" style={ITEM_RARITY[item.id] ?? {}}>
-                  <div style={{
-                    width: 64, height: 64, margin: "0 auto 8px",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    borderRadius: 16, background: "#f5f5f0",
-                    ...(ITEM_RARITY[item.id] ?? {}),
-                  }}>
+                  <div className="item-icon-wrap" style={ITEM_RARITY[item.id] ?? {}}>
                     {ITEM_IMAGE[item.id]
-                      ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 44, height: 44, objectFit: "contain" }} />
-                      : <span style={{ fontSize: 32 }}>🎁</span>
+                      ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                      : <span style={{ fontSize: 44 }}>🎁</span>
                     }
                   </div>
-                  <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
-                  <p style={{ margin: "0 0 10px", fontSize: 12, color: "#c9a84c", fontWeight: 700 }}>🪙 {item.cost}</p>
+                  <p style={{ margin: "0 0 3px", fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{item.name}</p>
+                  <p style={{ margin: "0 0 10px", fontSize: 13, color: "#c9a84c", fontWeight: 700 }}>🪙 {item.cost}</p>
                   {item.equipped && (
                     <span style={{ display: "inline-block", padding: "3px 10px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#2e7d32", fontWeight: 700, marginBottom: 8 }}>
                       ✓ On
@@ -383,18 +395,13 @@ function Achievements() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "0 16px" }}>
                 {inventory.map(item => (
                   <div key={item.id} className="item-card" style={ITEM_RARITY[item.id] ?? {}}>
-                    <div style={{
-                      width: 64, height: 64, margin: "0 auto 8px",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      borderRadius: 16, background: "#f5f5f0",
-                      ...(ITEM_RARITY[item.id] ?? {}),
-                    }}>
+                    <div className="item-icon-wrap" style={ITEM_RARITY[item.id] ?? {}}>
                       {ITEM_IMAGE[item.id]
-                        ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 44, height: 44, objectFit: "contain" }} />
-                        : <span style={{ fontSize: 32 }}>🎁</span>
+                        ? <img src={ITEM_IMAGE[item.id]} alt={item.name} style={{ width: 64, height: 64, objectFit: "contain" }} />
+                        : <span style={{ fontSize: 44 }}>🎁</span>
                       }
                     </div>
-                    <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 800, color: "#11112a" }}>{item.name}</p>
+                    <p style={{ margin: "0 0 3px", fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px", lineHeight: 1.2 }}>{item.name}</p>
                     <p style={{ margin: "0 0 10px", fontSize: 11, color: "#aaa", textTransform: "uppercase" as const, fontWeight: 600, letterSpacing: "0.5px" }}>{item.type}</p>
                     {item.equipped && (
                       <span style={{ display: "inline-block", padding: "3px 10px", background: "#e8f5e9", borderRadius: 20, fontSize: 11, color: "#2e7d32", fontWeight: 700, marginBottom: 8 }}>
@@ -434,5 +441,3 @@ function Achievements() {
 }
 
 export default Achievements;
-
-//d
