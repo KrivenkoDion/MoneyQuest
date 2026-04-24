@@ -12,10 +12,11 @@ function xpToLevel(xp: number) { return Math.min(Math.floor(xp / 100) + 1, 20); 
 function xpForNextLevel(level: number) { return level * 100; }
 function xpProgressInLevel(xp: number) { return xp % 100; }
 
-function ChillGuy({ fur, inner, equippedHat, equippedGlasses }: {
+function ChillGuy({ fur, inner, equippedHat, equippedGlasses, equippedOutfit }: {
   fur: string; inner: string;
   equippedHat: string | null;
   equippedGlasses: string | null;
+  equippedOutfit?: string | null;
 }) {
   return (
     <svg width="120" height="140" viewBox="0 0 200 230" className="profile-bear">
@@ -34,13 +35,66 @@ function ChillGuy({ fur, inner, equippedHat, equippedGlasses }: {
       <rect x="112" y="83" width="20" height="7" rx="4" fill={fur} />
       <path d="M88 126 Q100 134 112 126" fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
       <rect x="82" y="140" width="36" height="20" fill={fur} />
-      <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
-      <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
-      <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
-      <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-      <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+
+      {/* ── OUTFITS (replace default body) ── */}
+      {equippedOutfit === "hoodie" && (
+        <g>
+          <rect x="28" y="155" width="144" height="78" rx="20" fill="#5B7DD8" />
+          <path d="M28 172 Q100 145 172 172" fill="#5B7DD8" />
+          <rect x="28" y="162" width="144" height="12" rx="6" fill="#4A6BC7" />
+          <rect x="53" y="193" width="94" height="28" rx="10" fill="#4A6BC7" />
+          <rect x="85" y="160" width="30" height="38" rx="8" fill="#4A6BC7" />
+          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
+          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
+        </g>
+      )}
+      {equippedOutfit === "suit" && (
+        <g>
+          <rect x="28" y="155" width="144" height="78" rx="20" fill="#2D2D4A" />
+          <path d="M28 172 Q100 145 172 172" fill="#2D2D4A" />
+          <polygon points="100,158 88,185 100,178 112,185" fill="#F5F5F5" />
+          <rect x="96" y="178" width="8" height="30" fill="#F5F5F5" />
+          <polygon points="85,158 75,195 88,185" fill="#3D3D5A" />
+          <polygon points="115,158 125,195 112,185" fill="#3D3D5A" />
+          <rect x="90" y="200" width="20" height="4" rx="2" fill="#C9A84C" />
+          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
+          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
+          <rect x="28" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
+          <rect x="146" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
+        </g>
+      )}
+      {equippedOutfit === "royal_robe" && (
+        <g>
+          <rect x="24" y="153" width="152" height="82" rx="22" fill="#6B21A8" />
+          <path d="M24 170 Q100 143 176 170" fill="#6B21A8" />
+          <rect x="24" y="163" width="152" height="10" rx="5" fill="#F5D060" />
+          <rect x="24" y="218" width="152" height="17" rx="8" fill="#F5D060" />
+          <rect x="57" y="193" width="86" height="30" rx="10" fill="#7C3ABD" />
+          <circle cx="100" cy="183" r="6" fill="#F5D060" />
+          <circle cx="100" cy="200" r="4" fill="#F5D060" />
+          <circle cx="84"  cy="191" r="3" fill="#F5D060" />
+          <circle cx="116" cy="191" r="3" fill="#F5D060" />
+          <path d="M24 166 Q4 204 24 238"  fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
+          <path d="M176 166 Q196 204 176 238" fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
+          <rect x="4"   cy="216" width="32" height="10" rx="5" fill="#F5D060" />
+          <rect x="164" y="216" width="32" height="10" rx="5" fill="#F5D060" />
+        </g>
+      )}
+
+      {/* ── DEFAULT BODY (hidden when outfit equipped) ── */}
+      {!equippedOutfit && (
+        <g>
+          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
+          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
+          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
+          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+        </g>
+      )}
+
       <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
       <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
+
       {equippedHat === "hat" && (
         <g><rect x="72" y="38" width="56" height="8" rx="3" fill="#2D1B0E" /><rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" /></g>
       )}
