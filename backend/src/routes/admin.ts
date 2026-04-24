@@ -21,6 +21,23 @@ export function adminRoutes(pool: any) {
     res.json({ message: "XP added", amount });
   });
 
+  // ADD COINS (admin only)
+  router.post("/admin/add-coins", authMiddleware, async (req: any, res) => {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const { amount } = req.body;
+    const email = req.user.email;
+
+    await pool.query(
+      "UPDATE users SET coins = coins + $1 WHERE email = $2",
+      [amount, email]
+    );
+
+    res.json({ message: "Coins added", amount });
+  });
+
   // GET ALL USERS (admin only)
   router.get("/admin/users", authMiddleware, async (req: any, res) => {
     if (req.user.role !== "admin") {
