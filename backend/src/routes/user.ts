@@ -14,7 +14,7 @@ export function userRoutes(pool: any) {
 
     const result = await pool.query(
       `SELECT email, name, avatar, xp, level, coins, streak,
-              equipped_hat, equipped_glasses,
+              equipped_hat, equipped_glasses, equipped_scarf, equipped_outfit,
               monthly_income, income_day, role
        FROM users WHERE email = $1`,
       [email]
