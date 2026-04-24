@@ -51,11 +51,12 @@ function useBearReaction(resetDelay = 1500) {
 }
 
 function BearCharacter({
-  fur, inner, equippedHat, equippedGlasses, onClick, mood = "idle",
+  fur, inner, equippedHat, equippedGlasses, equippedOutfit, onClick, mood = "idle",
 }: {
   fur: string; inner: string;
   equippedHat?: string | null;
   equippedGlasses?: string | null;
+  equippedOutfit?: string | null;
   onClick?: () => void;
   mood?: BearMood;
 }) {
@@ -99,6 +100,52 @@ function BearCharacter({
         transition: "filter 0.3s ease",
       }}
     >
+      {/* ── OUTFIT (renders behind body) ── */}
+      {equippedOutfit === "hoodie" && (
+        <g>
+          <rect x="28" y="155" width="144" height="78" rx="20" fill="#5B7DD8" />
+          <path d="M28 172 Q100 145 172 172" fill="#5B7DD8" />
+          <rect x="28" y="162" width="144" height="12" rx="6" fill="#4A6BC7" />
+          <rect x="53" y="193" width="94" height="28" rx="10" fill="#4A6BC7" />
+          <rect x="85" y="160" width="30" height="38" rx="8" fill="#4A6BC7" />
+          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
+          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
+        </g>
+      )}
+      {equippedOutfit === "suit" && (
+        <g>
+          <rect x="28" y="155" width="144" height="78" rx="20" fill="#2D2D4A" />
+          <path d="M28 172 Q100 145 172 172" fill="#2D2D4A" />
+          <polygon points="100,158 88,185 100,178 112,185" fill="#F5F5F5" />
+          <rect x="96" y="178" width="8" height="30" fill="#F5F5F5" />
+          <polygon points="85,158 75,195 88,185" fill="#3D3D5A" />
+          <polygon points="115,158 125,195 112,185" fill="#3D3D5A" />
+          <rect x="90" y="200" width="20" height="4" rx="2" fill="#C9A84C" />
+          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
+          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
+          <rect x="28" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
+          <rect x="146" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
+        </g>
+      )}
+      {equippedOutfit === "royal_robe" && (
+        <g>
+          <rect x="24" y="153" width="152" height="82" rx="22" fill="#6B21A8" />
+          <path d="M24 170 Q100 143 176 170" fill="#6B21A8" />
+          <rect x="24" y="163" width="152" height="10" rx="5" fill="#F5D060" />
+          <rect x="24" y="218" width="152" height="17" rx="8" fill="#F5D060" />
+          <rect x="57" y="193" width="86" height="30" rx="10" fill="#7C3ABD" />
+          <circle cx="100" cy="183" r="6" fill="#F5D060" />
+          <circle cx="100" cy="200" r="4" fill="#F5D060" />
+          <circle cx="84"  cy="191" r="3" fill="#F5D060" />
+          <circle cx="116" cy="191" r="3" fill="#F5D060" />
+          <path d="M24 166 Q4 204 24 238"  fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
+          <path d="M176 166 Q196 204 176 238" fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
+          <rect x="4"  y="216" width="32" height="10" rx="5" fill="#F5D060" />
+          <rect x="164" y="216" width="32" height="10" rx="5" fill="#F5D060" />
+        </g>
+      )}
+
+      {/* ── BEAR BODY ── */}
       <ellipse cx="55"  cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(-15,55,60)" />
       <ellipse cx="145" cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(15,145,60)" />
       <ellipse cx="55"  cy="62"  rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
@@ -114,30 +161,124 @@ function BearCharacter({
       <rect x="112" y="83" width="20" height="7" rx="4" fill={fur} />
       <path d={mouthPath} fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
       <rect x="82" y="140" width="36" height="20" fill={fur} />
-      <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
-      <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
-      <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
-      <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-      <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+
+      {/* ── DEFAULT BODY (only when no outfit) ── */}
+      {!equippedOutfit && (
+        <g>
+          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
+          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
+          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
+          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+        </g>
+      )}
+
       <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
       <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
+
+      {/* ── HATS ── */}
       {equippedHat === "hat" && (
-        <g><rect x="72" y="38" width="56" height="8" rx="3" fill="#2D1B0E" /><rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" /></g>
+        <g>
+          <rect x="72" y="38" width="56" height="8"  rx="3" fill="#2D1B0E" />
+          <rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" />
+        </g>
+      )}
+      {equippedHat === "baseball_cap" && (
+        <g>
+          <ellipse cx="100" cy="46" rx="34" ry="14" fill="#E53935" />
+          <rect x="66" y="44" width="68" height="8" rx="4" fill="#C62828" />
+          <ellipse cx="100" cy="44" rx="34" ry="16" fill="#E53935" />
+          <path d="M100 28 Q120 26 126 40" fill="none" stroke="#C62828" strokeWidth="2" />
+          <rect x="100" y="36" width="44" height="10" rx="5" fill="#C62828" />
+          <rect x="86" y="40" width="28" height="6" rx="3" fill="#EF5350" />
+        </g>
+      )}
+      {equippedHat === "beanie" && (
+        <g>
+          <ellipse cx="100" cy="50" rx="38" ry="20" fill="#1565C0" />
+          <ellipse cx="100" cy="42" rx="36" ry="18" fill="#1976D2" />
+          <rect x="64"  y="48" width="72" height="10" rx="5" fill="#1565C0" />
+          <rect x="64"  y="54" width="72" height="7"  rx="3" fill="#E3F2FD" />
+          <ellipse cx="100" cy="26" rx="10" ry="10" fill="#E3F2FD" />
+        </g>
+      )}
+      {equippedHat === "santa_hat" && (
+        <g>
+          <polygon points="100,10 68,52 132,52" fill="#D32F2F" />
+          <rect x="64" y="48" width="72" height="12" rx="6" fill="#F5F5F5" />
+          <ellipse cx="100" cy="12" rx="7" ry="7" fill="#F5F5F5" />
+        </g>
+      )}
+      {equippedHat === "wizard_hat" && (
+        <g>
+          <polygon points="100,4 68,56 132,56" fill="#4A148C" />
+          <rect x="62" y="52" width="76" height="10" rx="5" fill="#7B1FA2" />
+          <circle cx="88"  cy="38" r="4" fill="#FFD700" />
+          <circle cx="106" cy="24" r="3" fill="#FFD700" />
+          <circle cx="114" cy="42" r="3" fill="#CE93D8" />
+          <path d="M72 50 Q100 30 128 50" fill="none" stroke="#CE93D8" strokeWidth="1.5" strokeDasharray="4 3" />
+        </g>
       )}
       {equippedHat === "crown" && (
-        <g><polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" /><rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" /></g>
+        <g>
+          <polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" />
+          <rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" />
+          <circle cx="88"  cy="24" r="3" fill="#E53935" />
+          <circle cx="100" cy="38" r="3" fill="#1565C0" />
+          <circle cx="112" cy="24" r="3" fill="#43A047" />
+        </g>
       )}
+
+      {/* ── GLASSES ── */}
       {equippedGlasses === "glasses" && (
         <g>
           <circle cx="78"  cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
           <circle cx="122" cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
           <line x1="89" y1="90" x2="111" y2="90" stroke="#1a1a2e" strokeWidth="2" />
+          <line x1="56" y1="88" x2="67"  y2="88" stroke="#1a1a2e" strokeWidth="2" />
+          <line x1="133" y1="88" x2="144" y2="88" stroke="#1a1a2e" strokeWidth="2" />
         </g>
       )}
       {equippedGlasses === "monocle" && (
         <g>
           <circle cx="122" cy="90" r="13" fill="none" stroke="#8B7355" strokeWidth="2.5" />
           <line x1="122" y1="103" x2="126" y2="114" stroke="#8B7355" strokeWidth="1.5" />
+          <line x1="133" y1="88"  x2="144" y2="86"  stroke="#8B7355" strokeWidth="1.5" />
+        </g>
+      )}
+      {equippedGlasses === "sunglasses" && (
+        <g>
+          <rect x="65" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
+          <rect x="109" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
+          <line x1="91" y1="91" x2="109" y2="91" stroke="#1a1a1a" strokeWidth="2.5" />
+          <line x1="54" y1="88" x2="65"  y2="88" stroke="#1a1a1a" strokeWidth="2" />
+          <line x1="135" y1="88" x2="146" y2="88" stroke="#1a1a1a" strokeWidth="2" />
+          <rect x="66" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
+          <rect x="110" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
+        </g>
+      )}
+      {equippedGlasses === "pixel_glasses" && (
+        <g>
+          <rect x="64" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
+          <rect x="108" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
+          <line x1="92" y1="90" x2="108" y2="90" stroke="#00E676" strokeWidth="2.5" />
+          <line x1="53" y1="88" x2="64"  y2="88" stroke="#00E676" strokeWidth="2" />
+          <line x1="136" y1="88" x2="147" y2="88" stroke="#00E676" strokeWidth="2" />
+          <rect x="68" y="87" width="4" height="4" fill="#00E676" />
+          <rect x="76" y="85" width="4" height="4" fill="#00E676" />
+          <rect x="112" y="87" width="4" height="4" fill="#00E676" />
+          <rect x="120" y="85" width="4" height="4" fill="#00E676" />
+        </g>
+      )}
+      {equippedGlasses === "diamond_glasses" && (
+        <g>
+          <polygon points="78,79 91,88 78,99 65,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
+          <polygon points="122,79 135,88 122,99 109,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
+          <line x1="91" y1="88" x2="109" y2="88" stroke="#90CAF9" strokeWidth="2" />
+          <line x1="54" y1="86" x2="65"  y2="88" stroke="#90CAF9" strokeWidth="2" />
+          <line x1="135" y1="88" x2="146" y2="86" stroke="#90CAF9" strokeWidth="2" />
+          <polygon points="78,82 83,88 78,94 73,88" fill="rgba(255,255,255,0.6)" />
+          <polygon points="122,82 127,88 122,94 117,88" fill="rgba(255,255,255,0.6)" />
         </g>
       )}
     </svg>
@@ -364,16 +505,13 @@ function Home() {
           background: linear-gradient(140deg, #11112a 0%, #1d1d43 55%, #282860 100%);
           box-shadow: 0 8px 32px rgba(17,17,42,0.38), 0 2px 6px rgba(0,0,0,0.18);
         }
-        /* subtle dot grid */
         .mq-hero::before {
           content: '';
           position: absolute; inset: 0;
-          background-image:
-            radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+          background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
           background-size: 22px 22px;
           pointer-events: none;
         }
-        /* ambient glow top-right */
         .mq-hero::after {
           content: '';
           position: absolute;
@@ -545,13 +683,13 @@ function Home() {
         <div className="mq-hero s1">
           <div style={{ display: "flex", alignItems: "flex-start", gap: 4, position: "relative", zIndex: 1 }}>
 
-            {/* Bear + tagline */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 96 }}>
               <BearCharacter
                 fur={charColors.fur}
                 inner={charColors.inner}
                 equippedHat={user?.equipped_hat}
                 equippedGlasses={user?.equipped_glasses}
+                equippedOutfit={user?.equipped_outfit}
                 mood={mood}
               />
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.36)", fontStyle: "italic", textAlign: "center", lineHeight: 1.4, maxWidth: 88 }}>
@@ -559,7 +697,6 @@ function Home() {
               </span>
             </div>
 
-            {/* Balance */}
             <div style={{ flex: 1, paddingLeft: 10, paddingTop: 4 }}>
               <p style={{ margin: "0 0 1px", fontSize: 10, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 700 }}>
                 Total Balance
@@ -653,8 +790,6 @@ function Home() {
 
         {/* SAVINGS GOAL */}
         <div className="mq-card s4" style={{ marginBottom: 14 }}>
-
-          {/* Active goal — fades out on completion */}
           {savingsGoal && (
             <div
               className={savingsFading ? "savings-fading" : ""}
@@ -714,7 +849,6 @@ function Home() {
             </div>
           )}
 
-          {/* Create new goal — always visible */}
           {!showSavingsCreate ? (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -802,7 +936,7 @@ function Home() {
         )}
       </div>
 
-      {/* BOTTOM NAV — outside scrollable container */}
+      {/* BOTTOM NAV */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
         width: "100%", maxWidth: 390, margin: "0 auto", background: "white",
@@ -826,7 +960,7 @@ function Home() {
         ))}
       </div>
 
-      {/* MODAL — rendered via portal to escape scroll container */}
+      {/* MODAL — portal */}
       {showModal && ReactDOM.createPortal(
         <div
           className="mq-overlay"
