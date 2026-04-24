@@ -66,10 +66,10 @@ function ChillGuy({ fur, inner, equippedHat, equippedGlasses }: {
 
 function Profile() {
   const navigate = useNavigate();
-  const [user, setUser]                   = useState<any>(null);
+  const [user, setUser]                     = useState<any>(null);
   const [showIncomeEdit, setShowIncomeEdit] = useState(false);
-  const [incomeAmount, setIncomeAmount]   = useState("");
-  const [incomeDay, setIncomeDay]         = useState("1");
+  const [incomeAmount, setIncomeAmount]     = useState("");
+  const [incomeDay, setIncomeDay]           = useState("1");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -302,6 +302,20 @@ function Profile() {
                 }}
                 style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "#fff8e7", color: "#c9a84c", fontSize: 14, fontWeight: 800, fontFamily: "inherit" }}
               >⚡ +100 XP (Dev)</button>
+              <button
+                className="tap"
+                onClick={async () => {
+                  const token = localStorage.getItem("token");
+                  const r = await fetch("https://moneyquest-pcoq.onrender.com/admin/add-coins", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ amount: 100 }),
+                  });
+                  const d = await r.json();
+                  if (d.amount) setUser({ ...user, coins: (user.coins || 0) + d.amount });
+                }}
+                style={{ width: "100%", padding: 14, borderRadius: 14, border: "none", background: "#fff8e7", color: "#c9a84c", fontSize: 14, fontWeight: 800, fontFamily: "inherit", marginTop: 8 }}
+              >🪙 +100 Coins (Dev)</button>
             </div>
           )}
 
