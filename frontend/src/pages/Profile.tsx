@@ -20,6 +20,181 @@ function ChillGuy({ fur, inner, equippedHat, equippedGlasses, equippedOutfit }: 
 }) {
   return (
     <svg width="120" height="140" viewBox="0 0 200 230" className="profile-bear">
+
+      {/* ── HOODIE ── */}
+      {equippedOutfit === "hoodie" && (
+        <g>
+          {/* Hood behind head */}
+          <ellipse cx="100" cy="62" rx="46" ry="38" fill="#4A6ED4" opacity="0.95" />
+          <ellipse cx="100" cy="58" rx="38" ry="30" fill="#5B7DD8" />
+
+          {/* Wide body — extends far outside bear silhouette */}
+          <rect x="10" y="148" width="180" height="90" rx="28" fill="#5B7DD8" />
+
+          {/* Shoulder bulk */}
+          <ellipse cx="22"  cy="168" rx="28" ry="22" fill="#5B7DD8" />
+          <ellipse cx="178" cy="168" rx="28" ry="22" fill="#5B7DD8" />
+
+          {/* Sleeve left */}
+          <path d="M10 162 Q-18 190 -8 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
+          {/* Sleeve right */}
+          <path d="M190 162 Q218 190 208 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
+
+          {/* Sleeve cuffs */}
+          <ellipse cx="-8"  cy="228" rx="19" ry="10" fill="#4A6BC7" />
+          <ellipse cx="208" cy="228" rx="19" ry="10" fill="#4A6BC7" />
+
+          {/* Body shading */}
+          <rect x="10" y="185" width="180" height="53" rx="18" fill="#4A6BC7" opacity="0.5" />
+
+          {/* Center seam */}
+          <line x1="100" y1="150" x2="100" y2="238" stroke="#4060B8" strokeWidth="2" opacity="0.6" />
+
+          {/* Front pocket */}
+          <rect x="68" y="195" width="64" height="36" rx="14" fill="#4A6BC7" />
+          <rect x="72" y="199" width="56" height="28" rx="11" fill="#4560C0" />
+
+          {/* Hood inner shadow */}
+          <ellipse cx="100" cy="72" rx="28" ry="22" fill="#4A6BC7" opacity="0.4" />
+
+          {/* Hood drawstring */}
+          <path d="M78 94 Q88 100 100 97 Q112 100 122 94" fill="none" stroke="#3A5AB0" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="78"  cy="94" r="3" fill="#3A5AB0" />
+          <circle cx="122" cy="94" r="3" fill="#3A5AB0" />
+        </g>
+      )}
+
+      {/* ── SUIT ── */}
+      {equippedOutfit === "suit" && (
+        <g>
+          {/* Jacket base */}
+          <rect x="14" y="148" width="172" height="90" rx="22" fill="#1E1E38" />
+
+          {/* Shoulder pads */}
+          <ellipse cx="20"  cy="162" rx="26" ry="16" fill="#252545" />
+          <ellipse cx="180" cy="162" rx="26" ry="16" fill="#252545" />
+
+          {/* Left sleeve */}
+          <path d="M14 158 Q-14 188 -4 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
+          {/* Right sleeve */}
+          <path d="M186 158 Q214 188 204 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
+
+          {/* Sleeve cuffs — white shirt peeking */}
+          <ellipse cx="-4"  cy="230" rx="18" ry="9" fill="#F0F0F0" />
+          <ellipse cx="204" cy="230" rx="18" ry="9" fill="#F0F0F0" />
+
+          {/* Jacket panels */}
+          <path d="M14 148 Q14 238 55 238 L55 148 Z" fill="#252548" opacity="0.7" />
+          <path d="M186 148 Q186 238 145 238 L145 148 Z" fill="#252548" opacity="0.7" />
+
+          {/* White shirt V */}
+          <polygon points="100,150 80,238 120,238" fill="#F5F5F5" />
+
+          {/* Left lapel */}
+          <polygon points="100,150 60,150 76,196" fill="#2A2A4A" />
+          {/* Right lapel */}
+          <polygon points="100,150 140,150 124,196" fill="#2A2A4A" />
+
+          {/* Lapel shine */}
+          <polygon points="100,150 64,150 72,172" fill="#32325A" opacity="0.8" />
+          <polygon points="100,150 136,150 128,172" fill="#32325A" opacity="0.8" />
+
+          {/* Pocket square */}
+          <rect x="26" y="168" width="18" height="12" rx="3" fill="#F5F5F5" opacity="0.9" />
+
+          {/* Tie */}
+          <polygon points="100,152 94,172 100,220 106,172" fill="#C9A84C" />
+          <polygon points="94,152 106,152 108,164 92,164" fill="#E8C060" />
+          <line x1="100" y1="175" x2="100" y2="215" stroke="#B89040" strokeWidth="1.5" opacity="0.6" />
+
+          {/* Buttons */}
+          <circle cx="100" cy="228" r="3" fill="#2A2A4A" />
+          <circle cx="100" cy="214" r="3" fill="#2A2A4A" />
+          <circle cx="100" cy="200" r="3" fill="#2A2A4A" />
+
+          {/* Jacket bottom edge */}
+          <rect x="14" y="232" width="172" height="8" rx="6" fill="#161630" />
+        </g>
+      )}
+
+      {/* ── ROYAL ROBE ── */}
+      {equippedOutfit === "royal_robe" && (
+        <g>
+          {/* Cape — dramatic wide shape */}
+          <ellipse cx="100" cy="155" rx="88" ry="20" fill="#4A0E8F" />
+          <path d="M12 155 Q-10 210 8 250 Q50 270 100 268 Q150 270 192 250 Q210 210 188 155 Z" fill="#5B1AAA" />
+
+          {/* Cape inner shadow */}
+          <path d="M30 158 Q16 205 28 245 Q60 260 100 258 Q140 260 172 245 Q184 205 170 158 Z" fill="#4A0E8F" opacity="0.6" />
+
+          {/* Robe body */}
+          <rect x="22" y="148" width="156" height="92" rx="24" fill="#6B21A8" />
+
+          {/* Shoulder mantle */}
+          <ellipse cx="100" cy="150" rx="76" ry="18" fill="#7C2EC0" />
+
+          {/* Left sleeve */}
+          <path d="M22 156 Q-16 192 -4 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
+          {/* Right sleeve */}
+          <path d="M178 156 Q216 192 204 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
+
+          {/* Gold cuffs */}
+          <ellipse cx="-4"  cy="238" rx="20" ry="10" fill="#C9A84C" />
+          <ellipse cx="204" cy="238" rx="20" ry="10" fill="#C9A84C" />
+          <ellipse cx="-4"  cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
+          <ellipse cx="204" cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
+
+          {/* Gold shoulder trim */}
+          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#C9A84C" strokeWidth="5" strokeLinecap="round" />
+          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#F0D870" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+
+          {/* Gold bottom hem */}
+          <rect x="22" y="230" width="156" height="10" rx="5" fill="#C9A84C" />
+          <rect x="22" y="231" width="156" height="5"  rx="3" fill="#F0D870" opacity="0.5" />
+
+          {/* Center front panel */}
+          <rect x="82" y="150" width="36" height="88" rx="6" fill="#7C2EC0" />
+
+          {/* Gold center trim */}
+          <rect x="93" y="148" width="14" height="92" rx="4" fill="#C9A84C" />
+          <rect x="96" y="148" width="8"  height="92" rx="3" fill="#F0D870" opacity="0.5" />
+
+          {/* Gemstones */}
+          <circle cx="100" cy="168" r="6" fill="#E53935" />
+          <circle cx="100" cy="168" r="3" fill="#FF6B6B" opacity="0.7" />
+          <circle cx="100" cy="190" r="5" fill="#1565C0" />
+          <circle cx="100" cy="190" r="2.5" fill="#64B5F6" opacity="0.7" />
+          <circle cx="100" cy="210" r="5" fill="#2E7D32" />
+          <circle cx="100" cy="210" r="2.5" fill="#81C784" opacity="0.7" />
+
+          {/* Side ornaments */}
+          <circle cx="56"  cy="172" r="5" fill="#C9A84C" />
+          <circle cx="144" cy="172" r="5" fill="#C9A84C" />
+          <circle cx="56"  cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
+          <circle cx="144" cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
+
+          {/* Side accent lines */}
+          <line x1="40"  y1="158" x2="40"  y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
+          <line x1="160" y1="158" x2="160" y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
+
+          {/* Fur collar */}
+          <path d="M22 150 Q100 138 178 150 Q160 162 100 158 Q40 162 22 150 Z" fill="#F5F5F5" opacity="0.9" />
+          <path d="M30 150 Q100 141 170 150 Q155 158 100 155 Q45 158 30 150 Z" fill="#E8E8E8" opacity="0.5" />
+        </g>
+      )}
+
+      {/* ── DEFAULT BODY (hidden when outfit equipped) ── */}
+      {!equippedOutfit && (
+        <g>
+          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
+          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
+          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
+          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+        </g>
+      )}
+
+      {/* ── BEAR BODY ── */}
       <ellipse cx="55"  cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(-15,55,60)" />
       <ellipse cx="145" cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(15,145,60)" />
       <ellipse cx="55"  cy="62"  rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
@@ -36,71 +211,18 @@ function ChillGuy({ fur, inner, equippedHat, equippedGlasses, equippedOutfit }: 
       <path d="M88 126 Q100 134 112 126" fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
       <rect x="82" y="140" width="36" height="20" fill={fur} />
 
-      {/* ── OUTFITS (replace default body) ── */}
-      {equippedOutfit === "hoodie" && (
-        <g>
-          <rect x="28" y="155" width="144" height="78" rx="20" fill="#5B7DD8" />
-          <path d="M28 172 Q100 145 172 172" fill="#5B7DD8" />
-          <rect x="28" y="162" width="144" height="12" rx="6" fill="#4A6BC7" />
-          <rect x="53" y="193" width="94" height="28" rx="10" fill="#4A6BC7" />
-          <rect x="85" y="160" width="30" height="38" rx="8" fill="#4A6BC7" />
-          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
-          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#5B7DD8" strokeWidth="30" strokeLinecap="round" />
-        </g>
-      )}
-      {equippedOutfit === "suit" && (
-        <g>
-          <rect x="28" y="155" width="144" height="78" rx="20" fill="#2D2D4A" />
-          <path d="M28 172 Q100 145 172 172" fill="#2D2D4A" />
-          <polygon points="100,158 88,185 100,178 112,185" fill="#F5F5F5" />
-          <rect x="96" y="178" width="8" height="30" fill="#F5F5F5" />
-          <polygon points="85,158 75,195 88,185" fill="#3D3D5A" />
-          <polygon points="115,158 125,195 112,185" fill="#3D3D5A" />
-          <rect x="90" y="200" width="20" height="4" rx="2" fill="#C9A84C" />
-          <path d="M28 168 Q8 204 28 238"  fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
-          <path d="M172 168 Q192 204 172 238" fill="none" stroke="#2D2D4A" strokeWidth="30" strokeLinecap="round" />
-          <rect x="28" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
-          <rect x="146" y="166" width="26" height="20" rx="5" fill="#F5F5F5" />
-        </g>
-      )}
-      {equippedOutfit === "royal_robe" && (
-        <g>
-          <rect x="24" y="153" width="152" height="82" rx="22" fill="#6B21A8" />
-          <path d="M24 170 Q100 143 176 170" fill="#6B21A8" />
-          <rect x="24" y="163" width="152" height="10" rx="5" fill="#F5D060" />
-          <rect x="24" y="218" width="152" height="17" rx="8" fill="#F5D060" />
-          <rect x="57" y="193" width="86" height="30" rx="10" fill="#7C3ABD" />
-          <circle cx="100" cy="183" r="6" fill="#F5D060" />
-          <circle cx="100" cy="200" r="4" fill="#F5D060" />
-          <circle cx="84"  cy="191" r="3" fill="#F5D060" />
-          <circle cx="116" cy="191" r="3" fill="#F5D060" />
-          <path d="M24 166 Q4 204 24 238"  fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
-          <path d="M176 166 Q196 204 176 238" fill="none" stroke="#6B21A8" strokeWidth="32" strokeLinecap="round" />
-          <rect x="4"   cy="216" width="32" height="10" rx="5" fill="#F5D060" />
-          <rect x="164" y="216" width="32" height="10" rx="5" fill="#F5D060" />
-        </g>
-      )}
-
-      {/* ── DEFAULT BODY (hidden when outfit equipped) ── */}
-      {!equippedOutfit && (
-        <g>
-          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
-          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
-          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
-          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-        </g>
-      )}
-
       <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
       <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
 
+      {/* ── HATS ── */}
       {equippedHat === "hat" && (
         <g><rect x="72" y="38" width="56" height="8" rx="3" fill="#2D1B0E" /><rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" /></g>
       )}
       {equippedHat === "crown" && (
         <g><polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" /><rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" /></g>
       )}
+
+      {/* ── GLASSES ── */}
       {equippedGlasses === "glasses" && (
         <g>
           <circle cx="78"  cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
@@ -231,7 +353,13 @@ function Profile() {
           {/* CHARACTER CARD */}
           <div className="p-card" style={{ display: "flex", alignItems: "center", gap: 20, padding: "22px 20px" }}>
             <div style={{ flexShrink: 0 }}>
-              <ChillGuy fur={charColors.fur} inner={charColors.inner} equippedHat={user.equipped_hat || null} equippedGlasses={user.equipped_glasses || null} />
+              <ChillGuy
+                fur={charColors.fur}
+                inner={charColors.inner}
+                equippedHat={user.equipped_hat || null}
+                equippedGlasses={user.equipped_glasses || null}
+                equippedOutfit={user.equipped_outfit || null}
+              />
             </div>
             <div style={{ flex: 1 }}>
               <h2 style={{ margin: "0 0 2px", fontSize: 20, fontWeight: 900, color: "#11112a", letterSpacing: "-0.4px" }}>
