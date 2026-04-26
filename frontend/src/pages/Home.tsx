@@ -529,18 +529,16 @@ function Home() {
 
         .mq-hero {
           position: relative;
-          overflow: visible;
+          overflow: hidden;
           margin: 0 16px 14px;
           border-radius: 28px;
           padding: 22px 20px 20px;
           background: linear-gradient(140deg, #11112a 0%, #1d1d43 55%, #282860 100%);
           box-shadow: 0 8px 32px rgba(17,17,42,0.38), 0 2px 6px rgba(0,0,0,0.18);
-          clip-path: none;
         }
         .mq-hero::before {
           content: '';
           position: absolute; inset: 0;
-          border-radius: 28px;
           background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
           background-size: 22px 22px;
           pointer-events: none;
@@ -700,81 +698,46 @@ function Home() {
         </div>
 
         {/* ── HERO CARD ── */}
-        <div className="mq-hero s1" style={{ paddingTop: 28 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 0, position: "relative", zIndex: 1 }}>
+        <div className="mq-hero s1">
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 4, position: "relative", zIndex: 1 }}>
 
-            {/* Character column — intentionally oversized, bursts out of card */}
+            {/* Character column — clean, stable, no scaling */}
             <div style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "flex-end",
-              minWidth: 105,
-              marginLeft: -8,
-              marginBottom: -12,
-              marginTop: -10,
-              position: "relative",
-              zIndex: 2,
+              gap: 6,
+              minWidth: 96,
             }}>
-              {/* Glow platform under bear */}
-              <div style={{
-                position: "absolute",
-                bottom: 22,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 100,
-                height: 22,
-                borderRadius: "50%",
-                background: "radial-gradient(ellipse, rgba(201,168,76,0.32) 0%, transparent 75%)",
-                filter: "blur(6px)",
-                pointerEvents: "none",
-              }} />
-
-              {/* Bear — intentionally oversized, head punches above card */}
-              <div
-                style={{
-                  transform: "scale(1.92)",
-                  transformOrigin: "bottom center",
-                  filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.55))",
-                  transition: "transform 0.3s cubic-bezier(0.34,1.4,0.64,1)",
-                  cursor: "pointer",
-                  marginBottom: 4,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "scale(2.0)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1.92)")}
-              >
-                <BearCharacter
-                  fur={charColors.fur}
-                  inner={charColors.inner}
-                  equippedHat={user?.equipped_hat}
-                  equippedGlasses={user?.equipped_glasses}
-                  equippedOutfit={user?.equipped_outfit}
-                  mood={mood}
-                />
-              </div>
-
+              <BearCharacter
+                fur={charColors.fur}
+                inner={charColors.inner}
+                equippedHat={user?.equipped_hat}
+                equippedGlasses={user?.equipped_glasses}
+                equippedOutfit={user?.equipped_outfit}
+                mood={mood}
+              />
               <span style={{
-                fontSize: 10,
-                color: "rgba(255,255,255,0.28)",
+                fontSize: 11,
+                color: "rgba(255,255,255,0.36)",
                 fontStyle: "italic",
                 textAlign: "center",
                 lineHeight: 1.4,
-                maxWidth: 90,
-                marginTop: 2,
+                maxWidth: 88,
               }}>
                 "{phrase}"
               </span>
             </div>
 
             {/* Balance + buttons */}
-            <div style={{ flex: 1, paddingLeft: 14, paddingTop: 6, paddingBottom: 4 }}>
+            <div style={{ flex: 1, paddingLeft: 10, paddingTop: 4 }}>
               <p style={{ margin: "0 0 1px", fontSize: 10, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 700 }}>
                 Total Balance
               </p>
-              <h1 style={{ margin: "0 0 1px", fontSize: 26, fontWeight: 900, color: "white", lineHeight: 1.1, letterSpacing: "-0.6px" }}>
+              <h1 style={{ margin: "0 0 1px", fontSize: 28, fontWeight: 900, color: "white", lineHeight: 1.1, letterSpacing: "-0.6px" }}>
                 {balance.toFixed(2)} €
               </h1>
-              <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(255,255,255,0.26)", fontWeight: 500 }}>
+              <p style={{ margin: "0 0 18px", fontSize: 11, color: "rgba(255,255,255,0.26)", fontWeight: 500 }}>
                 tracked via MoneyQuest
               </p>
 
@@ -798,7 +761,7 @@ function Home() {
           </div>
 
           {/* XP */}
-          <div style={{ marginTop: 16, position: "relative", zIndex: 1 }}>
+          <div style={{ marginTop: 20, position: "relative", zIndex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.72)", fontWeight: 800 }}>Level {level}</span>
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 600 }}>{xpInLevel} / 100 XP</span>
