@@ -51,12 +51,11 @@ function useBearReaction(resetDelay = 1500) {
 }
 
 function BearCharacter({
-  fur, inner, equippedHat, equippedGlasses, equippedOutfit, onClick, mood = "idle",
+  fur, inner, equippedHat, equippedGlasses, onClick, mood = "idle",
 }: {
   fur: string; inner: string;
   equippedHat?: string | null;
   equippedGlasses?: string | null;
-  equippedOutfit?: string | null;
   onClick?: () => void;
   mood?: BearMood;
 }) {
@@ -100,92 +99,6 @@ function BearCharacter({
         transition: "filter 0.3s ease",
       }}
     >
-      {/* ── OUTFIT (renders behind body) ── */}
-      {equippedOutfit === "hoodie" && (
-        <g>
-          <ellipse cx="100" cy="62" rx="46" ry="38" fill="#4A6ED4" opacity="0.95" />
-          <ellipse cx="100" cy="58" rx="38" ry="30" fill="#5B7DD8" />
-          <rect x="10" y="148" width="180" height="90" rx="28" fill="#5B7DD8" />
-          <ellipse cx="22"  cy="168" rx="28" ry="22" fill="#5B7DD8" />
-          <ellipse cx="178" cy="168" rx="28" ry="22" fill="#5B7DD8" />
-          <path d="M10 162 Q-18 190 -8 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
-          <path d="M190 162 Q218 190 208 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
-          <ellipse cx="-8"  cy="228" rx="19" ry="10" fill="#4A6BC7" />
-          <ellipse cx="208" cy="228" rx="19" ry="10" fill="#4A6BC7" />
-          <rect x="10" y="185" width="180" height="53" rx="18" fill="#4A6BC7" opacity="0.5" />
-          <line x1="100" y1="150" x2="100" y2="238" stroke="#4060B8" strokeWidth="2" opacity="0.6" />
-          <rect x="68" y="195" width="64" height="36" rx="14" fill="#4A6BC7" />
-          <rect x="72" y="199" width="56" height="28" rx="11" fill="#4560C0" />
-          <ellipse cx="100" cy="72" rx="28" ry="22" fill="#4A6BC7" opacity="0.4" />
-          <path d="M78 94 Q88 100 100 97 Q112 100 122 94" fill="none" stroke="#3A5AB0" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="78"  cy="94" r="3" fill="#3A5AB0" />
-          <circle cx="122" cy="94" r="3" fill="#3A5AB0" />
-        </g>
-      )}
-      {equippedOutfit === "suit" && (
-        <g>
-          <rect x="14" y="148" width="172" height="90" rx="22" fill="#1E1E38" />
-          <ellipse cx="20"  cy="162" rx="26" ry="16" fill="#252545" />
-          <ellipse cx="180" cy="162" rx="26" ry="16" fill="#252545" />
-          <path d="M14 158 Q-14 188 -4 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
-          <path d="M186 158 Q214 188 204 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
-          <ellipse cx="-4"  cy="230" rx="18" ry="9" fill="#F0F0F0" />
-          <ellipse cx="204" cy="230" rx="18" ry="9" fill="#F0F0F0" />
-          <path d="M14 148 Q14 238 55 238 L55 148 Z" fill="#252548" opacity="0.7" />
-          <path d="M186 148 Q186 238 145 238 L145 148 Z" fill="#252548" opacity="0.7" />
-          <polygon points="100,150 80,238 120,238" fill="#F5F5F5" />
-          <polygon points="100,150 60,150 76,196" fill="#2A2A4A" />
-          <polygon points="100,150 140,150 124,196" fill="#2A2A4A" />
-          <polygon points="100,150 64,150 72,172" fill="#32325A" opacity="0.8" />
-          <polygon points="100,150 136,150 128,172" fill="#32325A" opacity="0.8" />
-          <rect x="26" y="168" width="18" height="12" rx="3" fill="#F5F5F5" opacity="0.9" />
-          <polygon points="100,152 94,172 100,220 106,172" fill="#C9A84C" />
-          <polygon points="94,152 106,152 108,164 92,164" fill="#E8C060" />
-          <line x1="100" y1="175" x2="100" y2="215" stroke="#B89040" strokeWidth="1.5" opacity="0.6" />
-          <circle cx="100" cy="228" r="3" fill="#2A2A4A" />
-          <circle cx="100" cy="214" r="3" fill="#2A2A4A" />
-          <circle cx="100" cy="200" r="3" fill="#2A2A4A" />
-          <rect x="14" y="232" width="172" height="8" rx="6" fill="#161630" />
-        </g>
-      )}
-      {equippedOutfit === "royal_robe" && (
-        <g>
-          <ellipse cx="100" cy="155" rx="88" ry="20" fill="#4A0E8F" />
-          <path d="M12 155 Q-10 210 8 250 Q50 270 100 268 Q150 270 192 250 Q210 210 188 155 Z" fill="#5B1AAA" />
-          <path d="M30 158 Q16 205 28 245 Q60 260 100 258 Q140 260 172 245 Q184 205 170 158 Z" fill="#4A0E8F" opacity="0.6" />
-          <rect x="22" y="148" width="156" height="92" rx="24" fill="#6B21A8" />
-          <ellipse cx="100" cy="150" rx="76" ry="18" fill="#7C2EC0" />
-          <path d="M22 156 Q-16 192 -4 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
-          <path d="M178 156 Q216 192 204 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
-          <ellipse cx="-4"  cy="238" rx="20" ry="10" fill="#C9A84C" />
-          <ellipse cx="204" cy="238" rx="20" ry="10" fill="#C9A84C" />
-          <ellipse cx="-4"  cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
-          <ellipse cx="204" cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
-          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#C9A84C" strokeWidth="5" strokeLinecap="round" />
-          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#F0D870" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-          <rect x="22" y="230" width="156" height="10" rx="5" fill="#C9A84C" />
-          <rect x="22" y="231" width="156" height="5"  rx="3" fill="#F0D870" opacity="0.5" />
-          <rect x="82" y="150" width="36" height="88" rx="6" fill="#7C2EC0" />
-          <rect x="93" y="148" width="14" height="92" rx="4" fill="#C9A84C" />
-          <rect x="96" y="148" width="8"  height="92" rx="3" fill="#F0D870" opacity="0.5" />
-          <circle cx="100" cy="168" r="6" fill="#E53935" />
-          <circle cx="100" cy="168" r="3" fill="#FF6B6B" opacity="0.7" />
-          <circle cx="100" cy="190" r="5" fill="#1565C0" />
-          <circle cx="100" cy="190" r="2.5" fill="#64B5F6" opacity="0.7" />
-          <circle cx="100" cy="210" r="5" fill="#2E7D32" />
-          <circle cx="100" cy="210" r="2.5" fill="#81C784" opacity="0.7" />
-          <circle cx="56"  cy="172" r="5" fill="#C9A84C" />
-          <circle cx="144" cy="172" r="5" fill="#C9A84C" />
-          <circle cx="56"  cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
-          <circle cx="144" cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
-          <line x1="40"  y1="158" x2="40"  y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
-          <line x1="160" y1="158" x2="160" y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
-          <path d="M22 150 Q100 138 178 150 Q160 162 100 158 Q40 162 22 150 Z" fill="#F5F5F5" opacity="0.9" />
-          <path d="M30 150 Q100 141 170 150 Q155 158 100 155 Q45 158 30 150 Z" fill="#E8E8E8" opacity="0.5" />
-        </g>
-      )}
-
-      {/* ── BEAR BODY ── */}
       <ellipse cx="55"  cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(-15,55,60)" />
       <ellipse cx="145" cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(15,145,60)" />
       <ellipse cx="55"  cy="62"  rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
@@ -201,124 +114,30 @@ function BearCharacter({
       <rect x="112" y="83" width="20" height="7" rx="4" fill={fur} />
       <path d={mouthPath} fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
       <rect x="82" y="140" width="36" height="20" fill={fur} />
-
-      {/* ── DEFAULT BODY (only when no outfit) ── */}
-      {!equippedOutfit && (
-        <g>
-          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
-          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
-          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
-          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-        </g>
-      )}
-
+      <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
+      <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
+      <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
+      <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+      <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
       <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
       <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
-
-      {/* ── HATS ── */}
       {equippedHat === "hat" && (
-        <g>
-          <rect x="72" y="38" width="56" height="8"  rx="3" fill="#2D1B0E" />
-          <rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" />
-        </g>
-      )}
-      {equippedHat === "baseball_cap" && (
-        <g>
-          <ellipse cx="100" cy="46" rx="34" ry="14" fill="#E53935" />
-          <rect x="66" y="44" width="68" height="8" rx="4" fill="#C62828" />
-          <ellipse cx="100" cy="44" rx="34" ry="16" fill="#E53935" />
-          <path d="M100 28 Q120 26 126 40" fill="none" stroke="#C62828" strokeWidth="2" />
-          <rect x="100" y="36" width="44" height="10" rx="5" fill="#C62828" />
-          <rect x="86" y="40" width="28" height="6" rx="3" fill="#EF5350" />
-        </g>
-      )}
-      {equippedHat === "beanie" && (
-        <g>
-          <ellipse cx="100" cy="50" rx="38" ry="20" fill="#1565C0" />
-          <ellipse cx="100" cy="42" rx="36" ry="18" fill="#1976D2" />
-          <rect x="64"  y="48" width="72" height="10" rx="5" fill="#1565C0" />
-          <rect x="64"  y="54" width="72" height="7"  rx="3" fill="#E3F2FD" />
-          <ellipse cx="100" cy="26" rx="10" ry="10" fill="#E3F2FD" />
-        </g>
-      )}
-      {equippedHat === "santa_hat" && (
-        <g>
-          <polygon points="100,10 68,52 132,52" fill="#D32F2F" />
-          <rect x="64" y="48" width="72" height="12" rx="6" fill="#F5F5F5" />
-          <ellipse cx="100" cy="12" rx="7" ry="7" fill="#F5F5F5" />
-        </g>
-      )}
-      {equippedHat === "wizard_hat" && (
-        <g>
-          <polygon points="100,4 68,56 132,56" fill="#4A148C" />
-          <rect x="62" y="52" width="76" height="10" rx="5" fill="#7B1FA2" />
-          <circle cx="88"  cy="38" r="4" fill="#FFD700" />
-          <circle cx="106" cy="24" r="3" fill="#FFD700" />
-          <circle cx="114" cy="42" r="3" fill="#CE93D8" />
-          <path d="M72 50 Q100 30 128 50" fill="none" stroke="#CE93D8" strokeWidth="1.5" strokeDasharray="4 3" />
-        </g>
+        <g><rect x="72" y="38" width="56" height="8" rx="3" fill="#2D1B0E" /><rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" /></g>
       )}
       {equippedHat === "crown" && (
-        <g>
-          <polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" />
-          <rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" />
-          <circle cx="88"  cy="24" r="3" fill="#E53935" />
-          <circle cx="100" cy="38" r="3" fill="#1565C0" />
-          <circle cx="112" cy="24" r="3" fill="#43A047" />
-        </g>
+        <g><polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" /><rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" /></g>
       )}
-
-      {/* ── GLASSES ── */}
       {equippedGlasses === "glasses" && (
         <g>
           <circle cx="78"  cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
           <circle cx="122" cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
           <line x1="89" y1="90" x2="111" y2="90" stroke="#1a1a2e" strokeWidth="2" />
-          <line x1="56" y1="88" x2="67"  y2="88" stroke="#1a1a2e" strokeWidth="2" />
-          <line x1="133" y1="88" x2="144" y2="88" stroke="#1a1a2e" strokeWidth="2" />
         </g>
       )}
       {equippedGlasses === "monocle" && (
         <g>
           <circle cx="122" cy="90" r="13" fill="none" stroke="#8B7355" strokeWidth="2.5" />
           <line x1="122" y1="103" x2="126" y2="114" stroke="#8B7355" strokeWidth="1.5" />
-          <line x1="133" y1="88"  x2="144" y2="86"  stroke="#8B7355" strokeWidth="1.5" />
-        </g>
-      )}
-      {equippedGlasses === "sunglasses" && (
-        <g>
-          <rect x="65" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
-          <rect x="109" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
-          <line x1="91" y1="91" x2="109" y2="91" stroke="#1a1a1a" strokeWidth="2.5" />
-          <line x1="54" y1="88" x2="65"  y2="88" stroke="#1a1a1a" strokeWidth="2" />
-          <line x1="135" y1="88" x2="146" y2="88" stroke="#1a1a1a" strokeWidth="2" />
-          <rect x="66" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
-          <rect x="110" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
-        </g>
-      )}
-      {equippedGlasses === "pixel_glasses" && (
-        <g>
-          <rect x="64" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
-          <rect x="108" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
-          <line x1="92" y1="90" x2="108" y2="90" stroke="#00E676" strokeWidth="2.5" />
-          <line x1="53" y1="88" x2="64"  y2="88" stroke="#00E676" strokeWidth="2" />
-          <line x1="136" y1="88" x2="147" y2="88" stroke="#00E676" strokeWidth="2" />
-          <rect x="68" y="87" width="4" height="4" fill="#00E676" />
-          <rect x="76" y="85" width="4" height="4" fill="#00E676" />
-          <rect x="112" y="87" width="4" height="4" fill="#00E676" />
-          <rect x="120" y="85" width="4" height="4" fill="#00E676" />
-        </g>
-      )}
-      {equippedGlasses === "diamond_glasses" && (
-        <g>
-          <polygon points="78,79 91,88 78,99 65,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
-          <polygon points="122,79 135,88 122,99 109,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="91" y1="88" x2="109" y2="88" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="54" y1="86" x2="65"  y2="88" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="135" y1="88" x2="146" y2="86" stroke="#90CAF9" strokeWidth="2" />
-          <polygon points="78,82 83,88 78,94 73,88" fill="rgba(255,255,255,0.6)" />
-          <polygon points="122,82 127,88 122,94 117,88" fill="rgba(255,255,255,0.6)" />
         </g>
       )}
     </svg>
@@ -447,12 +266,14 @@ function Home() {
 
         *, *::before, *::after { box-sizing: border-box; }
 
+        /* ── Page enter ── */
         @keyframes mq-page-in {
           from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         .mq-page { animation: mq-page-in 0.4s ease both; }
 
+        /* ── Staggered card entrance ── */
         @keyframes card-rise {
           from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -462,12 +283,14 @@ function Home() {
         .s3 { animation: card-rise 0.42s ease both 0.24s; }
         .s4 { animation: card-rise 0.42s ease both 0.32s; }
 
+        /* ── Toast ── */
         @keyframes toast-in {
           from { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(0.92); }
           to   { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
         }
         .mq-toast { animation: toast-in 0.32s cubic-bezier(0.34,1.3,0.64,1) both; }
 
+        /* ── Modal sheet ── */
         @keyframes sheet-up {
           from { transform: translateY(50px); opacity: 0; }
           to   { transform: translateY(0);    opacity: 1; }
@@ -475,6 +298,7 @@ function Home() {
         .mq-sheet { animation: sheet-up 0.32s cubic-bezier(0.34,1.2,0.64,1) both; }
         .mq-overlay { animation: mq-page-in 0.22s ease both; }
 
+        /* ── Bear breathing ── */
         @keyframes breathe {
           0%, 100% { transform: scaleY(1)    translateY(0);    }
           50%       { transform: scaleY(1.03) translateY(-1.5px); }
@@ -484,6 +308,7 @@ function Home() {
           animation: breathe 3.4s ease-in-out infinite;
         }
 
+        /* ── Bear reactions ── */
         @keyframes bear-bounce {
           0%, 100% { transform: translateY(0) scale(1); }
           40%       { transform: translateY(-12px) scale(1.06); }
@@ -511,6 +336,7 @@ function Home() {
         .bear--proud    { animation: bear-proud   0.65s cubic-bezier(0.34,1.3,0.64,1) both !important; }
         .bear--sad      { animation: bear-sad     0.55s cubic-bezier(0.34,1.2,0.64,1) both !important; }
 
+        /* ── Button press ── */
         .mq-btn {
           -webkit-tap-highlight-color: transparent;
           transition: transform 0.13s cubic-bezier(0.34,1.6,0.64,1), opacity 0.13s, box-shadow 0.13s;
@@ -518,6 +344,7 @@ function Home() {
         }
         .mq-btn:active { transform: scale(0.93) !important; opacity: 0.82; }
 
+        /* ── Cards ── */
         .mq-card {
           background: #ffffff;
           border-radius: 24px;
@@ -527,24 +354,26 @@ function Home() {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
+        /* ── Hero card ── */
         .mq-hero {
           position: relative;
-          overflow: visible;
+          overflow: hidden;
           margin: 0 16px 14px;
           border-radius: 28px;
           padding: 22px 20px 20px;
           background: linear-gradient(140deg, #11112a 0%, #1d1d43 55%, #282860 100%);
           box-shadow: 0 8px 32px rgba(17,17,42,0.38), 0 2px 6px rgba(0,0,0,0.18);
-          clip-path: none;
         }
+        /* subtle dot grid */
         .mq-hero::before {
           content: '';
           position: absolute; inset: 0;
-          border-radius: 28px;
-          background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+          background-image:
+            radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
           background-size: 22px 22px;
           pointer-events: none;
         }
+        /* ambient glow top-right */
         .mq-hero::after {
           content: '';
           position: absolute;
@@ -554,6 +383,7 @@ function Home() {
           pointer-events: none;
         }
 
+        /* ── Lootbox card ── */
         .loot-active {
           background: linear-gradient(140deg, #11112a 0%, #282860 100%) !important;
           cursor: pointer;
@@ -561,6 +391,7 @@ function Home() {
         .loot-active:hover  { transform: translateY(-3px) !important; box-shadow: 0 14px 36px rgba(17,17,42,0.42) !important; }
         .loot-active:active { transform: scale(0.96) !important; }
 
+        /* ── Activity rows ── */
         .activity-row {
           display: flex; align-items: center; justify-content: space-between;
           padding: 12px 10px; border-radius: 14px; margin: 0 -10px;
@@ -570,6 +401,7 @@ function Home() {
         .activity-row:last-child { border-bottom: none; }
         .activity-row:hover { background: #f9f9f5; }
 
+        /* ── XP bar ── */
         @keyframes xp-in   { from { width: 0%; } }
         @keyframes shimmer {
           0%   { background-position: -200% 0; }
@@ -583,17 +415,20 @@ function Home() {
           background-size: 200% 100%;
         }
 
+        /* ── Input ── */
         .mq-input:focus {
           border-color: #11112a !important;
           box-shadow: 0 0 0 3px rgba(17,17,42,0.1) !important;
           outline: none;
         }
 
+        /* ── Lootbox pulse ── */
         @keyframes loot-pulse {
           0%,100% { transform: scale(1) rotate(-3deg); }
           50%      { transform: scale(1.14) rotate(3deg); }
         }
 
+        /* ── Floating XP ── */
         @keyframes xp-float {
           0%   { opacity: 1;   transform: translateY(0)   scale(1); }
           60%  { opacity: 1;   transform: translateY(-38px) scale(1.08); }
@@ -613,6 +448,7 @@ function Home() {
           letter-spacing: -0.3px;
         }
 
+        /* ── Savings goal fade-out ── */
         @keyframes savings-fade-out {
           from { opacity: 1; transform: scaleY(1); max-height: 300px; }
           to   { opacity: 0; transform: scaleY(0.92); max-height: 0; margin-bottom: 0; padding: 0; }
@@ -624,12 +460,14 @@ function Home() {
           pointer-events: none;
         }
 
+        /* ── Savings progress bar ── */
         @keyframes savings-in { from { width: 0%; } }
         .savings-bar {
           animation: savings-in 1s cubic-bezier(0.22,1,0.36,1) both 0.3s;
           background: linear-gradient(90deg, #3b5bdb 0%, #748ffc 100%);
         }
 
+        /* ── Nav ── */
         .nav-btn {
           display: flex; flex-direction: column; align-items: center;
           gap: 3px; font-size: 10px; border: none; background: none;
@@ -684,7 +522,11 @@ function Home() {
 
         {/* FLOATING XP PARTICLES */}
         {xpParticles.map(pt => (
-          <div key={pt.id} className="xp-particle" style={{ left: pt.x - 24, top: pt.y - 16 }}>
+          <div
+            key={pt.id}
+            className="xp-particle"
+            style={{ left: pt.x - 24, top: pt.y - 16 }}
+          >
             {pt.label}
           </div>
         ))}
@@ -700,81 +542,32 @@ function Home() {
         </div>
 
         {/* ── HERO CARD ── */}
-        <div className="mq-hero s1" style={{ paddingTop: 28 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 0, position: "relative", zIndex: 1 }}>
+        <div className="mq-hero s1">
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 4, position: "relative", zIndex: 1 }}>
 
-            {/* Character column — intentionally oversized, bursts out of card */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              minWidth: 105,
-              marginLeft: -8,
-              marginBottom: -12,
-              marginTop: -10,
-              position: "relative",
-              zIndex: 2,
-            }}>
-              {/* Glow platform under bear */}
-              <div style={{
-                position: "absolute",
-                bottom: 22,
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: 100,
-                height: 22,
-                borderRadius: "50%",
-                background: "radial-gradient(ellipse, rgba(201,168,76,0.32) 0%, transparent 75%)",
-                filter: "blur(6px)",
-                pointerEvents: "none",
-              }} />
-
-              {/* Bear — intentionally oversized, head punches above card */}
-              <div
-                style={{
-                  transform: "scale(1.92)",
-                  transformOrigin: "bottom center",
-                  filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.55))",
-                  transition: "transform 0.3s cubic-bezier(0.34,1.4,0.64,1)",
-                  cursor: "pointer",
-                  marginBottom: 4,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "scale(2.0)")}
-                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1.92)")}
-              >
-                <BearCharacter
-                  fur={charColors.fur}
-                  inner={charColors.inner}
-                  equippedHat={user?.equipped_hat}
-                  equippedGlasses={user?.equipped_glasses}
-                  equippedOutfit={user?.equipped_outfit}
-                  mood={mood}
-                />
-              </div>
-
-              <span style={{
-                fontSize: 10,
-                color: "rgba(255,255,255,0.28)",
-                fontStyle: "italic",
-                textAlign: "center",
-                lineHeight: 1.4,
-                maxWidth: 90,
-                marginTop: 2,
-              }}>
+            {/* Bear + tagline */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 96 }}>
+              <BearCharacter
+                fur={charColors.fur}
+                inner={charColors.inner}
+                equippedHat={user?.equipped_hat}
+                equippedGlasses={user?.equipped_glasses}
+                mood={mood}
+              />
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.36)", fontStyle: "italic", textAlign: "center", lineHeight: 1.4, maxWidth: 88 }}>
                 "{phrase}"
               </span>
             </div>
 
-            {/* Balance + buttons */}
-            <div style={{ flex: 1, paddingLeft: 14, paddingTop: 6, paddingBottom: 4 }}>
+            {/* Balance */}
+            <div style={{ flex: 1, paddingLeft: 10, paddingTop: 4 }}>
               <p style={{ margin: "0 0 1px", fontSize: 10, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: 1.4, fontWeight: 700 }}>
                 Total Balance
               </p>
-              <h1 style={{ margin: "0 0 1px", fontSize: 26, fontWeight: 900, color: "white", lineHeight: 1.1, letterSpacing: "-0.6px" }}>
+              <h1 style={{ margin: "0 0 1px", fontSize: 28, fontWeight: 900, color: "white", lineHeight: 1.1, letterSpacing: "-0.6px" }}>
                 {balance.toFixed(2)} €
               </h1>
-              <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(255,255,255,0.26)", fontWeight: 500 }}>
+              <p style={{ margin: "0 0 18px", fontSize: 11, color: "rgba(255,255,255,0.26)", fontWeight: 500 }}>
                 tracked via MoneyQuest
               </p>
 
@@ -798,7 +591,7 @@ function Home() {
           </div>
 
           {/* XP */}
-          <div style={{ marginTop: 16, position: "relative", zIndex: 1 }}>
+          <div style={{ marginTop: 20, position: "relative", zIndex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.72)", fontWeight: 800 }}>Level {level}</span>
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 600 }}>{xpInLevel} / 100 XP</span>
@@ -860,6 +653,8 @@ function Home() {
 
         {/* SAVINGS GOAL */}
         <div className="mq-card s4" style={{ marginBottom: 14 }}>
+
+          {/* Active goal — fades out on completion */}
           {savingsGoal && (
             <div
               className={savingsFading ? "savings-fading" : ""}
@@ -919,6 +714,7 @@ function Home() {
             </div>
           )}
 
+          {/* Create new goal — always visible */}
           {!showSavingsCreate ? (
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -1006,7 +802,7 @@ function Home() {
         )}
       </div>
 
-      {/* BOTTOM NAV */}
+      {/* BOTTOM NAV — outside scrollable container */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
         width: "100%", maxWidth: 390, margin: "0 auto", background: "white",
@@ -1030,7 +826,7 @@ function Home() {
         ))}
       </div>
 
-      {/* MODAL — portal */}
+      {/* MODAL — rendered via portal to escape scroll container */}
       {showModal && ReactDOM.createPortal(
         <div
           className="mq-overlay"
