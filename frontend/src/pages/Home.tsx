@@ -79,10 +79,6 @@ function BearCharacter({
     return () => clearTimeout(t);
   }, []);
 
-  // Slightly darker shade for ears inner shadow / depth
-  const furDark = fur;          // same flat color — reference uses flat tones
-  const furDeep = fur;          // no gradient
-
   // ── Mouth path per mood ────────────────────────────────────────────────────
   // Reference: W-shaped mouth — two small curves meeting at centre below nose
   const mouthIdle    = "M 86 128 Q 91 133 96 128 Q 101 133 106 128";   // soft W
@@ -118,8 +114,8 @@ function BearCharacter({
       {/* ── EARS (behind head) ────────────────────────────────────────── */}
       {/* Reference: small-ish circles, positioned at top-left/right of head,
           slightly overlapping head edge, tilted outward */}
-      <circle cx="44"  cy="52" r="22" fill={furDark} />
-      <circle cx="148" cy="52" r="22" fill={furDark} />
+      <circle cx="44"  cy="52" r="22" fill={fur} />
+      <circle cx="148" cy="52" r="22" fill={fur} />
       {/* Inner ear — smaller, same inner color as muzzle */}
       <circle cx="44"  cy="54" r="12" fill={inner} />
       <circle cx="148" cy="54" r="12" fill={inner} />
