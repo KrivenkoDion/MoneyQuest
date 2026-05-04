@@ -29,10 +29,10 @@ const PHRASES = [
 ];
 
 const CHARACTERS: Record<string, { fur: string; inner: string }> = {
-  brown:  { fur: "#C4956A", inner: "#E8C49A" },
-  white:  { fur: "#D8D0C8", inner: "#F0EDE8" },
-  black:  { fur: "#5A5A6A", inner: "#8A8A9A" },
-  orange: { fur: "#E8834A", inner: "#F4B07A" },
+  brown:  { fur: "#A0622A", inner: "#E8B98A" },
+  white:  { fur: "#C8BEB4", inner: "#EDE8E0" },
+  black:  { fur: "#4A4050", inner: "#8A8090" },
+  orange: { fur: "#C86030", inner: "#F0A870" },
 };
 
 type BearMood = "idle" | "happy" | "sad" | "excited" | "proud";
@@ -50,15 +50,13 @@ function useBearReaction(resetDelay = 1500) {
   return { mood, react };
 }
 
-// ─────────────────────────────────────────────────────────────
-//  BEAR CHARACTER  — minimal, clean, no accessories
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  BEAR CHARACTER  —  matched 1:1 to reference image
+//  viewBox 0 0 200 230  |  rendered at width=96 height=110
+// ─────────────────────────────────────────────────────────────────────────────
 function BearCharacter({
   fur, inner, onClick, mood = "idle",
-  // props kept for API compatibility but not rendered
-  equippedHat: _hat,
-  equippedGlasses: _glasses,
-  equippedOutfit: _outfit,
+  equippedHat: _h, equippedGlasses: _g, equippedOutfit: _o,
 }: {
   fur: string; inner: string;
   equippedHat?: string | null;
@@ -74,77 +72,100 @@ function BearCharacter({
     const schedule = () => {
       t = setTimeout(() => {
         setBlink(true);
-        setTimeout(() => { setBlink(false); schedule(); }, 110);
-      }, 3000 + Math.random() * 2000);
+        setTimeout(() => { setBlink(false); schedule(); }, 100);
+      }, 2800 + Math.random() * 2200);
     };
     schedule();
     return () => clearTimeout(t);
   }, []);
 
-  const eyeRy = blink ? 0.5 : 4.5;
+  // Slightly darker shade for ears inner shadow / depth
+  const furDark = fur;          // same flat color — reference uses flat tones
+  const furDeep = fur;          // no gradient
 
-  // Mouth shape per mood — all subtle, none dramatic
+  // ── Mouth path per mood ────────────────────────────────────────────────────
+  // Reference: W-shaped mouth — two small curves meeting at centre below nose
+  const mouthIdle    = "M 86 128 Q 91 133 96 128 Q 101 133 106 128";   // soft W
+  const mouthHappy   = "M 83 126 Q 96 138 109 126";                     // big smile arc
+  const mouthSad     = "M 85 132 Q 96 124 107 132";                     // frown
+  const mouthExcited = "M 85 126 Q 96 138 107 126";                     // wide smile
+  const mouthProud   = "M 87 128 Q 96 133 105 128";                     // slight smile
+
   const mouthD =
-    mood === "happy" || mood === "excited" || mood === "proud"
-      ? "M 54 74 Q 62 80 70 74"   // soft smile
-      : mood === "sad"
-      ? "M 54 76 Q 62 71 70 76"   // soft frown
-      : "M 55 74 Q 62 77 69 74";  // neutral
+    mood === "happy"   ? mouthHappy   :
+    mood === "sad"     ? mouthSad     :
+    mood === "excited" ? mouthExcited :
+    mood === "proud"   ? mouthProud   :
+    mouthIdle;
 
-  // Cheeks — only on happy/excited, very subtle
-  const showCheeks = mood === "happy" || mood === "excited";
+  // ── Eye height — closes on blink ──────────────────────────────────────────
+  const eyeRy = blink ? 0.5 : 7;
 
   return (
     <svg
-      width="88" height="96"
-      viewBox="0 0 124 130"
+      width="96" height="110"
+      viewBox="0 0 192 220"
       onClick={onClick}
       className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
-      style={{ cursor: "pointer", display: "block" }}
+      style={{ cursor: "pointer", display: "block", overflow: "visible" }}
     >
-      {/* ── EARS ── */}
-      <circle cx="28" cy="34" r="18" fill={fur} />
-      <circle cx="96" cy="34" r="18" fill={fur} />
-      <circle cx="28" cy="34" r="10" fill={inner} />
-      <circle cx="96" cy="34" r="10" fill={inner} />
+      {/* ── BODY (behind head) ────────────────────────────────────────── */}
+      {/* Main body — chubby rounded rectangle */}
+      <ellipse cx="96" cy="178" rx="58" ry="52" fill={fur} />
+      {/* Belly patch — large oval, reference shows it taking up most of body */}
+      <ellipse cx="96" cy="184" rx="38" ry="36" fill={inner} />
 
-      {/* ── HEAD ── */}
-      <circle cx="62" cy="58" r="46" fill={fur} />
+      {/* ── EARS (behind head) ────────────────────────────────────────── */}
+      {/* Reference: small-ish circles, positioned at top-left/right of head,
+          slightly overlapping head edge, tilted outward */}
+      <circle cx="44"  cy="52" r="22" fill={furDark} />
+      <circle cx="148" cy="52" r="22" fill={furDark} />
+      {/* Inner ear — smaller, same inner color as muzzle */}
+      <circle cx="44"  cy="54" r="12" fill={inner} />
+      <circle cx="148" cy="54" r="12" fill={inner} />
 
-      {/* ── MUZZLE ── */}
-      <ellipse cx="62" cy="72" rx="22" ry="15" fill={inner} />
+      {/* ── HEAD ──────────────────────────────────────────────────────── */}
+      {/* Large circle — dominant element, reference head takes ~55% of total height */}
+      <circle cx="96" cy="96" r="72" fill={fur} />
 
-      {/* ── NOSE ── */}
-      <ellipse cx="62" cy="64" rx="5.5" ry="3.5" fill="#3D2B1F" />
+      {/* ── MUZZLE ────────────────────────────────────────────────────── */}
+      {/* Reference: wide oval occupying lower 40% of face, slightly taller than wide */}
+      <ellipse cx="96" cy="120" rx="38" ry="28" fill={inner} />
 
-      {/* ── EYES ── */}
-      <ellipse cx="48" cy="52" rx="4.5" ry={eyeRy} fill="#3D2B1F" />
-      <ellipse cx="76" cy="52" rx="4.5" ry={eyeRy} fill="#3D2B1F" />
+      {/* ── NOSE ──────────────────────────────────────────────────────── */}
+      {/* Reference: small rounded inverted-triangle / oval, dark brown, centered */}
+      <ellipse cx="96" cy="110" rx="9" ry="6.5" fill="#2D1A0A" />
+      {/* Tiny highlight on nose */}
+      <circle cx="93" cy="108" r="2" fill="rgba(255,255,255,0.25)" />
 
-      {/* Eye shine — tiny white dot */}
+      {/* ── CHEEKS ────────────────────────────────────────────────────── */}
+      {/* Reference: soft pink circles, fairly prominent, below and outside eyes */}
+      <circle cx="66"  cy="116" r="14" fill="#E8788A" opacity="0.45" />
+      <circle cx="126" cy="116" r="14" fill="#E8788A" opacity="0.45" />
+
+      {/* ── EYES ──────────────────────────────────────────────────────── */}
+      {/* Reference: small dark brown/black circles with white shine dot,
+          positioned above muzzle on either side of nose bridge */}
+      <ellipse cx="76"  cy="96" rx="8.5" ry={eyeRy} fill="#2D1A0A" />
+      <ellipse cx="116" cy="96" rx="8.5" ry={eyeRy} fill="#2D1A0A" />
+      {/* White shine dots — essential for glossy look of reference */}
       {!blink && (
         <>
-          <circle cx="50" cy="50" r="1.5" fill="white" opacity="0.85" />
-          <circle cx="78" cy="50" r="1.5" fill="white" opacity="0.85" />
+          <circle cx="79"  cy="92" r="3" fill="white" opacity="0.9" />
+          <circle cx="119" cy="92" r="3" fill="white" opacity="0.9" />
         </>
       )}
 
-      {/* ── MOUTH ── */}
-      <path d={mouthD} fill="none" stroke="#3D2B1F" strokeWidth="2" strokeLinecap="round" />
-
-      {/* ── CHEEKS ── */}
-      {showCheeks && (
-        <>
-          <ellipse cx="38" cy="68" rx="8" ry="5" fill="#E8967A" opacity="0.35" />
-          <ellipse cx="86" cy="68" rx="8" ry="5" fill="#E8967A" opacity="0.35" />
-        </>
-      )}
-
-      {/* ── BODY ── */}
-      <ellipse cx="62" cy="118" rx="34" ry="22" fill={fur} />
-
-      {/* ── BODY BELLY ── */}
-      <ellipse cx="62" cy="120" rx="20" ry="13" fill={inner} />
+      {/* ── MOUTH ─────────────────────────────────────────────────────── */}
+      {/* Reference: W shape — two small curves, dark brown, below nose */}
+      <path
+        d={mouthD}
+        fill="none"
+        stroke="#2D1A0A"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -291,25 +312,25 @@ function Home() {
           from { transform: translateY(40px); opacity: 0; }
           to   { transform: translateY(0); opacity: 1; }
         }
-        .mq-sheet  { animation: sheet-up 0.3s cubic-bezier(0.34,1.2,0.64,1) both; }
+        .mq-sheet   { animation: sheet-up 0.3s cubic-bezier(0.34,1.2,0.64,1) both; }
         .mq-overlay { animation: mq-page-in 0.2s ease both; }
 
-        /* Bear breathing — very subtle */
+        /* Bear breathing */
         @keyframes breathe {
           0%, 100% { transform: translateY(0); }
           50%       { transform: translateY(-2px); }
         }
         .bear-idle { animation: breathe 4s ease-in-out infinite; }
 
-        /* Mood micro-animations */
+        /* Mood animations */
         @keyframes bear-bounce {
           0%, 100% { transform: translateY(0); }
-          40%       { transform: translateY(-6px); }
-          70%       { transform: translateY(-2px); }
+          40%       { transform: translateY(-7px); }
+          70%       { transform: translateY(-3px); }
         }
         @keyframes bear-sad {
           0%, 100% { transform: translateY(0) rotate(0deg); }
-          50%       { transform: translateY(2px) rotate(-2deg); }
+          50%       { transform: translateY(3px) rotate(-2deg); }
         }
         @keyframes bear-proud {
           0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -320,7 +341,6 @@ function Home() {
         .bear--proud   { animation: bear-proud  0.6s ease both !important; }
         .bear--sad     { animation: bear-sad    0.5s ease both !important; }
 
-        /* Tap targets */
         .mq-btn {
           -webkit-tap-highlight-color: transparent;
           transition: transform 0.12s cubic-bezier(0.34,1.5,0.64,1), opacity 0.12s;
@@ -328,7 +348,6 @@ function Home() {
         }
         .mq-btn:active { transform: scale(0.95) !important; opacity: 0.85; }
 
-        /* Cards */
         .mq-card {
           background: #ffffff;
           border-radius: 20px;
@@ -337,7 +356,6 @@ function Home() {
           box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
         }
 
-        /* ── HERO CARD (light fintech style) ── */
         .mq-hero {
           background: #ffffff;
           border-radius: 24px;
@@ -347,17 +365,15 @@ function Home() {
           position: relative;
           overflow: hidden;
         }
-        /* very faint top-right glow */
         .mq-hero::after {
           content: '';
           position: absolute;
           top: -20px; right: -20px;
-          width: 120px; height: 120px;
-          background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+          width: 100px; height: 100px;
+          background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
           pointer-events: none;
         }
 
-        /* Lootbox */
         .loot-active {
           background: linear-gradient(140deg, #11112a 0%, #282860 100%) !important;
           cursor: pointer;
@@ -365,7 +381,6 @@ function Home() {
         .loot-active:hover  { transform: translateY(-2px); }
         .loot-active:active { transform: scale(0.97); }
 
-        /* Activity list */
         .activity-row {
           display: flex; align-items: center; justify-content: space-between;
           padding: 11px 8px; border-radius: 12px; margin: 0 -8px;
@@ -375,7 +390,6 @@ function Home() {
         .activity-row:last-child { border-bottom: none; }
         .activity-row:hover { background: #fafaf8; }
 
-        /* XP bar */
         @keyframes xp-in { from { width: 0%; } }
         .xp-bar {
           animation: xp-in 0.9s cubic-bezier(0.22,1,0.36,1) both 0.4s;
@@ -384,20 +398,17 @@ function Home() {
           height: 100%;
         }
 
-        /* Input focus */
         .mq-input:focus {
           border-color: #3b5bdb !important;
           box-shadow: 0 0 0 3px rgba(59,91,219,0.1) !important;
           outline: none;
         }
 
-        /* Lootbox pulse */
         @keyframes loot-pulse {
           0%,100% { transform: scale(1) rotate(-2deg); }
           50%      { transform: scale(1.1) rotate(2deg); }
         }
 
-        /* XP float */
         @keyframes xp-float {
           0%   { opacity: 1; transform: translateY(0) scale(1); }
           60%  { opacity: 1; transform: translateY(-34px) scale(1.06); }
@@ -415,7 +426,6 @@ function Home() {
           font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* Savings */
         @keyframes savings-fade-out {
           from { opacity: 1; transform: scaleY(1); max-height: 300px; }
           to   { opacity: 0; transform: scaleY(0.94); max-height: 0; margin-bottom: 0; padding: 0; }
@@ -432,7 +442,6 @@ function Home() {
           height: 100%;
         }
 
-        /* Nav */
         .nav-btn {
           display: flex; flex-direction: column; align-items: center;
           gap: 3px; font-size: 10px; border: none; background: none;
@@ -471,9 +480,7 @@ function Home() {
             borderRadius: 18, padding: "12px 22px",
             fontSize: 13, fontWeight: 700, zIndex: 200,
             whiteSpace: "nowrap", boxShadow: "0 6px 24px rgba(0,0,0,0.28)",
-          }}>
-            🏆 Quest progress updated!
-          </div>
+          }}>🏆 Quest progress updated!</div>
         )}
 
         {/* XP PARTICLES */}
@@ -493,29 +500,29 @@ function Home() {
           }}>🔔</div>
         </div>
 
-        {/* ── HERO CARD (light, fintech) ── */}
+        {/* ── HERO CARD ── */}
         <div className="mq-hero s1">
 
-          {/* Top row: account label + level */}
+          {/* Top row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: "#888", fontWeight: 600 }}>Main account · EUR</span>
-            <span style={{ fontSize: 12, color: "#888", fontWeight: 600 }}>Level {level}</span>
+            <span style={{ fontSize: 12, color: "#999", fontWeight: 600 }}>Main account · EUR</span>
+            <span style={{ fontSize: 12, color: "#999", fontWeight: 600 }}>Level {level}</span>
           </div>
 
           {/* Balance row + bear */}
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <div>
-              <p style={{ margin: "0 0 2px", fontSize: 11, color: "#aaa", fontWeight: 500 }}>Total balance</p>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: "0 0 2px", fontSize: 11, color: "#bbb", fontWeight: 500 }}>Total balance</p>
               <h1 style={{ margin: 0, fontSize: 34, fontWeight: 900, color: "#11112a", letterSpacing: "-1px", lineHeight: 1 }}>
                 {balance.toFixed(2)} €
               </h1>
-              <p style={{ margin: "6px 0 0", fontSize: 12, color: "#3b5bdb", fontWeight: 600 }}>
+              <p style={{ margin: "8px 0 0", fontSize: 12, color: "#3b5bdb", fontWeight: 600 }}>
                 "{phrase}"
               </p>
             </div>
 
-            {/* Bear — small, right-aligned, subtle */}
-            <div style={{ flexShrink: 0, marginBottom: -4, marginRight: -4 }}>
+            {/* Bear — right side, bottom-aligned */}
+            <div style={{ flexShrink: 0, marginBottom: -2, marginRight: -4 }}>
               <BearCharacter
                 fur={charColors.fur}
                 inner={charColors.inner}
@@ -524,11 +531,11 @@ function Home() {
             </div>
           </div>
 
-          {/* XP bar */}
+          {/* XP row */}
           <div style={{ marginTop: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>Next level in {100 - xpInLevel} XP</span>
-              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>{xpInLevel} / 100</span>
+              <span style={{ fontSize: 11, color: "#bbb", fontWeight: 500 }}>Next level in {100 - xpInLevel} XP</span>
+              <span style={{ fontSize: 11, color: "#bbb", fontWeight: 500 }}>{xpInLevel} / 100</span>
             </div>
             <div style={{ height: 5, borderRadius: 4, background: "#EEEEED", overflow: "hidden" }}>
               <div className="xp-bar" style={{ width: `${xpInLevel}%` }} />
@@ -539,22 +546,12 @@ function Home() {
           <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
             <button
               className="mq-btn"
-              style={{
-                flex: 1, padding: "13px 0", borderRadius: 14,
-                border: "1.5px solid #E8E8E4", background: "#FAFAF8",
-                color: "#11112a", fontSize: 14, fontWeight: 700,
-                fontFamily: "inherit",
-              }}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #E8E8E4", background: "#FAFAF8", color: "#11112a", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
               onClick={() => { setType("expense"); setBalanceError(""); setShowModal(true); }}
             >− Expense</button>
             <button
               className="mq-btn"
-              style={{
-                flex: 1, padding: "13px 0", borderRadius: 14,
-                border: "none", background: "#11112a",
-                color: "white", fontSize: 14, fontWeight: 700,
-                fontFamily: "inherit",
-              }}
+              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
               onClick={() => { setType("income"); setBalanceError(""); setShowModal(true); }}
             >+ Income</button>
           </div>
