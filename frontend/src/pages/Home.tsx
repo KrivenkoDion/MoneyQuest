@@ -29,10 +29,10 @@ const PHRASES = [
 ];
 
 const CHARACTERS: Record<string, { fur: string; inner: string }> = {
-  brown:  { fur: "#8B7355", inner: "#C4956A" },
-  white:  { fur: "#E8E8E8", inner: "#F5F5F5" },
-  black:  { fur: "#2D2D2D", inner: "#4B4B4B" },
-  orange: { fur: "#C2703A", inner: "#E8967A" },
+  brown:  { fur: "#C4956A", inner: "#E8C49A" },
+  white:  { fur: "#D8D0C8", inner: "#F0EDE8" },
+  black:  { fur: "#5A5A6A", inner: "#8A8A9A" },
+  orange: { fur: "#E8834A", inner: "#F4B07A" },
 };
 
 type BearMood = "idle" | "happy" | "sad" | "excited" | "proud";
@@ -61,264 +61,276 @@ function BearCharacter({
   mood?: BearMood;
 }) {
   const [blink, setBlink] = useState(false);
-  const [happy, setHappy] = useState(false);
 
   useEffect(() => {
     let t: ReturnType<typeof setTimeout>;
     const schedule = () => {
       t = setTimeout(() => {
         setBlink(true);
-        setTimeout(() => { setBlink(false); schedule(); }, 170);
-      }, 3200 + Math.random() * 2800);
+        setTimeout(() => { setBlink(false); schedule(); }, 120);
+      }, 2800 + Math.random() * 2400);
     };
     schedule();
     return () => clearTimeout(t);
   }, []);
 
-  const handleClick = () => {
-    setHappy(true);
-    setTimeout(() => setHappy(false), 900);
-    onClick?.();
+  // ── Mood expressions ──────────────────────────────────────────────
+  // Eyes: scale Y for blink/squint
+  const eyeScaleY = blink ? 0.08 : 1;
+
+  // Left eye shape per mood
+  const leftEye  = () => {
+    if (mood === "excited") return <ellipse cx="76" cy="88" rx="7" ry="7" fill="#1A1A2E" transform={`scale(1,${eyeScaleY})`} style={{ transformOrigin: "76px 88px" }} />;
+    if (mood === "sad")     return <path d="M70 86 Q76 92 82 86" fill="none" stroke="#1A1A2E" strokeWidth="3.5" strokeLinecap="round" />;
+    if (mood === "happy" || mood === "proud") return <path d="M70 91 Q76 84 82 91" fill="#1A1A2E" />;
+    return <ellipse cx="76" cy="88" rx="6" ry={blink ? 0.8 : 6} fill="#1A1A2E" style={{ transformOrigin: "76px 88px" }} />;
   };
 
-  const eyeRy = blink ? 1 : 5;
-  const mouthPath = happy || mood === "happy" || mood === "excited" || mood === "proud"
-    ? "M84 126 Q100 140 116 126"
-    : mood === "sad"
-    ? "M88 132 Q100 124 112 132"
-    : "M88 126 Q100 134 112 126";
+  const rightEye = () => {
+    if (mood === "excited") return <ellipse cx="108" cy="88" rx="7" ry="7" fill="#1A1A2E" transform={`scale(1,${eyeScaleY})`} style={{ transformOrigin: "108px 88px" }} />;
+    if (mood === "sad")     return <path d="M102 86 Q108 92 114 86" fill="none" stroke="#1A1A2E" strokeWidth="3.5" strokeLinecap="round" />;
+    if (mood === "happy" || mood === "proud") return <path d="M102 91 Q108 84 114 91" fill="#1A1A2E" />;
+    return <ellipse cx="108" cy="88" rx="6" ry={blink ? 0.8 : 6} fill="#1A1A2E" style={{ transformOrigin: "108px 88px" }} />;
+  };
+
+  // Mouth per mood
+  const mouth = () => {
+    if (mood === "happy")   return <path d="M80 106 Q92 118 104 106" fill="none" stroke="#1A1A2E" strokeWidth="3.5" strokeLinecap="round" />;
+    if (mood === "excited") return <ellipse cx="92" cy="110" rx="10" ry="7" fill="#1A1A2E" />;
+    if (mood === "sad")     return <path d="M80 112 Q92 104 104 112" fill="none" stroke="#1A1A2E" strokeWidth="3.5" strokeLinecap="round" />;
+    if (mood === "proud")   return <path d="M82 108 Q92 114 102 108" fill="none" stroke="#1A1A2E" strokeWidth="3" strokeLinecap="round" />;
+    return                         <path d="M82 108 Q92 112 102 108" fill="none" stroke="#1A1A2E" strokeWidth="2.5" strokeLinecap="round" />;
+  };
+
+  // Eye shine dots
+  const eyeShine = (cx: number, cy: number) =>
+    mood !== "sad" && !blink
+      ? <circle cx={cx} cy={cy} r="2" fill="white" opacity="0.9" />
+      : null;
 
   return (
     <svg
-      width="90" height="105"
-      viewBox="0 0 200 230"
-      onClick={handleClick}
+      width="96" height="108"
+      viewBox="0 0 184 200"
+      onClick={onClick}
       className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
-      style={{
-        cursor: "pointer",
-        filter: happy || mood === "excited" ? "drop-shadow(0 0 14px rgba(201,168,76,0.9))" : mood === "proud" ? "drop-shadow(0 0 10px rgba(59,91,219,0.7))" : "none",
-        transition: "filter 0.3s ease",
-      }}
+      style={{ cursor: "pointer", overflow: "visible" }}
     >
-      {/* ── OUTFIT (renders behind body) ── */}
+      {/* ── OUTFIT LAYER (behind body) ── */}
+
       {equippedOutfit === "hoodie" && (
         <g>
-          <ellipse cx="100" cy="62" rx="46" ry="38" fill="#4A6ED4" opacity="0.95" />
-          <ellipse cx="100" cy="58" rx="38" ry="30" fill="#5B7DD8" />
-          <rect x="10" y="148" width="180" height="90" rx="28" fill="#5B7DD8" />
-          <ellipse cx="22"  cy="168" rx="28" ry="22" fill="#5B7DD8" />
-          <ellipse cx="178" cy="168" rx="28" ry="22" fill="#5B7DD8" />
-          <path d="M10 162 Q-18 190 -8 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
-          <path d="M190 162 Q218 190 208 228" fill="none" stroke="#5B7DD8" strokeWidth="38" strokeLinecap="round" />
-          <ellipse cx="-8"  cy="228" rx="19" ry="10" fill="#4A6BC7" />
-          <ellipse cx="208" cy="228" rx="19" ry="10" fill="#4A6BC7" />
-          <rect x="10" y="185" width="180" height="53" rx="18" fill="#4A6BC7" opacity="0.5" />
-          <line x1="100" y1="150" x2="100" y2="238" stroke="#4060B8" strokeWidth="2" opacity="0.6" />
-          <rect x="68" y="195" width="64" height="36" rx="14" fill="#4A6BC7" />
-          <rect x="72" y="199" width="56" height="28" rx="11" fill="#4560C0" />
-          <ellipse cx="100" cy="72" rx="28" ry="22" fill="#4A6BC7" opacity="0.4" />
-          <path d="M78 94 Q88 100 100 97 Q112 100 122 94" fill="none" stroke="#3A5AB0" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="78"  cy="94" r="3" fill="#3A5AB0" />
-          <circle cx="122" cy="94" r="3" fill="#3A5AB0" />
+          {/* Hood behind head */}
+          <ellipse cx="92" cy="82" rx="58" ry="54" fill="#4A70D0" />
+          {/* Body */}
+          <rect x="18" y="148" width="148" height="70" rx="28" fill="#5B82E0" />
+          {/* Sleeves */}
+          <ellipse cx="12"  cy="168" rx="22" ry="16" fill="#5B82E0" />
+          <ellipse cx="172" cy="168" rx="22" ry="16" fill="#5B82E0" />
+          {/* Pocket */}
+          <rect x="66" y="172" width="52" height="30" rx="12" fill="#4A70D0" />
+          {/* Hood opening inner */}
+          <ellipse cx="92" cy="82" rx="44" ry="42" fill="#4A70D0" opacity="0.5" />
         </g>
       )}
+
       {equippedOutfit === "suit" && (
         <g>
-          <rect x="14" y="148" width="172" height="90" rx="22" fill="#1E1E38" />
-          <ellipse cx="20"  cy="162" rx="26" ry="16" fill="#252545" />
-          <ellipse cx="180" cy="162" rx="26" ry="16" fill="#252545" />
-          <path d="M14 158 Q-14 188 -4 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
-          <path d="M186 158 Q214 188 204 230" fill="none" stroke="#1E1E38" strokeWidth="36" strokeLinecap="round" />
-          <ellipse cx="-4"  cy="230" rx="18" ry="9" fill="#F0F0F0" />
-          <ellipse cx="204" cy="230" rx="18" ry="9" fill="#F0F0F0" />
-          <path d="M14 148 Q14 238 55 238 L55 148 Z" fill="#252548" opacity="0.7" />
-          <path d="M186 148 Q186 238 145 238 L145 148 Z" fill="#252548" opacity="0.7" />
-          <polygon points="100,150 80,238 120,238" fill="#F5F5F5" />
-          <polygon points="100,150 60,150 76,196" fill="#2A2A4A" />
-          <polygon points="100,150 140,150 124,196" fill="#2A2A4A" />
-          <polygon points="100,150 64,150 72,172" fill="#32325A" opacity="0.8" />
-          <polygon points="100,150 136,150 128,172" fill="#32325A" opacity="0.8" />
-          <rect x="26" y="168" width="18" height="12" rx="3" fill="#F5F5F5" opacity="0.9" />
-          <polygon points="100,152 94,172 100,220 106,172" fill="#C9A84C" />
-          <polygon points="94,152 106,152 108,164 92,164" fill="#E8C060" />
-          <line x1="100" y1="175" x2="100" y2="215" stroke="#B89040" strokeWidth="1.5" opacity="0.6" />
-          <circle cx="100" cy="228" r="3" fill="#2A2A4A" />
-          <circle cx="100" cy="214" r="3" fill="#2A2A4A" />
-          <circle cx="100" cy="200" r="3" fill="#2A2A4A" />
-          <rect x="14" y="232" width="172" height="8" rx="6" fill="#161630" />
+          <rect x="18" y="148" width="148" height="70" rx="24" fill="#22223A" />
+          <ellipse cx="12"  cy="165" rx="22" ry="14" fill="#22223A" />
+          <ellipse cx="172" cy="165" rx="22" ry="14" fill="#22223A" />
+          {/* Shirt */}
+          <polygon points="92,150 76,200 108,200" fill="#F5F5F5" />
+          {/* Lapels */}
+          <polygon points="92,150 56,150 72,185" fill="#2E2E50" />
+          <polygon points="92,150 128,150 112,185" fill="#2E2E50" />
+          {/* Tie */}
+          <polygon points="92,152 87,170 92,195 97,170" fill="#E8C84A" />
+          <polygon points="87,152 97,152 99,162 85,162" fill="#F5D860" />
+          {/* Cuffs */}
+          <ellipse cx="8"   cy="178" rx="14" ry="7" fill="#F5F5F5" />
+          <ellipse cx="176" cy="178" rx="14" ry="7" fill="#F5F5F5" />
         </g>
       )}
+
       {equippedOutfit === "royal_robe" && (
         <g>
-          <ellipse cx="100" cy="155" rx="88" ry="20" fill="#4A0E8F" />
-          <path d="M12 155 Q-10 210 8 250 Q50 270 100 268 Q150 270 192 250 Q210 210 188 155 Z" fill="#5B1AAA" />
-          <path d="M30 158 Q16 205 28 245 Q60 260 100 258 Q140 260 172 245 Q184 205 170 158 Z" fill="#4A0E8F" opacity="0.6" />
-          <rect x="22" y="148" width="156" height="92" rx="24" fill="#6B21A8" />
-          <ellipse cx="100" cy="150" rx="76" ry="18" fill="#7C2EC0" />
-          <path d="M22 156 Q-16 192 -4 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
-          <path d="M178 156 Q216 192 204 238" fill="none" stroke="#6B21A8" strokeWidth="40" strokeLinecap="round" />
-          <ellipse cx="-4"  cy="238" rx="20" ry="10" fill="#C9A84C" />
-          <ellipse cx="204" cy="238" rx="20" ry="10" fill="#C9A84C" />
-          <ellipse cx="-4"  cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
-          <ellipse cx="204" cy="237" rx="16" ry="6"  fill="#E8C060" opacity="0.6" />
-          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#C9A84C" strokeWidth="5" strokeLinecap="round" />
-          <path d="M24 150 Q100 132 176 150" fill="none" stroke="#F0D870" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-          <rect x="22" y="230" width="156" height="10" rx="5" fill="#C9A84C" />
-          <rect x="22" y="231" width="156" height="5"  rx="3" fill="#F0D870" opacity="0.5" />
-          <rect x="82" y="150" width="36" height="88" rx="6" fill="#7C2EC0" />
-          <rect x="93" y="148" width="14" height="92" rx="4" fill="#C9A84C" />
-          <rect x="96" y="148" width="8"  height="92" rx="3" fill="#F0D870" opacity="0.5" />
-          <circle cx="100" cy="168" r="6" fill="#E53935" />
-          <circle cx="100" cy="168" r="3" fill="#FF6B6B" opacity="0.7" />
-          <circle cx="100" cy="190" r="5" fill="#1565C0" />
-          <circle cx="100" cy="190" r="2.5" fill="#64B5F6" opacity="0.7" />
-          <circle cx="100" cy="210" r="5" fill="#2E7D32" />
-          <circle cx="100" cy="210" r="2.5" fill="#81C784" opacity="0.7" />
-          <circle cx="56"  cy="172" r="5" fill="#C9A84C" />
-          <circle cx="144" cy="172" r="5" fill="#C9A84C" />
-          <circle cx="56"  cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
-          <circle cx="144" cy="172" r="2.5" fill="#F0D870" opacity="0.7" />
-          <line x1="40"  y1="158" x2="40"  y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
-          <line x1="160" y1="158" x2="160" y2="235" stroke="#C9A84C" strokeWidth="2" opacity="0.5" />
-          <path d="M22 150 Q100 138 178 150 Q160 162 100 158 Q40 162 22 150 Z" fill="#F5F5F5" opacity="0.9" />
-          <path d="M30 150 Q100 141 170 150 Q155 158 100 155 Q45 158 30 150 Z" fill="#E8E8E8" opacity="0.5" />
+          {/* Cape */}
+          <path d="M10 155 Q-8 195 10 215 Q50 230 92 228 Q134 230 174 215 Q192 195 174 155 Z" fill="#5A10A0" />
+          <rect x="20" y="148" width="144" height="76" rx="22" fill="#7B24C0" />
+          <ellipse cx="6"   cy="166" rx="22" ry="16" fill="#7B24C0" />
+          <ellipse cx="178" cy="166" rx="22" ry="16" fill="#7B24C0" />
+          {/* Gold trim */}
+          <path d="M20 150 Q92 132 164 150" fill="none" stroke="#E8C84A" strokeWidth="5" strokeLinecap="round" />
+          <rect x="20" y="210" width="144" height="10" rx="5" fill="#E8C84A" />
+          {/* Center strip */}
+          <rect x="84" y="150" width="16" height="72" rx="5" fill="#E8C84A" />
+          {/* Gems */}
+          <circle cx="92" cy="166" r="6" fill="#E53935" />
+          <circle cx="92" cy="184" r="5" fill="#1E88E5" />
+          <circle cx="92" cy="200" r="4" fill="#43A047" />
+          {/* Cuffs */}
+          <ellipse cx="4"   cy="180" rx="16" ry="8" fill="#E8C84A" />
+          <ellipse cx="180" cy="180" rx="16" ry="8" fill="#E8C84A" />
+          {/* Collar */}
+          <path d="M20 150 Q92 140 164 150 Q148 162 92 158 Q36 162 20 150 Z" fill="#F0F0F0" />
         </g>
       )}
 
-      {/* ── BEAR BODY ── */}
-      <ellipse cx="55"  cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(-15,55,60)" />
-      <ellipse cx="145" cy="60"  rx="18" ry="24" fill={fur}   transform="rotate(15,145,60)" />
-      <ellipse cx="55"  cy="62"  rx="10" ry="14" fill={inner} transform="rotate(-15,55,62)" />
-      <ellipse cx="145" cy="62"  rx="10" ry="14" fill={inner} transform="rotate(15,145,62)" />
-      <ellipse cx="100" cy="95"  rx="52" ry="50" fill={fur} />
-      <ellipse cx="100" cy="118" rx="28" ry="20" fill={inner} />
-      <ellipse cx="100" cy="108" rx="10" ry="7"  fill="#2D1B0E" />
-      <ellipse cx="78"  cy="88"  rx="10" ry="7"  fill="white" />
-      <ellipse cx="122" cy="88"  rx="10" ry="7"  fill="white" />
-      <ellipse cx="78"  cy="90"  rx="6"  ry={eyeRy} fill="#3D2B1F" />
-      <ellipse cx="122" cy="90"  rx="6"  ry={eyeRy} fill="#3D2B1F" />
-      <rect x="68"  y="83" width="20" height="7" rx="4" fill={fur} />
-      <rect x="112" y="83" width="20" height="7" rx="4" fill={fur} />
-      <path d={mouthPath} fill="none" stroke="#2D1B0E" strokeWidth="2.5" strokeLinecap="round" />
-      <rect x="82" y="140" width="36" height="20" fill={fur} />
+      {/* ── BEAR EARS ── */}
+      <circle cx="40"  cy="48" r="24" fill={fur} />
+      <circle cx="144" cy="48" r="24" fill={fur} />
+      {/* Inner ear */}
+      <circle cx="40"  cy="48" r="14" fill={inner} />
+      <circle cx="144" cy="48" r="14" fill={inner} />
 
-      {/* ── DEFAULT BODY (only when no outfit) ── */}
-      {!equippedOutfit && (
+      {/* ── HEAD (dominant circle) ── */}
+      <circle cx="92" cy="90" r="66" fill={fur} />
+
+      {/* ── FACE AREA (muzzle) ── */}
+      <ellipse cx="92" cy="106" rx="34" ry="24" fill={inner} />
+
+      {/* ── NOSE ── */}
+      <ellipse cx="92" cy="98" rx="8" ry="5" fill="#1A1A2E" />
+
+      {/* ── EYES ── */}
+      {!equippedGlasses && (
         <g>
-          <rect x="30" y="158" width="140" height="72" rx="20" fill="#4A4A6A" />
-          <path d="M30 175 Q100 148 170 175" fill="#4A4A6A" />
-          <rect x="55" y="195" width="90" height="25" rx="10" fill="#3A3A5A" />
-          <path d="M30 170 Q10 205 30 235"   fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
-          <path d="M170 170 Q190 205 170 235" fill="none" stroke="#4A4A6A" strokeWidth="28" strokeLinecap="round" />
+          {leftEye()}
+          {rightEye()}
+          {eyeShine(79, 84)}
+          {eyeShine(111, 84)}
         </g>
       )}
 
-      <ellipse cx="22"  cy="232" rx="14" ry="12" fill={fur} />
-      <ellipse cx="178" cy="232" rx="14" ry="12" fill={fur} />
+      {/* ── MOUTH ── */}
+      {mouth()}
 
-      {/* ── HATS ── */}
+      {/* ── CHEEK BLUSH (happy/excited) ── */}
+      {(mood === "happy" || mood === "excited") && (
+        <g>
+          <ellipse cx="58"  cy="102" rx="10" ry="6" fill="#F4927A" opacity="0.45" />
+          <ellipse cx="126" cy="102" rx="10" ry="6" fill="#F4927A" opacity="0.45" />
+        </g>
+      )}
+
+      {/* ── BODY ── */}
+      {!equippedOutfit && (
+        <ellipse cx="92" cy="172" rx="52" ry="38" fill={fur} />
+      )}
+
+      {/* ── HAT LAYER ── */}
       {equippedHat === "hat" && (
         <g>
-          <rect x="72" y="38" width="56" height="8"  rx="3" fill="#2D1B0E" />
-          <rect x="82" y="18" width="36" height="22" rx="5" fill="#2D1B0E" />
+          <rect x="62" y="26" width="60" height="8" rx="4" fill="#1A1A2E" />
+          <rect x="72" y="4"  width="40" height="24" rx="6" fill="#1A1A2E" />
         </g>
       )}
       {equippedHat === "baseball_cap" && (
         <g>
-          <ellipse cx="100" cy="46" rx="34" ry="14" fill="#E53935" />
-          <rect x="66" y="44" width="68" height="8" rx="4" fill="#C62828" />
-          <ellipse cx="100" cy="44" rx="34" ry="16" fill="#E53935" />
-          <path d="M100 28 Q120 26 126 40" fill="none" stroke="#C62828" strokeWidth="2" />
-          <rect x="100" y="36" width="44" height="10" rx="5" fill="#C62828" />
-          <rect x="86" y="40" width="28" height="6" rx="3" fill="#EF5350" />
+          <ellipse cx="92" cy="36" rx="44" ry="20" fill="#D32F2F" />
+          <ellipse cx="92" cy="30" rx="40" ry="18" fill="#E53935" />
+          {/* Peak */}
+          <path d="M92 46 Q130 50 136 42" fill="#C62828" />
+          <rect x="60" y="26" width="64" height="10" rx="5" fill="#C62828" />
         </g>
       )}
       {equippedHat === "beanie" && (
         <g>
-          <ellipse cx="100" cy="50" rx="38" ry="20" fill="#1565C0" />
-          <ellipse cx="100" cy="42" rx="36" ry="18" fill="#1976D2" />
-          <rect x="64"  y="48" width="72" height="10" rx="5" fill="#1565C0" />
-          <rect x="64"  y="54" width="72" height="7"  rx="3" fill="#E3F2FD" />
-          <ellipse cx="100" cy="26" rx="10" ry="10" fill="#E3F2FD" />
+          <ellipse cx="92" cy="38" rx="48" ry="26" fill="#1565C0" />
+          <ellipse cx="92" cy="28" rx="44" ry="22" fill="#1976D2" />
+          <rect x="44" y="46" width="96" height="12" rx="6" fill="#1565C0" />
+          <rect x="44" y="50" width="96" height="6"  rx="3" fill="#BBDEFB" />
+          {/* Pompom */}
+          <circle cx="92" cy="12" r="12" fill="#BBDEFB" />
         </g>
       )}
       {equippedHat === "santa_hat" && (
         <g>
-          <polygon points="100,10 68,52 132,52" fill="#D32F2F" />
-          <rect x="64" y="48" width="72" height="12" rx="6" fill="#F5F5F5" />
-          <ellipse cx="100" cy="12" rx="7" ry="7" fill="#F5F5F5" />
+          <polygon points="92,2 54,50 130,50" fill="#D32F2F" />
+          <rect x="50" y="46" width="84" height="14" rx="7" fill="#F5F5F5" />
+          <circle cx="92" cy="4" r="8" fill="#F5F5F5" />
         </g>
       )}
       {equippedHat === "wizard_hat" && (
         <g>
-          <polygon points="100,4 68,56 132,56" fill="#4A148C" />
-          <rect x="62" y="52" width="76" height="10" rx="5" fill="#7B1FA2" />
-          <circle cx="88"  cy="38" r="4" fill="#FFD700" />
-          <circle cx="106" cy="24" r="3" fill="#FFD700" />
-          <circle cx="114" cy="42" r="3" fill="#CE93D8" />
-          <path d="M72 50 Q100 30 128 50" fill="none" stroke="#CE93D8" strokeWidth="1.5" strokeDasharray="4 3" />
+          <polygon points="92,0 56,54 128,54" fill="#4A148C" />
+          <rect x="52" y="50" width="80" height="12" rx="6" fill="#6A1FC2" />
+          <circle cx="74" cy="36" r="5" fill="#FFD700" />
+          <circle cx="102" cy="20" r="4" fill="#FFD700" />
+          <circle cx="112" cy="40" r="3.5" fill="#CE93D8" />
         </g>
       )}
       {equippedHat === "crown" && (
         <g>
-          <polygon points="76,42 88,22 100,36 112,22 124,42" fill="#FFD700" />
-          <rect x="76" y="40" width="48" height="6" rx="2" fill="#FFD700" />
-          <circle cx="88"  cy="24" r="3" fill="#E53935" />
-          <circle cx="100" cy="38" r="3" fill="#1565C0" />
-          <circle cx="112" cy="24" r="3" fill="#43A047" />
+          <polygon points="60,44 74,22 92,36 110,22 124,44" fill="#FFD700" />
+          <rect x="60" y="42" width="64" height="8" rx="4" fill="#FFD700" />
+          <circle cx="74"  cy="24" r="4" fill="#E53935" />
+          <circle cx="92"  cy="38" r="4" fill="#1565C0" />
+          <circle cx="110" cy="24" r="4" fill="#43A047" />
         </g>
       )}
 
-      {/* ── GLASSES ── */}
+      {/* ── GLASSES LAYER ── */}
       {equippedGlasses === "glasses" && (
         <g>
-          <circle cx="78"  cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
-          <circle cx="122" cy="90" r="11" fill="none" stroke="#1a1a2e" strokeWidth="2.5" />
-          <line x1="89" y1="90" x2="111" y2="90" stroke="#1a1a2e" strokeWidth="2" />
-          <line x1="56" y1="88" x2="67"  y2="88" stroke="#1a1a2e" strokeWidth="2" />
-          <line x1="133" y1="88" x2="144" y2="88" stroke="#1a1a2e" strokeWidth="2" />
+          {leftEye()}
+          {rightEye()}
+          {eyeShine(79, 84)}
+          {eyeShine(111, 84)}
+          <rect x="58" y="78" width="34" height="22" rx="11" fill="none" stroke="#1A1A2E" strokeWidth="3" />
+          <rect x="98" y="78" width="34" height="22" rx="11" fill="none" stroke="#1A1A2E" strokeWidth="3" />
+          <line x1="92" y1="89" x2="98" y2="89" stroke="#1A1A2E" strokeWidth="2.5" />
+          <line x1="42" y1="86" x2="58" y2="86" stroke="#1A1A2E" strokeWidth="2.5" />
+          <line x1="132" y1="86" x2="148" y2="86" stroke="#1A1A2E" strokeWidth="2.5" />
         </g>
       )}
       {equippedGlasses === "monocle" && (
         <g>
-          <circle cx="122" cy="90" r="13" fill="none" stroke="#8B7355" strokeWidth="2.5" />
-          <line x1="122" y1="103" x2="126" y2="114" stroke="#8B7355" strokeWidth="1.5" />
-          <line x1="133" y1="88"  x2="144" y2="86"  stroke="#8B7355" strokeWidth="1.5" />
+          {leftEye()}
+          {rightEye()}
+          {eyeShine(79, 84)}
+          {eyeShine(111, 84)}
+          <rect x="98" y="76" width="34" height="24" rx="12" fill="none" stroke="#8B7355" strokeWidth="3" />
+          <line x1="132" y1="86" x2="148" y2="84" stroke="#8B7355" strokeWidth="2.5" />
+          <line x1="116" y1="100" x2="120" y2="112" stroke="#8B7355" strokeWidth="2" />
         </g>
       )}
       {equippedGlasses === "sunglasses" && (
         <g>
-          <rect x="65" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
-          <rect x="109" y="83" width="26" height="16" rx="8" fill="#1a1a1a" />
-          <line x1="91" y1="91" x2="109" y2="91" stroke="#1a1a1a" strokeWidth="2.5" />
-          <line x1="54" y1="88" x2="65"  y2="88" stroke="#1a1a1a" strokeWidth="2" />
-          <line x1="135" y1="88" x2="146" y2="88" stroke="#1a1a1a" strokeWidth="2" />
-          <rect x="66" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
-          <rect x="110" y="84" width="24" height="6" rx="3" fill="#2D2D2D" opacity="0.5" />
+          <rect x="56" y="78" width="36" height="22" rx="11" fill="#1A1A2E" />
+          <rect x="96" y="78" width="36" height="22" rx="11" fill="#1A1A2E" />
+          <line x1="92" y1="89" x2="96" y2="89" stroke="#1A1A2E" strokeWidth="3" />
+          <line x1="40" y1="86" x2="56" y2="86" stroke="#1A1A2E" strokeWidth="2.5" />
+          <line x1="132" y1="86" x2="148" y2="86" stroke="#1A1A2E" strokeWidth="2.5" />
+          {/* Lens sheen */}
+          <rect x="58" y="80" width="28" height="7" rx="4" fill="white" opacity="0.18" />
+          <rect x="98" y="80" width="28" height="7" rx="4" fill="white" opacity="0.18" />
         </g>
       )}
       {equippedGlasses === "pixel_glasses" && (
         <g>
-          <rect x="64" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
-          <rect x="108" y="83" width="28" height="14" rx="2" fill="none" stroke="#00E676" strokeWidth="2.5" />
-          <line x1="92" y1="90" x2="108" y2="90" stroke="#00E676" strokeWidth="2.5" />
-          <line x1="53" y1="88" x2="64"  y2="88" stroke="#00E676" strokeWidth="2" />
-          <line x1="136" y1="88" x2="147" y2="88" stroke="#00E676" strokeWidth="2" />
-          <rect x="68" y="87" width="4" height="4" fill="#00E676" />
-          <rect x="76" y="85" width="4" height="4" fill="#00E676" />
-          <rect x="112" y="87" width="4" height="4" fill="#00E676" />
-          <rect x="120" y="85" width="4" height="4" fill="#00E676" />
+          <rect x="56" y="78" width="36" height="22" rx="3" fill="none" stroke="#00C853" strokeWidth="3" />
+          <rect x="96" y="78" width="36" height="22" rx="3" fill="none" stroke="#00C853" strokeWidth="3" />
+          <line x1="92" y1="89" x2="96" y2="89" stroke="#00C853" strokeWidth="3" />
+          <line x1="40" y1="86" x2="56" y2="86" stroke="#00C853" strokeWidth="2.5" />
+          <line x1="132" y1="86" x2="148" y2="86" stroke="#00C853" strokeWidth="2.5" />
+          {/* Pixel dots */}
+          <rect x="62" y="84" width="5" height="5" fill="#00C853" />
+          <rect x="72" y="82" width="5" height="5" fill="#00C853" />
+          <rect x="102" y="84" width="5" height="5" fill="#00C853" />
+          <rect x="112" y="82" width="5" height="5" fill="#00C853" />
         </g>
       )}
       {equippedGlasses === "diamond_glasses" && (
         <g>
-          <polygon points="78,79 91,88 78,99 65,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
-          <polygon points="122,79 135,88 122,99 109,88" fill="rgba(147,210,255,0.55)" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="91" y1="88" x2="109" y2="88" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="54" y1="86" x2="65"  y2="88" stroke="#90CAF9" strokeWidth="2" />
-          <line x1="135" y1="88" x2="146" y2="86" stroke="#90CAF9" strokeWidth="2" />
-          <polygon points="78,82 83,88 78,94 73,88" fill="rgba(255,255,255,0.6)" />
-          <polygon points="122,82 127,88 122,94 117,88" fill="rgba(255,255,255,0.6)" />
+          <polygon points="74,78 92,87 74,98 56,87" fill="rgba(144,202,249,0.55)" stroke="#90CAF9" strokeWidth="2.5" />
+          <polygon points="110,78 128,87 110,98 92,87" fill="rgba(144,202,249,0.55)" stroke="#90CAF9" strokeWidth="2.5" />
+          <line x1="40" y1="86" x2="56" y2="87" stroke="#90CAF9" strokeWidth="2.5" />
+          <line x1="128" y1="87" x2="144" y2="86" stroke="#90CAF9" strokeWidth="2.5" />
+          {/* Facet highlights */}
+          <polygon points="74,80 82,87 74,92 68,87" fill="rgba(255,255,255,0.55)" />
+          <polygon points="110,80 118,87 110,92 104,87" fill="rgba(255,255,255,0.55)" />
         </g>
       )}
     </svg>
@@ -475,35 +487,37 @@ function Home() {
         .mq-sheet { animation: sheet-up 0.32s cubic-bezier(0.34,1.2,0.64,1) both; }
         .mq-overlay { animation: mq-page-in 0.22s ease both; }
 
+        /* Bear breathing */
         @keyframes breathe {
-          0%, 100% { transform: scaleY(1)    translateY(0);    }
-          50%       { transform: scaleY(1.03) translateY(-1.5px); }
+          0%, 100% { transform: scaleY(1) translateY(0); }
+          50%       { transform: scaleY(1.02) translateY(-2px); }
         }
         .bear-idle {
-          transform-origin: 50% 90%;
-          animation: breathe 3.4s ease-in-out infinite;
+          transform-origin: 50% 85%;
+          animation: breathe 3.6s ease-in-out infinite;
         }
 
+        /* Bear mood animations */
         @keyframes bear-bounce {
           0%, 100% { transform: translateY(0) scale(1); }
-          40%       { transform: translateY(-12px) scale(1.06); }
-          70%       { transform: translateY(-5px) scale(1.02); }
+          40%       { transform: translateY(-10px) scale(1.04); }
+          70%       { transform: translateY(-4px) scale(1.01); }
         }
         @keyframes bear-excited {
-          0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-          25%       { transform: translateY(-14px) rotate(4deg) scale(1.07); }
-          50%       { transform: translateY(-10px) rotate(-3deg) scale(1.05); }
-          75%       { transform: translateY(-12px) rotate(2deg) scale(1.06); }
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25%       { transform: translateY(-12px) rotate(3deg); }
+          50%       { transform: translateY(-8px) rotate(-2deg); }
+          75%       { transform: translateY(-10px) rotate(2deg); }
         }
         @keyframes bear-proud {
           0%, 100% { transform: translateY(0) rotate(0deg); }
-          30%       { transform: translateY(-8px) rotate(3deg); }
-          60%       { transform: translateY(-5px) rotate(-2deg); }
+          40%       { transform: translateY(-6px) rotate(2deg); }
+          70%       { transform: translateY(-3px) rotate(-1deg); }
         }
         @keyframes bear-sad {
           0%, 100% { transform: translateY(0) rotate(0deg); }
-          40%       { transform: translateY(5px) rotate(-5deg); }
-          70%       { transform: translateY(3px) rotate(-3deg); }
+          40%       { transform: translateY(4px) rotate(-3deg); }
+          70%       { transform: translateY(2px) rotate(-2deg); }
         }
 
         .bear--happy    { animation: bear-bounce  0.55s cubic-bezier(0.34,1.4,0.64,1) both !important; }
@@ -513,7 +527,7 @@ function Home() {
 
         .mq-btn {
           -webkit-tap-highlight-color: transparent;
-          transition: transform 0.13s cubic-bezier(0.34,1.6,0.64,1), opacity 0.13s, box-shadow 0.13s;
+          transition: transform 0.13s cubic-bezier(0.34,1.6,0.64,1), opacity 0.13s;
           cursor: pointer;
         }
         .mq-btn:active { transform: scale(0.93) !important; opacity: 0.82; }
@@ -524,7 +538,6 @@ function Home() {
           padding: 20px;
           margin: 0 16px 14px;
           box-shadow: 0 2px 14px rgba(0,0,0,0.055), 0 1px 3px rgba(0,0,0,0.04);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .mq-hero {
@@ -534,7 +547,7 @@ function Home() {
           border-radius: 28px;
           padding: 22px 20px 20px;
           background: linear-gradient(140deg, #11112a 0%, #1d1d43 55%, #282860 100%);
-          box-shadow: 0 8px 32px rgba(17,17,42,0.38), 0 2px 6px rgba(0,0,0,0.18);
+          box-shadow: 0 8px 32px rgba(17,17,42,0.38);
         }
         .mq-hero::before {
           content: '';
@@ -548,7 +561,7 @@ function Home() {
           position: absolute;
           top: -30px; right: -30px;
           width: 140px; height: 140px;
-          background: radial-gradient(circle, rgba(201,168,76,0.22) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -556,8 +569,8 @@ function Home() {
           background: linear-gradient(140deg, #11112a 0%, #282860 100%) !important;
           cursor: pointer;
         }
-        .loot-active:hover  { transform: translateY(-3px) !important; box-shadow: 0 14px 36px rgba(17,17,42,0.42) !important; }
-        .loot-active:active { transform: scale(0.96) !important; }
+        .loot-active:hover  { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(17,17,42,0.42) !important; }
+        .loot-active:active { transform: scale(0.96); }
 
         .activity-row {
           display: flex; align-items: center; justify-content: space-between;
@@ -568,7 +581,7 @@ function Home() {
         .activity-row:last-child { border-bottom: none; }
         .activity-row:hover { background: #f9f9f5; }
 
-        @keyframes xp-in   { from { width: 0%; } }
+        @keyframes xp-in { from { width: 0%; } }
         @keyframes shimmer {
           0%   { background-position: -200% 0; }
           100% { background-position:  200% 0; }
@@ -593,9 +606,9 @@ function Home() {
         }
 
         @keyframes xp-float {
-          0%   { opacity: 1;   transform: translateY(0)   scale(1); }
-          60%  { opacity: 1;   transform: translateY(-38px) scale(1.08); }
-          100% { opacity: 0;   transform: translateY(-62px) scale(0.9); }
+          0%   { opacity: 1; transform: translateY(0) scale(1); }
+          60%  { opacity: 1; transform: translateY(-38px) scale(1.08); }
+          100% { opacity: 0; transform: translateY(-62px) scale(0.9); }
         }
         .xp-particle {
           position: fixed;
@@ -608,7 +621,6 @@ function Home() {
           white-space: nowrap;
           animation: xp-float 1.05s cubic-bezier(0.22,1,0.36,1) both;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          letter-spacing: -0.3px;
         }
 
         @keyframes savings-fade-out {
@@ -617,9 +629,7 @@ function Home() {
         }
         .savings-fading {
           animation: savings-fade-out 1s cubic-bezier(0.4,0,0.2,1) both;
-          overflow: hidden;
-          transform-origin: top;
-          pointer-events: none;
+          overflow: hidden; transform-origin: top; pointer-events: none;
         }
 
         @keyframes savings-in { from { width: 0%; } }
@@ -636,20 +646,12 @@ function Home() {
           transition: transform 0.15s ease, color 0.2s;
         }
         .nav-btn:active { transform: scale(0.84); }
-        .nav-icon {
-          font-size: 20px;
-          transition: transform 0.2s cubic-bezier(0.34,1.5,0.64,1);
-          display: block;
-        }
+        .nav-icon { font-size: 20px; transition: transform 0.2s cubic-bezier(0.34,1.5,0.64,1); display: block; }
         .nav-btn:hover .nav-icon { transform: translateY(-3px); }
         .nav-btn.is-active .nav-icon { transform: scale(1.14); }
         .nav-pip {
-          position: absolute;
-          top: -7px; left: 50%;
-          transform: translateX(-50%);
-          width: 28px; height: 3px;
-          background: #11112a;
-          border-radius: 0 0 4px 4px;
+          position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+          width: 28px; height: 3px; background: #11112a; border-radius: 0 0 4px 4px;
         }
       `}</style>
 
@@ -673,8 +675,7 @@ function Home() {
             background: "#11112a", color: "white",
             borderRadius: 20, padding: "14px 26px",
             fontSize: 14, fontWeight: 700, zIndex: 200,
-            whiteSpace: "nowrap",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+            whiteSpace: "nowrap", boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
           }}>
             🏆 Quest progress updated!
           </div>
@@ -701,12 +702,12 @@ function Home() {
         <div className="mq-hero s1">
           <div style={{ display: "flex", alignItems: "flex-start", gap: 4, position: "relative", zIndex: 1 }}>
 
-            {/* Character column — clean, stable, no scaling */}
+            {/* Character column */}
             <div style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 6,
+              gap: 4,
               minWidth: 96,
             }}>
               <BearCharacter
@@ -718,12 +719,12 @@ function Home() {
                 mood={mood}
               />
               <span style={{
-                fontSize: 11,
-                color: "rgba(255,255,255,0.36)",
+                fontSize: 10,
+                color: "rgba(255,255,255,0.35)",
                 fontStyle: "italic",
                 textAlign: "center",
                 lineHeight: 1.4,
-                maxWidth: 88,
+                maxWidth: 90,
               }}>
                 "{phrase}"
               </span>
@@ -740,22 +741,17 @@ function Home() {
               <p style={{ margin: "0 0 18px", fontSize: 11, color: "rgba(255,255,255,0.26)", fontWeight: 500 }}>
                 tracked via MoneyQuest
               </p>
-
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   className="mq-btn"
                   style={{ flex: 1, padding: "12px 0", borderRadius: 14, border: "none", background: "white", color: "#11112a", fontSize: 13, fontWeight: 800 }}
                   onClick={() => { setType("expense"); setBalanceError(""); setShowModal(true); }}
-                >
-                  − Expense
-                </button>
+                >− Expense</button>
                 <button
                   className="mq-btn"
                   style={{ flex: 1, padding: "12px 0", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "white", fontSize: 13, fontWeight: 700 }}
                   onClick={() => { setType("income"); setBalanceError(""); setShowModal(true); }}
-                >
-                  + Income
-                </button>
+                >+ Income</button>
               </div>
             </div>
           </div>
@@ -767,10 +763,7 @@ function Home() {
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 600 }}>{xpInLevel} / 100 XP</span>
             </div>
             <div style={{ height: 8, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-              <div
-                className="xp-bar"
-                style={{ height: "100%", borderRadius: 4, width: `${xpInLevel}%`, boxShadow: "0 0 10px rgba(201,168,76,0.7)" }}
-              />
+              <div className="xp-bar" style={{ height: "100%", borderRadius: 4, width: `${xpInLevel}%`, boxShadow: "0 0 10px rgba(201,168,76,0.7)" }} />
             </div>
           </div>
         </div>
@@ -783,9 +776,7 @@ function Home() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={{ margin: "0 0 3px", fontSize: 10, color: lootboxCount > 0 ? "#c9a84c" : "#aaa", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
-                Lootboxes
-              </p>
+              <p style={{ margin: "0 0 3px", fontSize: 10, color: lootboxCount > 0 ? "#c9a84c" : "#aaa", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Lootboxes</p>
               <h3 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: lootboxCount > 0 ? "white" : "#11112a", letterSpacing: "-0.3px" }}>
                 {lootboxCount > 0 ? `${lootboxCount} ready to open!` : "No lootboxes yet"}
               </h3>
@@ -803,31 +794,21 @@ function Home() {
 
         {/* ACTIVE QUEST */}
         <div className="mq-card s3">
-          <p style={{ margin: "0 0 2px", fontSize: 10, color: "#c9a84c", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>
-            Active Quest
-          </p>
-          <h3 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>
-            Track your spending
-          </h3>
+          <p style={{ margin: "0 0 2px", fontSize: 10, color: "#c9a84c", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Active Quest</p>
+          <h3 style={{ margin: "0 0 16px", fontSize: 17, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>Track your spending</h3>
           <div style={{ height: 7, borderRadius: 4, background: "#eaeae4", marginBottom: 10, overflow: "hidden" }}>
             <div style={{ height: "100%", borderRadius: 4, background: "linear-gradient(90deg, #11112a, #3b5bdb)", width: "65%", transition: "width 0.7s cubic-bezier(0.22,1,0.36,1)" }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#bbb", fontWeight: 600 }}>
             <span>Keep going!</span>
-            <button
-              onClick={() => navigate("/achievements")}
-              style={{ border: "none", background: "none", fontSize: 12, color: "#3b5bdb", fontWeight: 800, cursor: "pointer", padding: 0, fontFamily: "inherit" }}
-            >View Quests →</button>
+            <button onClick={() => navigate("/achievements")} style={{ border: "none", background: "none", fontSize: 12, color: "#3b5bdb", fontWeight: 800, cursor: "pointer", padding: 0, fontFamily: "inherit" }}>View Quests →</button>
           </div>
         </div>
 
         {/* SAVINGS GOAL */}
         <div className="mq-card s4" style={{ marginBottom: 14 }}>
           {savingsGoal && (
-            <div
-              className={savingsFading ? "savings-fading" : ""}
-              style={{ marginBottom: savingsGoal ? 0 : undefined }}
-            >
+            <div className={savingsFading ? "savings-fading" : ""} style={{ marginBottom: savingsGoal ? 0 : undefined }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 <div>
                   <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
@@ -849,33 +830,19 @@ function Home() {
                         {pct < 100 && <span style={{ color: "#e67e22", fontWeight: 700, marginLeft: 6 }}>· {savingsGoal.target_amount - savingsGoal.saved_amount}€ left</span>}
                       </span>
                     </div>
-                    {pct < 100 ? (
-                      <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>
-                        You're getting closer to your goal 💪
-                      </p>
-                    ) : (
-                      <p style={{ margin: "0 0 12px", fontSize: 14, color: "#2e7d32", fontWeight: 800, letterSpacing: "-0.2px" }}>
-                        You did it 🎉
-                      </p>
-                    )}
+                    {pct < 100
+                      ? <p style={{ margin: "0 0 12px", fontSize: 12, color: "#888", fontWeight: 500, fontStyle: "italic" }}>You're getting closer to your goal 💪</p>
+                      : <p style={{ margin: "0 0 12px", fontSize: 14, color: "#2e7d32", fontWeight: 800, letterSpacing: "-0.2px" }}>You did it 🎉</p>
+                    }
                   </>
                 );
               })()}
               {!savingsCompleted && (
                 <div style={{ display: "flex", gap: 8 }}>
-                  <input
-                    className="mq-input"
-                    type="number"
-                    placeholder="Amount €"
-                    value={savingsAdd}
-                    onChange={e => setSavingsAdd(e.target.value)}
-                    style={{ flex: 1, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, outline: "none" }}
-                  />
-                  <button
-                    className="mq-btn"
-                    onClick={(e) => addToSavings(e)}
-                    style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#3b5bdb", color: "white", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}
-                  >+ Save</button>
+                  <input className="mq-input" type="number" placeholder="Amount €" value={savingsAdd} onChange={e => setSavingsAdd(e.target.value)}
+                    style={{ flex: 1, padding: "11px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, outline: "none" }} />
+                  <button className="mq-btn" onClick={(e) => addToSavings(e)}
+                    style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#3b5bdb", color: "white", fontSize: 13, fontWeight: 800, whiteSpace: "nowrap" }}>+ Save</button>
                 </div>
               )}
               <div style={{ height: 1, background: "#f0f0ea", margin: "14px -20px 14px" }} />
@@ -886,34 +853,18 @@ function Home() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <p style={{ margin: "0 0 2px", fontSize: 10, color: "#3b5bdb", textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Savings Goal</p>
-                <p style={{ margin: 0, fontSize: 14, color: "#bbb", fontWeight: 500 }}>
-                  {savingsGoal ? "Start a new goal" : "No goal set yet"}
-                </p>
+                <p style={{ margin: 0, fontSize: 14, color: "#bbb", fontWeight: 500 }}>{savingsGoal ? "Start a new goal" : "No goal set yet"}</p>
               </div>
-              <button
-                className="mq-btn"
-                onClick={() => setShowSavingsCreate(true)}
-                style={{ padding: "10px 16px", borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 13, fontWeight: 800 }}
-              >+ Create Goal</button>
+              <button className="mq-btn" onClick={() => setShowSavingsCreate(true)}
+                style={{ padding: "10px 16px", borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 13, fontWeight: 800 }}>+ Create Goal</button>
             </div>
           ) : (
             <>
               <p style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#11112a" }}>🎯 New Savings Goal</p>
-              <input
-                className="mq-input"
-                placeholder="Goal name (e.g. New laptop)"
-                value={savingsName}
-                onChange={e => setSavingsName(e.target.value)}
-                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 500, marginBottom: 10, outline: "none", boxSizing: "border-box" }}
-              />
-              <input
-                className="mq-input"
-                type="number"
-                placeholder="Target amount €"
-                value={savingsTarget}
-                onChange={e => setSavingsTarget(e.target.value)}
-                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, marginBottom: 12, outline: "none", boxSizing: "border-box" }}
-              />
+              <input className="mq-input" placeholder="Goal name (e.g. New laptop)" value={savingsName} onChange={e => setSavingsName(e.target.value)}
+                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 500, marginBottom: 10, outline: "none", boxSizing: "border-box" }} />
+              <input className="mq-input" type="number" placeholder="Target amount €" value={savingsTarget} onChange={e => setSavingsTarget(e.target.value)}
+                style={{ width: "100%", padding: "13px 14px", borderRadius: 12, border: "1.5px solid #e4e4de", fontSize: 14, fontFamily: "inherit", fontWeight: 600, marginBottom: 12, outline: "none", boxSizing: "border-box" }} />
               <div style={{ display: "flex", gap: 8 }}>
                 <button className="mq-btn" onClick={createSavingsGoal} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 800 }}>Create</button>
                 <button className="mq-btn" onClick={() => { setShowSavingsCreate(false); setSavingsName(""); setSavingsTarget(""); }} style={{ flex: 1, padding: 13, borderRadius: 12, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 14, fontWeight: 600 }}>Cancel</button>
@@ -926,9 +877,7 @@ function Home() {
         <div className="mq-card s4">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#11112a" }}>Recent Activity</h3>
-            <button onClick={() => navigate("/stats")} style={{ border: "none", background: "none", fontSize: 12, color: "#3b5bdb", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-              View all
-            </button>
+            <button onClick={() => navigate("/stats")} style={{ border: "none", background: "none", fontSize: 12, color: "#3b5bdb", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>View all</button>
           </div>
           {transactions.length === 0 ? (
             <p style={{ color: "#bbb", fontSize: 14, textAlign: "center", padding: "24px 0", fontWeight: 500 }}>No transactions yet</p>
@@ -936,12 +885,7 @@ function Home() {
             transactions.slice(0, 5).map((t, i) => (
               <div key={i} className="activity-row">
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{
-                    width: 44, height: 44, borderRadius: 14,
-                    background: t.category === "income" ? "#e8f5e9" : "#f0f0ea",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 20, flexShrink: 0,
-                  }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: t.category === "income" ? "#e8f5e9" : "#f0f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
                     {CATEGORY_ICONS[t.category] || "💳"}
                   </div>
                   <div>
@@ -980,12 +924,9 @@ function Home() {
         zIndex: 50,
       }}>
         {NAV_ITEMS.map(item => (
-          <button
-            key={item.label}
-            className={`nav-btn ${item.active ? "is-active" : ""}`}
+          <button key={item.label} className={`nav-btn ${item.active ? "is-active" : ""}`}
             style={{ color: item.active ? "#11112a" : "#bbb", fontWeight: item.active ? 800 : 500, letterSpacing: "0.3px" }}
-            onClick={() => !item.active && navigate(item.path)}
-          >
+            onClick={() => !item.active && navigate(item.path)}>
             {item.active && <span className="nav-pip" />}
             <span className="nav-icon">{item.icon}</span>
             {item.label}
@@ -995,13 +936,11 @@ function Home() {
 
       {/* MODAL — portal */}
       {showModal && ReactDOM.createPortal(
-        <div
-          className="mq-overlay"
+        <div className="mq-overlay"
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", display: "flex", alignItems: "flex-end", justifyContent: "center", zIndex: 100 }}
           onClick={() => setShowModal(false)}
         >
-          <div
-            className="mq-sheet"
+          <div className="mq-sheet"
             style={{ background: "white", borderRadius: "28px 28px 0 0", padding: "10px 20px 52px", width: "100%", maxWidth: 390 }}
             onClick={e => e.stopPropagation()}
           >
@@ -1011,17 +950,12 @@ function Home() {
             </h3>
             {type === "expense" && (
               <>
-                <input
-                  className="mq-input"
+                <input className="mq-input"
                   style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", fontWeight: 500, transition: "border-color 0.15s, box-shadow 0.15s" }}
-                  placeholder="What did you spend on? (optional)"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                />
+                  placeholder="What did you spend on? (optional)" value={description} onChange={e => setDescription(e.target.value)} />
                 <select
                   style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 15, marginBottom: 12, fontFamily: "inherit", background: "white", outline: "none", color: "#11112a", fontWeight: 500, appearance: "none" as const }}
-                  value={category}
-                  onChange={e => setCategory(e.target.value)}
+                  value={category} onChange={e => setCategory(e.target.value)}
                 >
                   <option value="food">☕ Food & Coffee</option>
                   <option value="transport">🚗 Transport</option>
@@ -1029,42 +963,25 @@ function Home() {
                 </select>
               </>
             )}
-            <input
-              className="mq-input"
+            <input className="mq-input"
               style={{ width: "100%", padding: "15px 16px", borderRadius: 16, border: "1.5px solid #e4e4de", fontSize: 18, marginBottom: 8, fontFamily: "inherit", fontWeight: 800, letterSpacing: "-0.3px", transition: "border-color 0.15s, box-shadow 0.15s" }}
-              type="number"
-              inputMode="decimal"
-              placeholder="0.00 €"
-              value={amount}
-              onChange={e => { setAmount(e.target.value); setBalanceError(""); }}
-            />
+              type="number" inputMode="decimal" placeholder="0.00 €" value={amount}
+              onChange={e => { setAmount(e.target.value); setBalanceError(""); }} />
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               {[5, 10, 20].map(q => (
-                <button
-                  key={q}
-                  className="mq-btn"
+                <button key={q} className="mq-btn"
                   style={{ flex: 1, padding: "9px 0", borderRadius: 12, border: "1.5px solid #e4e4de", background: "white", color: "#11112a", fontSize: 13, fontWeight: 700 }}
                   onClick={() => setAmount(a => a ? String(Number(a) + q) : String(q))}
                 >+{q}€</button>
               ))}
             </div>
-            {balanceError && (
-              <p style={{ color: "#c62828", fontSize: 13, margin: "-4px 0 14px", fontWeight: 600 }}>⚠️ {balanceError}</p>
-            )}
-            <button
-              className="mq-btn"
+            {balanceError && <p style={{ color: "#c62828", fontSize: 13, margin: "-4px 0 14px", fontWeight: 600 }}>⚠️ {balanceError}</p>}
+            <button className="mq-btn"
               style={{ width: "100%", padding: 17, borderRadius: 16, border: "none", background: "#11112a", color: "white", fontSize: 16, fontWeight: 800, marginBottom: 10, boxShadow: "0 4px 20px rgba(17,17,42,0.28)", letterSpacing: "-0.2px" }}
-              onClick={(e) => addTransaction(e)}
-            >
-              Save Transaction
-            </button>
-            <button
-              className="mq-btn"
+              onClick={(e) => addTransaction(e)}>Save Transaction</button>
+            <button className="mq-btn"
               style={{ width: "100%", padding: 16, borderRadius: 16, border: "none", background: "#f0f0ea", color: "#11112a", fontSize: 15, fontWeight: 600 }}
-              onClick={() => { setShowModal(false); setBalanceError(""); }}
-            >
-              Cancel
-            </button>
+              onClick={() => { setShowModal(false); setBalanceError(""); }}>Cancel</button>
           </div>
         </div>,
         document.body
