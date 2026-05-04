@@ -29,10 +29,10 @@ const PHRASES = [
 ];
 
 const CHARACTERS: Record<string, { fur: string; inner: string }> = {
-  brown:  { fur: "#A0622A", inner: "#E8B98A" },
+  brown:  { fur: "#8B5228", inner: "#E8B97A" },
   white:  { fur: "#C8BEB4", inner: "#EDE8E0" },
   black:  { fur: "#4A4050", inner: "#8A8090" },
-  orange: { fur: "#C86030", inner: "#F0A870" },
+  orange: { fur: "#C05C20", inner: "#F0A060" },
 };
 
 type BearMood = "idle" | "happy" | "sad" | "excited" | "proud";
@@ -51,8 +51,22 @@ function useBearReaction(resetDelay = 1500) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  BEAR CHARACTER  —  matched 1:1 to reference image
-//  viewBox 0 0 200 230  |  rendered at width=96 height=110
+//  BEAR CHARACTER — traced from reference image
+//
+//  Canvas: 200 × 240 units, rendered at width=100 height=120
+//
+//  Key measurements from reference (as % of canvas):
+//  Head circle:  cx=100 cy=95  r=68   (large, dominant)
+//  Ears:         left cx=46 cy=44 r=20, right cx=154 cy=44 r=20
+//                inner r=11 — sit above/behind head at ~10-11 o'clock
+//  Muzzle:       cx=100 cy=118  rx=34 ry=24  (wide oval, lower face)
+//  Eyes:         cx=82 / cx=118, cy=96  rx=7.5 ry=7.5
+//                close together, just above muzzle top edge
+//  Cheeks:       cx=68 cy=114 / cx=132 cy=114  r=12  outside+below eyes
+//  Nose:         cx=100 cy=107  rx=7.5 ry=5.5
+//  Mouth W:      M88,116 Q94,122 100,116 Q106,122 112,116
+//  Body:         cx=100 cy=186  rx=55 ry=48
+//  Belly:        cx=100 cy=194  rx=35 ry=34
 // ─────────────────────────────────────────────────────────────────────────────
 function BearCharacter({
   fur, inner, onClick, mood = "idle",
@@ -79,86 +93,68 @@ function BearCharacter({
     return () => clearTimeout(t);
   }, []);
 
-  // ── Mouth path per mood ────────────────────────────────────────────────────
-  // Reference: W-shaped mouth — two small curves meeting at centre below nose
-  const mouthIdle    = "M 86 128 Q 91 133 96 128 Q 101 133 106 128";   // soft W
-  const mouthHappy   = "M 83 126 Q 96 138 109 126";                     // big smile arc
-  const mouthSad     = "M 85 132 Q 96 124 107 132";                     // frown
-  const mouthExcited = "M 85 126 Q 96 138 107 126";                     // wide smile
-  const mouthProud   = "M 87 128 Q 96 133 105 128";                     // slight smile
+  const eyeRy = blink ? 0.6 : 7.5;
 
+  // Mouth shapes — all subtle, matching reference W-curve baseline
   const mouthD =
-    mood === "happy"   ? mouthHappy   :
-    mood === "sad"     ? mouthSad     :
-    mood === "excited" ? mouthExcited :
-    mood === "proud"   ? mouthProud   :
-    mouthIdle;
-
-  // ── Eye height — closes on blink ──────────────────────────────────────────
-  const eyeRy = blink ? 0.5 : 7;
+    mood === "happy"   ? "M85,116 Q100,128 115,116"        :
+    mood === "excited" ? "M83,115 Q100,129 117,115"        :
+    mood === "sad"     ? "M86,122 Q100,113 114,122"        :
+    mood === "proud"   ? "M87,117 Q100,123 113,117"        :
+    "M88,116 Q94,122 100,116 Q106,122 112,116";            // idle W
 
   return (
     <svg
-      width="96" height="110"
-      viewBox="0 0 192 220"
+      width="100" height="120"
+      viewBox="0 0 200 240"
       onClick={onClick}
       className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
       style={{ cursor: "pointer", display: "block", overflow: "visible" }}
     >
-      {/* ── BODY (behind head) ────────────────────────────────────────── */}
-      {/* Main body — chubby rounded rectangle */}
-      <ellipse cx="96" cy="178" rx="58" ry="52" fill={fur} />
-      {/* Belly patch — large oval, reference shows it taking up most of body */}
-      <ellipse cx="96" cy="184" rx="38" ry="36" fill={inner} />
+      {/* ── BODY — behind head ── */}
+      <ellipse cx="100" cy="186" rx="55" ry="48" fill={fur} />
+      {/* Belly patch — large, takes up most of body front */}
+      <ellipse cx="100" cy="194" rx="35" ry="34" fill={inner} />
 
-      {/* ── EARS (behind head) ────────────────────────────────────────── */}
-      {/* Reference: small-ish circles, positioned at top-left/right of head,
-          slightly overlapping head edge, tilted outward */}
-      <circle cx="44"  cy="52" r="22" fill={fur} />
-      <circle cx="148" cy="52" r="22" fill={fur} />
-      {/* Inner ear — smaller, same inner color as muzzle */}
-      <circle cx="44"  cy="54" r="12" fill={inner} />
-      <circle cx="148" cy="54" r="12" fill={inner} />
+      {/* ── EARS — behind head, at ~10-11 and 1-2 o'clock ── */}
+      <circle cx="46"  cy="44" r="21" fill={fur} />
+      <circle cx="154" cy="44" r="21" fill={fur} />
+      {/* Inner ear */}
+      <circle cx="46"  cy="46" r="11" fill={inner} />
+      <circle cx="154" cy="46" r="11" fill={inner} />
 
-      {/* ── HEAD ──────────────────────────────────────────────────────── */}
-      {/* Large circle — dominant element, reference head takes ~55% of total height */}
-      <circle cx="96" cy="96" r="72" fill={fur} />
+      {/* ── HEAD — large dominant circle ── */}
+      <circle cx="100" cy="95" r="68" fill={fur} />
 
-      {/* ── MUZZLE ────────────────────────────────────────────────────── */}
-      {/* Reference: wide oval occupying lower 40% of face, slightly taller than wide */}
-      <ellipse cx="96" cy="120" rx="38" ry="28" fill={inner} />
+      {/* ── MUZZLE — wide oval, lower 35% of face ── */}
+      <ellipse cx="100" cy="118" rx="34" ry="24" fill={inner} />
 
-      {/* ── NOSE ──────────────────────────────────────────────────────── */}
-      {/* Reference: small rounded inverted-triangle / oval, dark brown, centered */}
-      <ellipse cx="96" cy="110" rx="9" ry="6.5" fill="#2D1A0A" />
-      {/* Tiny highlight on nose */}
-      <circle cx="93" cy="108" r="2" fill="rgba(255,255,255,0.25)" />
+      {/* ── NOSE — small dark oval at top of muzzle ── */}
+      <ellipse cx="100" cy="107" rx="7.5" ry="5.5" fill="#2A1506" />
 
-      {/* ── CHEEKS ────────────────────────────────────────────────────── */}
-      {/* Reference: soft pink circles, fairly prominent, below and outside eyes */}
-      <circle cx="66"  cy="116" r="14" fill="#E8788A" opacity="0.45" />
-      <circle cx="126" cy="116" r="14" fill="#E8788A" opacity="0.45" />
+      {/* ── CHEEKS — soft pink, outside+below eyes, on muzzle edge ── */}
+      <circle cx="70"  cy="114" r="12" fill="#E07080" opacity="0.42" />
+      <circle cx="130" cy="114" r="12" fill="#E07080" opacity="0.42" />
 
-      {/* ── EYES ──────────────────────────────────────────────────────── */}
-      {/* Reference: small dark brown/black circles with white shine dot,
-          positioned above muzzle on either side of nose bridge */}
-      <ellipse cx="76"  cy="96" rx="8.5" ry={eyeRy} fill="#2D1A0A" />
-      <ellipse cx="116" cy="96" rx="8.5" ry={eyeRy} fill="#2D1A0A" />
-      {/* White shine dots — essential for glossy look of reference */}
+      {/* ── EYES — small, close together, above muzzle ── */}
+      {/* Left eye */}
+      <ellipse cx="82"  cy="96" rx="7.5" ry={eyeRy} fill="#2A1506" />
+      {/* Right eye */}
+      <ellipse cx="118" cy="96" rx="7.5" ry={eyeRy} fill="#2A1506" />
+      {/* Shine dots — upper-inner quadrant of each eye */}
       {!blink && (
         <>
-          <circle cx="79"  cy="92" r="3" fill="white" opacity="0.9" />
-          <circle cx="119" cy="92" r="3" fill="white" opacity="0.9" />
+          <circle cx="85"  cy="92" r="2.8" fill="white" opacity="0.92" />
+          <circle cx="121" cy="92" r="2.8" fill="white" opacity="0.92" />
         </>
       )}
 
-      {/* ── MOUTH ─────────────────────────────────────────────────────── */}
-      {/* Reference: W shape — two small curves, dark brown, below nose */}
+      {/* ── MOUTH — W shape below nose ── */}
       <path
         d={mouthD}
         fill="none"
-        stroke="#2D1A0A"
-        strokeWidth="3.5"
+        stroke="#2A1506"
+        strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
