@@ -111,10 +111,10 @@ function BearCharacter({
       className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
       style={{ cursor: "pointer", display: "block", overflow: "visible" }}
     >
-      {/* ── BODY — behind head ── */}
-      <ellipse cx="100" cy="186" rx="55" ry="48" fill={fur} />
-      {/* Belly patch — large, takes up most of body front */}
-      <ellipse cx="100" cy="194" rx="35" ry="34" fill={inner} />
+      {/* ── BODY — wider, chubby ── */}
+      <ellipse cx="100" cy="186" rx="68" ry="50" fill={fur} />
+      {/* Belly patch */}
+      <ellipse cx="100" cy="194" rx="44" ry="36" fill={inner} />
 
       {/* ── EARS — behind head, at ~10-11 and 1-2 o'clock ── */}
       <circle cx="46"  cy="44" r="21" fill={fur} />
@@ -136,16 +136,14 @@ function BearCharacter({
       <circle cx="70"  cy="114" r="12" fill="#E07080" opacity="0.42" />
       <circle cx="130" cy="114" r="12" fill="#E07080" opacity="0.42" />
 
-      {/* ── EYES — small, close together, above muzzle ── */}
-      {/* Left eye */}
-      <ellipse cx="82"  cy="96" rx="7.5" ry={eyeRy} fill="#2A1506" />
-      {/* Right eye */}
-      <ellipse cx="118" cy="96" rx="7.5" ry={eyeRy} fill="#2A1506" />
-      {/* Shine dots — upper-inner quadrant of each eye */}
+      {/* ── EYES — slightly bigger, wider apart, glossy ── */}
+      <ellipse cx="79"  cy="96" rx="9" ry={eyeRy} fill="#2A1506" />
+      <ellipse cx="121" cy="96" rx="9" ry={eyeRy} fill="#2A1506" />
+      {/* Shine dots — upper-inner quadrant */}
       {!blink && (
         <>
-          <circle cx="85"  cy="92" r="2.8" fill="white" opacity="0.92" />
-          <circle cx="121" cy="92" r="2.8" fill="white" opacity="0.92" />
+          <circle cx="83"  cy="91" r="3.2" fill="white" opacity="0.92" />
+          <circle cx="125" cy="91" r="3.2" fill="white" opacity="0.92" />
         </>
       )}
 
