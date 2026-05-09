@@ -140,13 +140,12 @@ function BearCharacter({
 
 // Subtle floating sparkle particles around the bear
 function BearAura() {
-  // 5 sparkles around the bear — visible but not overwhelming
   const sparkles = [
-    { x: 100, y: 4,   size: 9,  color: "#3b5bdb", delay: "0s",   dur: "3.6s" },
-    { x: -10, y: 36,  size: 7,  color: "#7B9CF0", delay: "1.2s", dur: "4s"   },
-    { x: 112, y: 64,  size: 6,  color: "#50C878", delay: "0.5s", dur: "3.4s" },
-    { x: -8,  y: 88,  size: 8,  color: "#3b5bdb", delay: "2s",   dur: "4.2s" },
-    { x: 104, y: 110, size: 6,  color: "#7B9CF0", delay: "0.9s", dur: "3.8s" },
+    { x: 102, y: 2,   size: 11, color: "#1d3fc7", delay: "0s",   dur: "3.4s" },
+    { x: -10, y: 32,  size: 9,  color: "#3b5bdb", delay: "1.1s", dur: "3.8s" },
+    { x: 116, y: 60,  size: 8,  color: "#16a34a", delay: "0.5s", dur: "3.2s" },
+    { x: -8,  y: 86,  size: 10, color: "#1d3fc7", delay: "1.8s", dur: "4s"   },
+    { x: 108, y: 108, size: 8,  color: "#3b5bdb", delay: "0.8s", dur: "3.6s" },
   ];
 
   return (
@@ -156,7 +155,7 @@ function BearAura() {
         position: "absolute",
         inset: 0,
         borderRadius: "50%",
-        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.2) 0%, rgba(180,195,255,0.05) 55%, transparent 75%)",
+        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(59,91,219,0.14) 0%, rgba(59,91,219,0.04) 55%, transparent 75%)",
         pointerEvents: "none",
       }} />
       {/* Sparkle crosses */}
@@ -364,12 +363,10 @@ function Home() {
         .bear--proud   { animation: bear-proud  0.6s ease both !important; }
         .bear--sad     { animation: bear-sad    0.5s ease both !important; }
 
-        /* Sparkle pulse — visible fade + subtle floating */
+        /* Sparkle pulse — always visible, gentle floating */
         @keyframes sparkle-pulse {
-          0%, 100% { transform: translateY(0)    scale(0.6);  opacity: 0;    }
-          25%       { transform: translateY(-3px) scale(1);    opacity: 0.28; }
-          50%       { transform: translateY(-6px) scale(1.15); opacity: 0.32; }
-          75%       { transform: translateY(-3px) scale(1);    opacity: 0.22; }
+          0%, 100% { transform: translateY(0)    scale(0.85); opacity: 0.45; }
+          50%       { transform: translateY(-6px) scale(1.15); opacity: 0.7;  }
         }
 
         .mq-btn {
