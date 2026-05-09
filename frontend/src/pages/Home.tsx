@@ -140,16 +140,13 @@ function BearCharacter({
 
 // Subtle floating sparkle particles around the bear
 function BearAura() {
-  // Sparkle positions tuned for 118×130 container
+  // 5 sparkles around the bear — visible but not overwhelming
   const sparkles = [
-    { x: 96,  y: 6,   size: 8, color: "#7B9CF0", delay: "0s",   dur: "4.2s" },
-    { x: -8,  y: 28,  size: 6, color: "#A0B8FF", delay: "1.4s", dur: "5s"   },
-    { x: 108, y: 52,  size: 5, color: "#50C878", delay: "0.6s", dur: "4.6s" },
-    { x: -10, y: 70,  size: 7, color: "#7B9CF0", delay: "2.1s", dur: "5.4s" },
-    { x: 100, y: 92,  size: 5, color: "#C0CFFF", delay: "1.0s", dur: "4.4s" },
-    { x: -4,  y: 102, size: 6, color: "#A0B8FF", delay: "2.8s", dur: "5.2s" },
-    { x: 80,  y: 116, size: 4, color: "#50C878", delay: "0.3s", dur: "4s"   },
-    { x: 18,  y: 8,   size: 4, color: "#A0B8FF", delay: "3.2s", dur: "5.6s" },
+    { x: 100, y: 4,   size: 9,  color: "#3b5bdb", delay: "0s",   dur: "3.6s" },
+    { x: -10, y: 36,  size: 7,  color: "#7B9CF0", delay: "1.2s", dur: "4s"   },
+    { x: 112, y: 64,  size: 6,  color: "#50C878", delay: "0.5s", dur: "3.4s" },
+    { x: -8,  y: 88,  size: 8,  color: "#3b5bdb", delay: "2s",   dur: "4.2s" },
+    { x: 104, y: 110, size: 6,  color: "#7B9CF0", delay: "0.9s", dur: "3.8s" },
   ];
 
   return (
@@ -159,7 +156,7 @@ function BearAura() {
         position: "absolute",
         inset: 0,
         borderRadius: "50%",
-        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.14) 0%, rgba(180,195,255,0.04) 55%, transparent 75%)",
+        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.2) 0%, rgba(180,195,255,0.05) 55%, transparent 75%)",
         pointerEvents: "none",
       }} />
       {/* Sparkle crosses */}
@@ -173,8 +170,7 @@ function BearAura() {
             width: s.size,
             height: s.size,
             pointerEvents: "none",
-            opacity: 0.15,
-            animation: `sparkle-float ${s.dur} ease-in-out ${s.delay} infinite`,
+            animation: `sparkle-pulse ${s.dur} ease-in-out ${s.delay} infinite`,
           }}
         >
           <svg width={s.size} height={s.size} viewBox="0 0 10 10">
@@ -368,10 +364,12 @@ function Home() {
         .bear--proud   { animation: bear-proud  0.6s ease both !important; }
         .bear--sad     { animation: bear-sad    0.5s ease both !important; }
 
-        /* Sparkle float */
-        @keyframes sparkle-float {
-          0%, 100% { transform: translateY(0) scale(1);    opacity: 0.15; }
-          50%       { transform: translateY(-6px) scale(1.15); opacity: 0.22; }
+        /* Sparkle pulse — visible fade + subtle floating */
+        @keyframes sparkle-pulse {
+          0%, 100% { transform: translateY(0)    scale(0.6);  opacity: 0;    }
+          25%       { transform: translateY(-3px) scale(1);    opacity: 0.28; }
+          50%       { transform: translateY(-6px) scale(1.15); opacity: 0.32; }
+          75%       { transform: translateY(-3px) scale(1);    opacity: 0.22; }
         }
 
         .mq-btn {
@@ -583,8 +581,8 @@ function Home() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginTop: -8,
-              marginRight: -10,
+              marginTop: -16,
+              marginRight: -14,
               zIndex: 1,
             }}>
               <BearAura />
@@ -599,7 +597,7 @@ function Home() {
           </div>
 
           {/* ── XP BAR ── */}
-          <div style={{ marginTop: 10, position: "relative", zIndex: 2 }}>
+          <div style={{ marginTop: 18, position: "relative", zIndex: 2 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
               <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
                 Next level in {100 - xpInLevel} XP
