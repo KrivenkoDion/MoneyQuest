@@ -140,13 +140,13 @@ function BearCharacter({
 
 // Subtle floating sparkle particles around the bear
 function BearAura() {
-  // Sparkle positions tuned for 116×130 container
+  // Static sparkle positions (relative to bear container)
   const sparkles = [
-    { x: 92,  y: 8,   size: 9, color: "#7B9CF0", delay: "0s",    dur: "3.2s" },
-    { x: -6,  y: 46,  size: 7, color: "#A0B8FF", delay: "1.1s",  dur: "4s"   },
-    { x: 96,  y: 80,  size: 6, color: "#50C878", delay: "0.5s",  dur: "3.6s" },
-    { x: -8,  y: 96,  size: 8, color: "#7B9CF0", delay: "1.8s",  dur: "4.4s" },
-    { x: 78,  y: 116, size: 5, color: "#A0B8FF", delay: "2.3s",  dur: "3s"   },
+    { x: 108, y: 12,  size: 10, color: "#4A6FE3", delay: "0s",    dur: "3.2s" },
+    { x: -10, y: 55,  size: 8,  color: "#7B9CF0", delay: "1.1s",  dur: "4s"   },
+    { x: 112, y: 90,  size: 7,  color: "#50C878", delay: "0.5s",  dur: "3.6s" },
+    { x: -14, y: 105, size: 9,  color: "#4A6FE3", delay: "1.8s",  dur: "4.4s" },
+    { x: 96,  y: 130, size: 6,  color: "#A0B8FF", delay: "2.3s",  dur: "3s"   },
   ];
 
   return (
@@ -156,7 +156,7 @@ function BearAura() {
         position: "absolute",
         inset: 0,
         borderRadius: "50%",
-        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.14) 0%, rgba(180,195,255,0.04) 55%, transparent 75%)",
+        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.18) 0%, rgba(180,195,255,0.06) 55%, transparent 75%)",
         pointerEvents: "none",
       }} />
       {/* Sparkle crosses */}
@@ -170,7 +170,7 @@ function BearAura() {
             width: s.size,
             height: s.size,
             pointerEvents: "none",
-            opacity: 0.12,
+            opacity: 0.18,
             animation: `sparkle-float ${s.dur} ease-in-out ${s.delay} infinite`,
           }}
         >
@@ -389,10 +389,10 @@ function Home() {
         /* Hero card — white, clean */
         .mq-hero {
           background: #ffffff;
-          border-radius: 24px;
+          border-radius: 22px;
           margin: 0 16px 12px;
-          padding: 18px 18px 18px;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+          padding: 16px 16px 16px;
+          box-shadow: 0 2px 14px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
           position: relative;
           overflow: visible;
         }
@@ -526,67 +526,32 @@ function Home() {
         {/* ── HERO CARD ── */}
         <div className="mq-hero s1">
 
-          {/* ── TOP ROW: wallet+account+EUR  |  level badge ── */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {/* Wallet icon */}
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "#EEF0FF",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M3 7h15a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7Z" stroke="#3b5bdb" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M3 7V6a2 2 0 0 1 2-2h11l2 3" stroke="#3b5bdb" strokeWidth="2" strokeLinejoin="round"/>
-                  <circle cx="17" cy="13.5" r="1.3" fill="#3b5bdb"/>
-                </svg>
-              </div>
-              <div>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px" }}>Main account</p>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 5,
-                  padding: "2px 8px", marginTop: 3,
-                  background: "#EEF0FF", borderRadius: 999,
-                  fontSize: 10, color: "#3b5bdb", fontWeight: 700,
-                }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#3b5bdb" }} />
-                  EUR
-                </span>
-              </div>
+          {/* ── TOP ROW: account+streak  |  level info ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+            <div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px" }}>Main account</p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#aaa", fontWeight: 500 }}>
+                🔥 {user?.streak || 0} day streak
+              </p>
             </div>
 
-            {/* Level badge */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                position: "relative",
-                width: 36, height: 36,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {/* Hexagon */}
-                <svg width="36" height="36" viewBox="0 0 36 36" style={{ position: "absolute", inset: 0 }}>
-                  <path d="M18 2 L32 10 L32 26 L18 34 L4 26 L4 10 Z" fill="#EEF0FF" stroke="#D4DAFF" strokeWidth="1" />
-                </svg>
-                <span style={{ position: "relative", fontSize: 12, fontWeight: 900, color: "#3b5bdb" }}>{level}</span>
-                {/* Bolt */}
-                <span style={{ position: "absolute", right: -6, top: -2, fontSize: 14 }}>⚡</span>
-              </div>
-              <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#11112a" }}>Level {level}</p>
-                <p style={{ margin: "1px 0 0", fontSize: 10, color: "#aaa", fontWeight: 500 }}>{100 - xpInLevel} XP to next</p>
-              </div>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#11112a" }}>Level {level}</p>
+              <p style={{ margin: "3px 0 0", fontSize: 11, color: "#aaa", fontWeight: 500 }}>
+                {100 - xpInLevel} XP to next level
+              </p>
             </div>
           </div>
 
           {/* ── BALANCE ROW + BEAR ── */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
 
             {/* Left: balance + phrase */}
-            <div style={{ flex: 1, paddingRight: 4 }}>
+            <div style={{ flex: 1, paddingRight: 0, minWidth: 0 }}>
               <p style={{ margin: "0 0 2px", fontSize: 12, color: "#aaa", fontWeight: 500 }}>Total balance</p>
               <h1 style={{
                 margin: 0,
-                fontSize: 34,
+                fontSize: 32,
                 fontWeight: 900,
                 color: "#11112a",
                 letterSpacing: "-1.2px",
@@ -596,7 +561,7 @@ function Home() {
                 {formatBalance(balance)} €
               </h1>
               <p style={{
-                margin: "8px 0 0",
+                margin: "6px 0 0",
                 fontSize: 13,
                 color: "#3b5bdb",
                 fontWeight: 700,
@@ -610,15 +575,15 @@ function Home() {
             <div style={{
               flexShrink: 0,
               position: "relative",
-              width: 116,
-              height: 130,
+              width: 104,
+              height: 118,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginRight: -4,
+              marginRight: -6,
             }}>
               <BearAura />
-              <div style={{ transform: "scale(0.88)", transformOrigin: "center bottom" }}>
+              <div style={{ transform: "scale(0.78)", transformOrigin: "center bottom" }}>
                 <BearCharacter
                   fur={charColors.fur}
                   inner={charColors.inner}
@@ -628,9 +593,9 @@ function Home() {
             </div>
           </div>
 
-          {/* ── XP BAR — под balance, на всю ширину ── */}
-          <div style={{ marginTop: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          {/* ── XP BAR ── */}
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
               <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
                 Next level in {100 - xpInLevel} XP
               </span>
@@ -644,11 +609,11 @@ function Home() {
           </div>
 
           {/* ── BUTTONS ── */}
-          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
             <button
               className="mq-btn"
               style={{
-                flex: 1, padding: "14px 0", borderRadius: 999,
+                flex: 1, padding: "13px 0", borderRadius: 999,
                 border: "none", background: "#F0F0ED",
                 color: "#11112a", fontSize: 15, fontWeight: 800, fontFamily: "inherit",
               }}
@@ -657,7 +622,7 @@ function Home() {
             <button
               className="mq-btn"
               style={{
-                flex: 1, padding: "14px 0", borderRadius: 999,
+                flex: 1, padding: "13px 0", borderRadius: 999,
                 border: "none", background: "#11112a",
                 color: "white", fontSize: 15, fontWeight: 800, fontFamily: "inherit",
               }}
