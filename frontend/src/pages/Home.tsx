@@ -375,12 +375,12 @@ function Home() {
           box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
         }
 
-        /* Hero card — white, clean, matches reference */
+        /* Hero card — white, clean */
         .mq-hero {
           background: #ffffff;
           border-radius: 24px;
-          margin: 0 16px 12px;
-          padding: 20px 20px 20px;
+          margin: 0 16px 16px;
+          padding: 24px 24px 22px;
           box-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
           position: relative;
           overflow: visible;
@@ -515,56 +515,13 @@ function Home() {
         {/* ── HERO CARD ── */}
         <div className="mq-hero s1">
 
-          {/* ── TOP ROW: account info left, level badge right ── */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-
-            {/* Left: wallet icon + account name + EUR pill */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 14,
-                background: "#EEF0FB",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, flexShrink: 0,
-              }}>👛</div>
-              <div>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>
-                  Main account
-                </p>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#3b5bdb" }} />
-                  <span style={{ fontSize: 12, color: "#3b5bdb", fontWeight: 700, letterSpacing: "0.2px" }}>EUR</span>
-                </div>
-              </div>
+          {/* ── TOP ROW: account left, level right ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+            <div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#11112a" }}>Main account</p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#aaa", fontWeight: 500 }}>EUR</p>
             </div>
-
-            {/* Right: hexagon level badge + level text */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {/* Hexagon badge */}
-              <div style={{ position: "relative", width: 44, height: 44, flexShrink: 0 }}>
-                <svg width="44" height="44" viewBox="0 0 44 44" style={{ position: "absolute", inset: 0 }}>
-                  <path
-                    d="M22 3 L39 12.5 L39 31.5 L22 41 L5 31.5 L5 12.5 Z"
-                    fill="#C8CFFA"
-                  />
-                </svg>
-                <div style={{
-                  position: "absolute", inset: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  gap: 1,
-                }}>
-                  <span style={{ fontSize: 13, fontWeight: 900, color: "#11112a" }}>{level}</span>
-                  <span style={{ fontSize: 11 }}>⚡</span>
-                </div>
-              </div>
-              <div>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px" }}>
-                  Level {level}
-                </p>
-                <p style={{ margin: 0, fontSize: 11, color: "#999", fontWeight: 500 }}>
-                  {100 - xpInLevel} XP to next level
-                </p>
-              </div>
-            </div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#aaa" }}>Level {level}</p>
           </div>
 
           {/* ── BALANCE ROW + BEAR ── */}
@@ -594,7 +551,7 @@ function Home() {
               </p>
 
               {/* XP bar */}
-              <div style={{ marginTop: 18 }}>
+              <div style={{ marginTop: 22 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
                   <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
                     Next level in {100 - xpInLevel} XP
@@ -631,7 +588,7 @@ function Home() {
           </div>
 
           {/* ── BUTTONS ── */}
-          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+          <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
             <button
               className="mq-btn"
               style={{
