@@ -140,13 +140,16 @@ function BearCharacter({
 
 // Subtle floating sparkle particles around the bear
 function BearAura() {
-  // Static sparkle positions (relative to bear container)
+  // Sparkle positions tuned for 118×130 container
   const sparkles = [
-    { x: 108, y: 12,  size: 10, color: "#4A6FE3", delay: "0s",    dur: "3.2s" },
-    { x: -10, y: 55,  size: 8,  color: "#7B9CF0", delay: "1.1s",  dur: "4s"   },
-    { x: 112, y: 90,  size: 7,  color: "#50C878", delay: "0.5s",  dur: "3.6s" },
-    { x: -14, y: 105, size: 9,  color: "#4A6FE3", delay: "1.8s",  dur: "4.4s" },
-    { x: 96,  y: 130, size: 6,  color: "#A0B8FF", delay: "2.3s",  dur: "3s"   },
+    { x: 96,  y: 6,   size: 8, color: "#7B9CF0", delay: "0s",   dur: "4.2s" },
+    { x: -8,  y: 28,  size: 6, color: "#A0B8FF", delay: "1.4s", dur: "5s"   },
+    { x: 108, y: 52,  size: 5, color: "#50C878", delay: "0.6s", dur: "4.6s" },
+    { x: -10, y: 70,  size: 7, color: "#7B9CF0", delay: "2.1s", dur: "5.4s" },
+    { x: 100, y: 92,  size: 5, color: "#C0CFFF", delay: "1.0s", dur: "4.4s" },
+    { x: -4,  y: 102, size: 6, color: "#A0B8FF", delay: "2.8s", dur: "5.2s" },
+    { x: 80,  y: 116, size: 4, color: "#50C878", delay: "0.3s", dur: "4s"   },
+    { x: 18,  y: 8,   size: 4, color: "#A0B8FF", delay: "3.2s", dur: "5.6s" },
   ];
 
   return (
@@ -156,7 +159,7 @@ function BearAura() {
         position: "absolute",
         inset: 0,
         borderRadius: "50%",
-        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.18) 0%, rgba(180,195,255,0.06) 55%, transparent 75%)",
+        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.14) 0%, rgba(180,195,255,0.04) 55%, transparent 75%)",
         pointerEvents: "none",
       }} />
       {/* Sparkle crosses */}
@@ -170,7 +173,7 @@ function BearAura() {
             width: s.size,
             height: s.size,
             pointerEvents: "none",
-            opacity: 0.18,
+            opacity: 0.15,
             animation: `sparkle-float ${s.dur} ease-in-out ${s.delay} infinite`,
           }}
         >
@@ -575,15 +578,17 @@ function Home() {
             <div style={{
               flexShrink: 0,
               position: "relative",
-              width: 104,
-              height: 118,
+              width: 118,
+              height: 130,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginRight: -6,
+              marginTop: -8,
+              marginRight: -10,
+              zIndex: 1,
             }}>
               <BearAura />
-              <div style={{ transform: "scale(0.78)", transformOrigin: "center bottom" }}>
+              <div style={{ transform: "scale(0.9)", transformOrigin: "center bottom" }}>
                 <BearCharacter
                   fur={charColors.fur}
                   inner={charColors.inner}
@@ -594,12 +599,12 @@ function Home() {
           </div>
 
           {/* ── XP BAR ── */}
-          <div style={{ marginTop: 10 }}>
+          <div style={{ marginTop: 10, position: "relative", zIndex: 2 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
               <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
                 Next level in {100 - xpInLevel} XP
               </span>
-              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
+              <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500, background: "#fff", paddingLeft: 6 }}>
                 {xpInLevel} / 100
               </span>
             </div>
