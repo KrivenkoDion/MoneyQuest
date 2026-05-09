@@ -50,24 +50,6 @@ function useBearReaction(resetDelay = 1500) {
   return { mood, react };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  BEAR CHARACTER — traced from reference image
-//
-//  Canvas: 200 × 240 units, rendered at width=100 height=120
-//
-//  Key measurements from reference (as % of canvas):
-//  Head circle:  cx=100 cy=95  r=68   (large, dominant)
-//  Ears:         left cx=46 cy=44 r=20, right cx=154 cy=44 r=20
-//                inner r=11 — sit above/behind head at ~10-11 o'clock
-//  Muzzle:       cx=100 cy=118  rx=34 ry=24  (wide oval, lower face)
-//  Eyes:         cx=82 / cx=118, cy=96  rx=7.5 ry=7.5
-//                close together, just above muzzle top edge
-//  Cheeks:       cx=68 cy=114 / cx=132 cy=114  r=12  outside+below eyes
-//  Nose:         cx=100 cy=107  rx=7.5 ry=5.5
-//  Mouth W:      M88,116 Q94,122 100,116 Q106,122 112,116
-//  Body:         cx=100 cy=186  rx=55 ry=48
-//  Belly:        cx=100 cy=194  rx=35 ry=34
-// ─────────────────────────────────────────────────────────────────────────────
 function BearCharacter({
   fur, inner, onClick, mood = "idle",
   equippedHat: _h, equippedGlasses: _g, equippedOutfit: _o,
@@ -95,51 +77,47 @@ function BearCharacter({
 
   const eyeRy = blink ? 0.6 : 7.5;
 
-  // Mouth shapes — all subtle, matching reference W-curve baseline
   const mouthD =
     mood === "happy"   ? "M85,116 Q100,128 115,116"        :
     mood === "excited" ? "M83,115 Q100,129 117,115"        :
     mood === "sad"     ? "M86,122 Q100,113 114,122"        :
     mood === "proud"   ? "M87,117 Q100,123 113,117"        :
-    "M88,116 Q94,122 100,116 Q106,122 112,116";            // idle W
+    "M88,116 Q94,122 100,116 Q106,122 112,116";
 
   return (
     <svg
-      width="100" height="120"
+      width="130" height="156"
       viewBox="0 0 200 240"
       onClick={onClick}
       className={`bear-idle ${mood !== "idle" ? `bear--${mood}` : ""}`}
       style={{ cursor: "pointer", display: "block", overflow: "visible" }}
     >
-      {/* ── BODY — wider, chubby ── */}
+      {/* ── BODY ── */}
       <ellipse cx="100" cy="186" rx="68" ry="50" fill={fur} />
-      {/* Belly patch */}
       <ellipse cx="100" cy="194" rx="44" ry="36" fill={inner} />
 
-      {/* ── EARS — behind head, at ~10-11 and 1-2 o'clock ── */}
+      {/* ── EARS ── */}
       <circle cx="46"  cy="44" r="21" fill={fur} />
       <circle cx="154" cy="44" r="21" fill={fur} />
-      {/* Inner ear */}
       <circle cx="46"  cy="46" r="11" fill={inner} />
       <circle cx="154" cy="46" r="11" fill={inner} />
 
-      {/* ── HEAD — large dominant circle ── */}
+      {/* ── HEAD ── */}
       <circle cx="100" cy="95" r="68" fill={fur} />
 
-      {/* ── MUZZLE — wide oval, lower 35% of face ── */}
+      {/* ── MUZZLE ── */}
       <ellipse cx="100" cy="118" rx="34" ry="24" fill={inner} />
 
-      {/* ── NOSE — small dark oval at top of muzzle ── */}
+      {/* ── NOSE ── */}
       <ellipse cx="100" cy="107" rx="7.5" ry="5.5" fill="#2A1506" />
 
-      {/* ── CHEEKS — soft pink, outside+below eyes, on muzzle edge ── */}
+      {/* ── CHEEKS ── */}
       <circle cx="70"  cy="114" r="12" fill="#E07080" opacity="0.42" />
       <circle cx="130" cy="114" r="12" fill="#E07080" opacity="0.42" />
 
-      {/* ── EYES — slightly bigger, wider apart, glossy ── */}
+      {/* ── EYES ── */}
       <ellipse cx="79"  cy="96" rx="9" ry={eyeRy} fill="#2A1506" />
       <ellipse cx="121" cy="96" rx="9" ry={eyeRy} fill="#2A1506" />
-      {/* Shine dots — upper-inner quadrant */}
       {!blink && (
         <>
           <circle cx="83"  cy="91" r="3.2" fill="white" opacity="0.92" />
@@ -147,7 +125,7 @@ function BearCharacter({
         </>
       )}
 
-      {/* ── MOUTH — W shape below nose ── */}
+      {/* ── MOUTH ── */}
       <path
         d={mouthD}
         fill="none"
@@ -157,6 +135,51 @@ function BearCharacter({
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+// Subtle floating sparkle particles around the bear
+function BearAura() {
+  // Static sparkle positions (relative to bear container)
+  const sparkles = [
+    { x: 108, y: 12,  size: 10, color: "#4A6FE3", delay: "0s",    dur: "3.2s" },
+    { x: -10, y: 55,  size: 8,  color: "#7B9CF0", delay: "1.1s",  dur: "4s"   },
+    { x: 112, y: 90,  size: 7,  color: "#50C878", delay: "0.5s",  dur: "3.6s" },
+    { x: -14, y: 105, size: 9,  color: "#4A6FE3", delay: "1.8s",  dur: "4.4s" },
+    { x: 96,  y: 130, size: 6,  color: "#A0B8FF", delay: "2.3s",  dur: "3s"   },
+  ];
+
+  return (
+    <>
+      {/* Soft radial aura behind bear */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        borderRadius: "50%",
+        background: "radial-gradient(ellipse 80% 70% at 50% 55%, rgba(180,195,255,0.18) 0%, rgba(180,195,255,0.06) 55%, transparent 75%)",
+        pointerEvents: "none",
+      }} />
+      {/* Sparkle crosses */}
+      {sparkles.map((s, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            left: s.x,
+            top: s.y,
+            width: s.size,
+            height: s.size,
+            pointerEvents: "none",
+            opacity: 0.18,
+            animation: `sparkle-float ${s.dur} ease-in-out ${s.delay} infinite`,
+          }}
+        >
+          <svg width={s.size} height={s.size} viewBox="0 0 10 10">
+            <path d="M5 0 L5.4 4.6 L10 5 L5.4 5.4 L5 10 L4.6 5.4 L0 5 L4.6 4.6 Z" fill={s.color} />
+          </svg>
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -331,6 +354,12 @@ function Home() {
         .bear--proud   { animation: bear-proud  0.6s ease both !important; }
         .bear--sad     { animation: bear-sad    0.5s ease both !important; }
 
+        /* Sparkle float */
+        @keyframes sparkle-float {
+          0%, 100% { transform: translateY(0) scale(1);    opacity: 0.15; }
+          50%       { transform: translateY(-6px) scale(1.15); opacity: 0.22; }
+        }
+
         .mq-btn {
           -webkit-tap-highlight-color: transparent;
           transition: transform 0.12s cubic-bezier(0.34,1.5,0.64,1), opacity 0.12s;
@@ -346,22 +375,15 @@ function Home() {
           box-shadow: 0 1px 8px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
         }
 
+        /* Hero card — white, clean, matches reference */
         .mq-hero {
           background: #ffffff;
           border-radius: 24px;
           margin: 0 16px 12px;
-          padding: 20px 20px 18px;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+          padding: 20px 20px 20px;
+          box-shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
           position: relative;
-          overflow: hidden;
-        }
-        .mq-hero::after {
-          content: '';
-          position: absolute;
-          top: -20px; right: -20px;
-          width: 100px; height: 100px;
-          background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
-          pointer-events: none;
+          overflow: visible;
         }
 
         .loot-active {
@@ -493,26 +515,113 @@ function Home() {
         {/* ── HERO CARD ── */}
         <div className="mq-hero s1">
 
-          {/* Top row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: "#999", fontWeight: 600 }}>Main account · EUR</span>
-            <span style={{ fontSize: 12, color: "#999", fontWeight: 600 }}>Level {level}</span>
-          </div>
+          {/* ── TOP ROW: account info left, level badge right ── */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
 
-          {/* Balance row + bear */}
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: "0 0 2px", fontSize: 11, color: "#bbb", fontWeight: 500 }}>Total balance</p>
-              <h1 style={{ margin: 0, fontSize: 34, fontWeight: 900, color: "#11112a", letterSpacing: "-1px", lineHeight: 1 }}>
-                {balance.toFixed(2)} €
-              </h1>
-              <p style={{ margin: "8px 0 0", fontSize: 12, color: "#3b5bdb", fontWeight: 600 }}>
-                "{phrase}"
-              </p>
+            {/* Left: wallet icon + account name + EUR pill */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 14,
+                background: "#EEF0FB",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 20, flexShrink: 0,
+              }}>👛</div>
+              <div>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#11112a", letterSpacing: "-0.3px" }}>
+                  Main account
+                </p>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 3 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#3b5bdb" }} />
+                  <span style={{ fontSize: 12, color: "#3b5bdb", fontWeight: 700, letterSpacing: "0.2px" }}>EUR</span>
+                </div>
+              </div>
             </div>
 
-            {/* Bear — right side, bottom-aligned */}
-            <div style={{ flexShrink: 0, marginBottom: -2, marginRight: -4 }}>
+            {/* Right: hexagon level badge + level text */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {/* Hexagon badge */}
+              <div style={{ position: "relative", width: 44, height: 44, flexShrink: 0 }}>
+                <svg width="44" height="44" viewBox="0 0 44 44" style={{ position: "absolute", inset: 0 }}>
+                  <path
+                    d="M22 3 L39 12.5 L39 31.5 L22 41 L5 31.5 L5 12.5 Z"
+                    fill="#C8CFFA"
+                  />
+                </svg>
+                <div style={{
+                  position: "absolute", inset: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  gap: 1,
+                }}>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: "#11112a" }}>{level}</span>
+                  <span style={{ fontSize: 11 }}>⚡</span>
+                </div>
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#11112a", letterSpacing: "-0.2px" }}>
+                  Level {level}
+                </p>
+                <p style={{ margin: 0, fontSize: 11, color: "#999", fontWeight: 500 }}>
+                  {100 - xpInLevel} XP to next level
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── BALANCE ROW + BEAR ── */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+
+            {/* Left: balance + phrase + XP bar */}
+            <div style={{ flex: 1, paddingRight: 8 }}>
+              <p style={{ margin: "0 0 4px", fontSize: 12, color: "#aaa", fontWeight: 500 }}>Total balance</p>
+              <h1 style={{
+                margin: 0,
+                fontSize: 40,
+                fontWeight: 900,
+                color: "#11112a",
+                letterSpacing: "-1.5px",
+                lineHeight: 1,
+              }}>
+                {balance.toFixed(2)} €
+              </h1>
+              <p style={{
+                margin: "10px 0 0",
+                fontSize: 13,
+                color: "#3b5bdb",
+                fontWeight: 700,
+                fontStyle: "italic",
+              }}>
+                "{phrase}"
+              </p>
+
+              {/* XP bar */}
+              <div style={{ marginTop: 18 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                  <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
+                    Next level in {100 - xpInLevel} XP
+                  </span>
+                  <span style={{ fontSize: 11, color: "#aaa", fontWeight: 500 }}>
+                    {xpInLevel} / 100
+                  </span>
+                </div>
+                <div style={{ height: 5, borderRadius: 4, background: "#EEEEED", overflow: "hidden" }}>
+                  <div className="xp-bar" style={{ width: `${xpInLevel}%` }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Right: bear with aura */}
+            <div style={{
+              flexShrink: 0,
+              position: "relative",
+              width: 140,
+              height: 160,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: -8,
+              marginRight: -4,
+            }}>
+              <BearAura />
               <BearCharacter
                 fur={charColors.fur}
                 inner={charColors.inner}
@@ -521,27 +630,24 @@ function Home() {
             </div>
           </div>
 
-          {/* XP row */}
-          <div style={{ marginTop: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 11, color: "#bbb", fontWeight: 500 }}>Next level in {100 - xpInLevel} XP</span>
-              <span style={{ fontSize: 11, color: "#bbb", fontWeight: 500 }}>{xpInLevel} / 100</span>
-            </div>
-            <div style={{ height: 5, borderRadius: 4, background: "#EEEEED", overflow: "hidden" }}>
-              <div className="xp-bar" style={{ width: `${xpInLevel}%` }} />
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
+          {/* ── BUTTONS ── */}
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
             <button
               className="mq-btn"
-              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "1.5px solid #E8E8E4", background: "#FAFAF8", color: "#11112a", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
+              style={{
+                flex: 1, padding: "15px 0", borderRadius: 999,
+                border: "none", background: "#F0F0ED",
+                color: "#11112a", fontSize: 15, fontWeight: 800, fontFamily: "inherit",
+              }}
               onClick={() => { setType("expense"); setBalanceError(""); setShowModal(true); }}
             >− Expense</button>
             <button
               className="mq-btn"
-              style={{ flex: 1, padding: "13px 0", borderRadius: 14, border: "none", background: "#11112a", color: "white", fontSize: 14, fontWeight: 700, fontFamily: "inherit" }}
+              style={{
+                flex: 1, padding: "15px 0", borderRadius: 999,
+                border: "none", background: "#11112a",
+                color: "white", fontSize: 15, fontWeight: 800, fontFamily: "inherit",
+              }}
               onClick={() => { setType("income"); setBalanceError(""); setShowModal(true); }}
             >+ Income</button>
           </div>
